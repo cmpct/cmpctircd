@@ -14,8 +14,8 @@ namespace cmpctircd {
         private TcpListener _listener = null;
         // port
         //private Dictionary<TcpClient, Client> client_mapping = new Dictionary<Socket, Client>();
-        // maybe this should be tcpclients
-        private List<Socket> _sockets = new List<Socket>();
+        // maybe this should be Client?
+        private List<TcpClient> _clients = new List<TcpClient>();
 
         public SocketListener(String IP, int port) {
             _listener = new TcpListener(IPAddress.Any, port);
@@ -43,80 +43,33 @@ namespace cmpctircd {
 
             // TODO: Loop (should be done by caller instead)
             TcpClient tc = await _listener.AcceptTcpClientAsync();
-            HandleClient(tc);
+            HandleClient(tc); // this should split off execution
         }
 
         async Task HandleClient(TcpClient tc) {
             var client = new Client();
-            client.socket = tc.Client;
-            client.buffer = new byte[1024];
+            client.TcpClient = tc;
+            client.Buffer = new byte[1024];
 
-            lock (_sockets)
-                _sockets.Add(client.socket);
+            lock (_clients)
+                _clients.Add(client.TcpClient);
 
-            // use Stream - socket draft shown here
-            //var rEvent = new SocketAsyncEventArgs();
-            //rEvent.SetBuffer(client.buffer, 0, client.buffer.Length);
-            //tc.Client.ReceiveAsync(rEvent);
+            // TODO: Loop this
 
-            // TODO: Loops
-
-            using (var s = tc.GetStream()) {
-                var bytesRead = await s.ReadAsync(client.buffer, 0, client.buffer.Length);
+            using (var s = client.TcpClient.GetStream()) {
+                var bytesRead = await s.ReadAsync(client.Buffer, 0, client.Buffer.Length);
                 if (bytesRead > 0) {
                     // Would a TcpClient have ReadLine for us?
-                    string data = Encoding.UTF8.GetString(client.buffer);
+                    string data = Encoding.UTF8.GetString(client.Buffer);
                     Console.WriteLine("Got data:");
                     Console.WriteLine(data);
                 } else {
                     Console.WriteLine("No data, killing client");
-                    // Close the connectiono
-                    client.socket.Close();
-                    lock (_sockets) {
-                        _sockets.Remove(client.socket);
+                    // Close the connection
+                    client.TcpClient.Close();
+                    lock (_clients) {
+                        _clients.Remove(client.TcpClient);
                     }
-                }
-            }
-        }
-
-        // dead code starts here
-
-        public void acceptClient(IAsyncResult ar) {
-            TcpListener listener = (TcpListener)ar.AsyncState;
-            TcpClient newTcpClient = listener.EndAcceptTcpClient(ar);
-            Socket newSocket = newTcpClient.Client;
-
-            Client client = new Client();
-            client.socket = newTcpClient.Client;
-            client.buffer = new byte[1024];
-
-            Console.WriteLine("Accepting a client");
-            lock (_sockets) {
-                _sockets.Add(client.socket);
-            }
-
-            client.socket.BeginReceive(client.buffer, 0, client.buffer.Length, SocketFlags.None, new AsyncCallback(readClient), client);
-            // shouldn't the caller be the one looping?
-            _listener.BeginAcceptTcpClient(new AsyncCallback(acceptClient), _listener);
-        }
-
-        public void readClient(IAsyncResult ar) {
-            Client client = (Client)ar.AsyncState;
-            Socket socket = client.socket;
-            int bytesRead = client.socket.EndReceive(ar);
-
-            if (bytesRead > 0) {
-                // Would a TcpClient have ReadLine for us?
-                String data = System.Text.Encoding.UTF8.GetString(client.buffer);
-                Console.WriteLine("Got data:");
-                Console.WriteLine(data);
-                client.socket.BeginReceive(client.buffer, 0, client.buffer.Length, SocketFlags.None, new AsyncCallback(readClient), client);
-            } else {
-                Console.WriteLine("No data, killing client");
-                // Close the connectiono
-                client.socket.Close();
-                lock (_sockets) {
-                    _sockets.Remove(client.socket);
                 }
             }
         }

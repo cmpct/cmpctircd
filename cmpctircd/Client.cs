@@ -9,9 +9,8 @@ namespace cmpctircd
 {
     class Client
     {
-        // make this tcpclient?
-        public Socket socket;
-        public byte[] buffer;
+        public TcpClient TcpClient { get; set; }
+        public byte[] Buffer { get; set; }
 
         public Client() {}
     }

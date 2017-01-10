@@ -17,11 +17,13 @@ namespace cmpctircd
             SocketListener sl = new SocketListener("127.0.0.1", 6669);
             sl.bind();
             try {
-                while (true) {
-                    sl.listenToClients();
-                }
-            } finally {
+                sl.listenToClients();
+            } catch {
                 sl.stop();
+            }
+
+            while (true) {
+                // Sit here
             }
         }
     }

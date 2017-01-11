@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections;
+using System.Text.RegularExpressions;
 
 namespace cmpctircd {
     class SocketListener {
@@ -53,15 +54,20 @@ namespace cmpctircd {
 
             lock (_clients)
                 _clients.Add(client.TcpClient);
-
-            // TODO: Loop this
-
+            
             using (var s = client.TcpClient.GetStream()) {
-                var bytesRead = await s.ReadAsync(client.Buffer, 0, client.Buffer.Length);
+                while (true) {
+                int bytesRead = await s.ReadAsync(client.Buffer, 0, client.Buffer.Length);
                 if (bytesRead > 0) {
                     // Would a TcpClient have ReadLine for us?
                     string data = Encoding.UTF8.GetString(client.Buffer);
+                    string[] lines = Regex.Split(data, "\r\n");
                     Console.WriteLine("Got data:");
+                    foreach (string line in lines) {
+                        Console.WriteLine(line.Trim());
+                    }
+                     // Why does nothing show after this?
+                    Console.WriteLine("hello");
                     Console.WriteLine(data);
                 } else {
                     Console.WriteLine("No data, killing client");
@@ -71,6 +77,7 @@ namespace cmpctircd {
                         _clients.Remove(client.TcpClient);
                     }
                 }
+            }
             }
         }
     }

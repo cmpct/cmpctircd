@@ -16,14 +16,13 @@ namespace cmpctircd
             //Console.ReadKey();
             SocketListener sl = new SocketListener("127.0.0.1", 6669);
             sl.bind();
-            try {
-                sl.listenToClients();
-            } catch {
-                sl.stop();
-            }
 
             while (true) {
-                // Sit here
+                try {
+                    sl.listenToClients();
+                } catch {
+                    sl.stop();
+                }
             }
         }
     }

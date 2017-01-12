@@ -36,7 +36,7 @@ namespace cmpctircd {
         }
 
         // Accept + read from clients.
-        // This function should be called in a loop
+        // This function should be called in a loop, and waited on
         public async Task listenToClients() {
             if (!_started) {
                 throw new InvalidOperationException("Bind() not called or has been stopped.");

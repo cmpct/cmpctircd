@@ -19,7 +19,9 @@ namespace cmpctircd
 
             while (true) {
                 try {
-                    sl.listenToClients();
+                    Console.WriteLine("Listening to one more");
+                    // HACK: You can't use await in async
+                    sl.listenToClients().Wait();
                 } catch {
                     sl.stop();
                 }

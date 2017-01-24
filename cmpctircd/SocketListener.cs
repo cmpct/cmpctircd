@@ -67,7 +67,9 @@ namespace cmpctircd {
                     foreach (string line in lines) {
                         // Split each line into bits
                         string[] parts = Regex.Split(line, " ");
-                        _ircd.packetManager.findHandler(parts[0]);
+                        object[] args = new object[] { _ircd, client, line};
+                        if (parts[0].Contains("\0")) continue;
+                        _ircd.packetManager.findHandler(parts[0], args);
                    }
                 } else {
                     Console.WriteLine("No data, killing client");

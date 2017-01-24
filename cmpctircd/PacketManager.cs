@@ -7,20 +7,21 @@ using System.Threading.Tasks;
 namespace cmpctircd {
     class PacketManager {
         private IRCd ircd;
-        public Dictionary<String, Func<Boolean>> handlers = new Dictionary<string, Func<Boolean>>();
+        // XXX: Instead of Array, this could be a bundle which we send with each packet - args baked in, ircd, etc?
+        public Dictionary<String, Func<Array, Boolean>> handlers = new Dictionary<string, Func<Array, Boolean>>();
            
         public PacketManager(IRCd ircd) {
             this.ircd = ircd;
         }
 
-        public bool register(String packet, Func<Boolean> handler) {
+        public bool register(String packet, Func<Array, Boolean> handler) {
             handlers.Add(packet, handler);
             return true;
         }
 
-        public bool findHandler(String packet) {
+        public bool findHandler(String packet, Array args) {
             try {
-                handlers[packet].Invoke();
+                handlers[packet].Invoke(args);
                 Console.WriteLine("Handler for " + packet + " executed");
             } catch(KeyNotFoundException) {
                 Console.WriteLine("No handler for " + packet);

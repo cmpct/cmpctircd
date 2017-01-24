@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace cmpctircd {
     class SocketListener {
+        private IRCd _ircd;
         private Boolean _started = false;
         private TcpListener _listener = null;
         // port
@@ -18,7 +19,8 @@ namespace cmpctircd {
         // maybe this should be Client?
         private List<TcpClient> _clients = new List<TcpClient>();
 
-        public SocketListener(String IP, int port) {
+        public SocketListener(IRCd ircd, String IP, int port) {
+            this._ircd = ircd;
             _listener = new TcpListener(IPAddress.Any, port);
         }
         ~SocketListener() {
@@ -62,13 +64,11 @@ namespace cmpctircd {
                     // Would a TcpClient have ReadLine for us?
                     string data = Encoding.UTF8.GetString(client.Buffer);
                     string[] lines = Regex.Split(data, "\r\n");
-                    Console.WriteLine("Got data:");
                     foreach (string line in lines) {
-                        Console.WriteLine(line.Trim());
-                    }
-                     // Why does nothing show after this?
-                    Console.WriteLine("hello");
-                    Console.WriteLine(data);
+                        // Split each line into bits
+                        string[] parts = Regex.Split(line, " ");
+                        _ircd.packetManager.findHandler(parts[0]);
+                   }
                 } else {
                     Console.WriteLine("No data, killing client");
                     // Close the connection

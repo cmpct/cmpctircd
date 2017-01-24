@@ -14,7 +14,17 @@ namespace cmpctircd.Packets {
         }
 
         public Boolean userHandler(Array args) {
-            //Console.WriteLine("Running user handler...");
+            IRCd ircd = (IRCd)args.GetValue(0);
+            Client client = (Client)args.GetValue(1);
+            String rawLine = args.GetValue(2).ToString();
+
+            String[] splitLine = rawLine.Split(' ');
+            String[] splitColonLine = rawLine.Split(new char[] { ':' }, 2);
+
+            String username = splitLine[1];
+            String real_name = splitColonLine[1];
+
+            client.setUser(username, real_name);
             return true;
         }
 

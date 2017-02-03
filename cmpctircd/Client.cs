@@ -30,7 +30,20 @@ namespace cmpctircd
 
             // Henceforth, we assume user can become Authenticated!
             state = ClientState.Auth;
-            write(String.Format(":{0} {1} {2} :Welcome to the {3} IRC Network {4}", "irc.cmpct.info", "001", nick, "cmpct", mask()));
+
+            // TODO: constants which will go into the config
+            String host = "irc.cmpct.info";
+            String network = "cmpct";
+            String version = "0.1";
+            int maxTargets = 200;
+
+            write(String.Format(":{0} {1} {2} :Welcome to the {3} IRC Network {4}", host, IrcNumeric.RPL_WELCOME.Printable(), nick, network, mask()));
+            write(String.Format(":{0} {1} {2} :Your host is {3}, running version cmpctircd-{4}", host, IrcNumeric.RPL_YOURHOST.Printable(), nick, host, version));
+            write(String.Format(":{0} {1} {2} :This server was created {3}", host, IrcNumeric.RPL_CREATED.Printable(), nick, host, 0));
+            // TODO: Should this not have a ':'? It didn't in the perl version...
+            write(String.Format(":{0} {1} {2} {3} {4} x ntlo", host, IrcNumeric.RPL_MYINFO.Printable(), nick, host, version));
+            write(String.Format(":{0} {1} {2} :CASEMAPPING=rfc1459 PREFIX=(ov)@+ STATUSMSG=@+ NETWORK={3} MAXTARGETS={4} :are supported by this server", host, IrcNumeric.RPL_ISUPPORT.Printable(), nick, network, maxTargets));
+            write(String.Format(":{0} {1} {2} :CHANTYPES=# CHANMODES=b,,l,ntm :are supported by this server", host, IrcNumeric.RPL_ISUPPORT.Printable(), nick));
         }
 
 

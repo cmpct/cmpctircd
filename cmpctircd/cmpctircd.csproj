@@ -46,6 +46,7 @@
     <Compile Include="Client.cs" />
     <Compile Include="ClientState.cs" />
     <Compile Include="IRCd.cs" />
+    <Compile Include="IrcNumeric.cs" />
     <Compile Include="PacketManager.cs" />
     <Compile Include="Packets\Login.cs" />
     <Compile Include="Program.cs" />

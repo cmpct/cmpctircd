@@ -50,6 +50,7 @@
     <Compile Include="IrcNumericExtensions.cs" />
     <Compile Include="PacketManager.cs" />
     <Compile Include="Packets\Login.cs" />
+    <Compile Include="Packets\Motd.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SocketListener.cs" />

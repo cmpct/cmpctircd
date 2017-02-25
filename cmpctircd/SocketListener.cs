@@ -51,6 +51,7 @@ namespace cmpctircd {
 
         async Task HandleClient(TcpClient tc) {
             var client = new Client();
+            client.ircd = _ircd;
             client.TcpClient = tc;
             client.Buffer = new byte[1024];
 

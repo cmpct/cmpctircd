@@ -11,6 +11,12 @@ namespace cmpctircd {
         private Dictionary<String, SocketListener> listeners;
         public PacketManager packetManager;
 
+        // TODO: constants which will go into the config
+        public String host = "irc.cmpct.info";
+        public String network = "cmpct";
+        public String version = "0.1";
+        public int maxTargets = 200;
+
         public void run() {
             Console.WriteLine("Starting cmpctircd");
             Console.WriteLine("==> Host: irc.cmpct.info");

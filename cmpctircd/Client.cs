@@ -39,8 +39,27 @@ namespace cmpctircd
             write(String.Format(":{0} {1} {2} {3} {4} x ntlo", ircd.host, IrcNumeric.RPL_MYINFO.Printable(), nick, ircd.host, ircd.version));
             write(String.Format(":{0} {1} {2} :CASEMAPPING=rfc1459 PREFIX=(ov)@+ STATUSMSG=@+ NETWORK={3} MAXTARGETS={4} :are supported by this server", ircd.host, IrcNumeric.RPL_ISUPPORT.Printable(), nick, ircd.network, ircd.maxTargets));
             write(String.Format(":{0} {1} {2} :CHANTYPES=# CHANMODES=b,,l,ntm :are supported by this server", ircd.host, IrcNumeric.RPL_ISUPPORT.Printable(), nick));
+
+            // Send MOTD
+            send_motd();
         }
 
+        public void send_motd() {
+            try {
+                string[] motd = System.IO.File.ReadAllLines("ircd.motd");
+                write(String.Format(":{0} {1} {2} : - {3} Message of the Day -", ircd.host, IrcNumeric.RPL_MOTDSTART.Printable(), nick, ircd.host));
+                for(int i = 0; i < motd.Length; i++) {
+                    if((i == motd.Length) && String.IsNullOrEmpty(motd[i])) {
+                        // If end of the file and a new line, don't print.
+                        break;
+                    }
+                    write(String.Format(":{0} {1} {2} : - {3}", ircd.host, IrcNumeric.RPL_MOTD.Printable(), nick, motd[i]));
+                }
+                write(String.Format(":{0} {1} {2} :End of /MOTD command.", ircd.host, IrcNumeric.RPL_ENDOFMOTD.Printable(), nick));
+            } catch(System.IO.FileNotFoundException e) {
+                Console.WriteLine("ircd.motd doesn't exist!");
+            }
+        }
 
         public Boolean setNick(String nick) {
             // Return if nick is the same

@@ -15,6 +15,7 @@ namespace cmpctircd {
         }
 
         public bool register(String packet, Func<Array, Boolean> handler) {
+            Console.WriteLine("Registering packet: " + packet);
             handlers.Add(packet, handler);
             return true;
         }

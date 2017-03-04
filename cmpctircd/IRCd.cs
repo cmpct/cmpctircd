@@ -10,6 +10,7 @@ namespace cmpctircd {
     class IRCd {
         private Dictionary<String, SocketListener> listeners;
         public PacketManager packetManager;
+        public ChannelManager channelManager;
 
         // TODO: constants which will go into the config
         public String host = "irc.cmpct.info";
@@ -23,6 +24,7 @@ namespace cmpctircd {
             Console.WriteLine("==> Listening on: 127.0.0.1:6669");
             SocketListener sl = new SocketListener(this, "127.0.0.1", 6669);
             packetManager = new PacketManager(this);
+            channelManager = new ChannelManager(this);
 
             sl.bind();
             packetManager.load();

@@ -35,8 +35,9 @@ namespace cmpctircd
             write(String.Format(":{0} {1} {2} :Welcome to the {3} IRC Network {4}", ircd.host, IrcNumeric.RPL_WELCOME.Printable(), nick, ircd.network, mask()));
             write(String.Format(":{0} {1} {2} :Your host is {3}, running version cmpctircd-{4}", ircd.host, IrcNumeric.RPL_YOURHOST.Printable(), nick, ircd.host, ircd.version));
             write(String.Format(":{0} {1} {2} :This server was created {3}", ircd.host, IrcNumeric.RPL_CREATED.Printable(), nick, ircd.host, 0));
-            // TODO: Should this not have a ':'? It didn't in the perl version...
-            write(String.Format(":{0} {1} {2} {3} {4} x ntlo", ircd.host, IrcNumeric.RPL_MYINFO.Printable(), nick, ircd.host, ircd.version));
+            // TODO: This was commented out in the Perl version, probably not something to use for now.
+            // TODO: I don't think MYINFO is very popular?
+            //write(String.Format(":{0} {1} {2} {3} {4} x ntlo", ircd.host, IrcNumeric.RPL_MYINFO.Printable(), nick, ircd.host, ircd.version));
             write(String.Format(":{0} {1} {2} :CASEMAPPING=rfc1459 PREFIX=(ov)@+ STATUSMSG=@+ NETWORK={3} MAXTARGETS={4} :are supported by this server", ircd.host, IrcNumeric.RPL_ISUPPORT.Printable(), nick, ircd.network, ircd.maxTargets));
             write(String.Format(":{0} {1} {2} :CHANTYPES=# CHANMODES=b,,l,ntm :are supported by this server", ircd.host, IrcNumeric.RPL_ISUPPORT.Printable(), nick));
 

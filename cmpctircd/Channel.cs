@@ -33,6 +33,13 @@ namespace cmpctircd {
         public bool inhabits(Client client) {
             return clients.ContainsValue(client);
         }
+        public bool inhabits(String nick) {
+            return clients.ContainsKey(nick);
+        }
+        public void remove(Client client) {
+            // TODO: need a PART/QUIT too which this will call
+            clients.Remove(client.nick);
+        }
         public int size() {
             return clients.Count();
         }

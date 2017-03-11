@@ -76,12 +76,14 @@ namespace cmpctircd {
                         } else {
                             Console.WriteLine("No data, killing client");
                             // Close the connection
+                            client.disconnect();
                             client.TcpClient.Close();
                             lock (_clients) {
                                 _clients.Remove(client.TcpClient);
                             }
                         }
                     } catch(ObjectDisposedException) {
+                        client.disconnect();
                         lock(_clients) {
                             if(_clients.Contains(client.TcpClient))
                                 _clients.Remove(client.TcpClient);

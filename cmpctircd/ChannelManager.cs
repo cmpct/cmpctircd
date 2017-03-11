@@ -31,6 +31,9 @@ namespace cmpctircd {
         public int size() {
             return channels.Count();
         }
+        public Dictionary<String, Channel> list() {
+            return channels;
+        }
 
 
     }

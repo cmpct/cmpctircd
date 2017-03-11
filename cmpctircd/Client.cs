@@ -123,5 +123,15 @@ namespace cmpctircd
             byte[] packetBytes = Encoding.UTF8.GetBytes(packet + "\r\n");
             TcpClient.GetStream().Write(packetBytes, 0, packetBytes.Length);
         }
+
+        public void disconnect() {
+            // Inform all of the channels we're a member of that we are leaving
+            foreach (var channel in ircd.channelManager.list()) {
+                if(channel.Value.inhabits(this)) {
+                    channel.Value.remove(this);
+                }
+            }
+        }
+
     }
 }

@@ -60,26 +60,34 @@ namespace cmpctircd {
             
             using (var s = client.TcpClient.GetStream()) {
                 while (true) {
-                    int bytesRead = await s.ReadAsync(client.Buffer, 0, client.Buffer.Length);
-                    if (bytesRead > 0) {
-                        // Would a TcpClient have ReadLine for us?
-                        string data = Encoding.UTF8.GetString(client.Buffer);
-                        string[] lines = Regex.Split(data, "\r\n");
-                        foreach (string line in lines) {
-                            // Split each line into bits
-                            string[] parts = Regex.Split(line, " ");
-                            object[] args = new object[] { _ircd, client, line};
-                            if (parts[0].Contains("\0")) continue;
-                            _ircd.packetManager.findHandler(parts[0], args);
-                       }
-                    } else {
-                        Console.WriteLine("No data, killing client");
-                        // Close the connection
-                        client.TcpClient.Close();
-                        lock (_clients) {
-                            _clients.Remove(client.TcpClient);
+                    try {
+                        int bytesRead = await s.ReadAsync(client.Buffer, 0, client.Buffer.Length);
+                        if (bytesRead > 0) {
+                            // Would a TcpClient have ReadLine for us?
+                            string data = Encoding.UTF8.GetString(client.Buffer);
+                            string[] lines = Regex.Split(data, "\r\n");
+                            foreach (string line in lines) {
+                                // Split each line into bits
+                                string[] parts = Regex.Split(line, " ");
+                                object[] args = new object[] { _ircd, client, line };
+                                if (parts[0].Contains("\0")) continue;
+                                _ircd.packetManager.findHandler(parts[0], args);
+                            }
+                        } else {
+                            Console.WriteLine("No data, killing client");
+                            // Close the connection
+                            client.TcpClient.Close();
+                            lock (_clients) {
+                                _clients.Remove(client.TcpClient);
+                            }
                         }
-                    }
+                    } catch(ObjectDisposedException) {
+                        lock(_clients) {
+                            if(_clients.Contains(client.TcpClient))
+                                _clients.Remove(client.TcpClient);
+                        }
+                        break;
+                    };
                 }
             }
         }

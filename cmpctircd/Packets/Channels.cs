@@ -40,23 +40,32 @@ namespace cmpctircd.Packets {
             IRCd ircd = (IRCd) args.GetValue(0);
             Client client = (Client)args.GetValue(1);
             String rawLine = args.GetValue(2).ToString();
-            String target = rawLine.Split(' ')[1];
-            String message = rawLine.Split(new Char[] { ':' }, 1)[1];
-            
-            if(target.First().Equals("#")) {
+            String target;
+            String message;
+
+            try {
+                target = rawLine.Split(' ')[1];
+                message = rawLine.Split(new string[] { ":" }, 2, StringSplitOptions.None)[1];
+            } catch(IndexOutOfRangeException) {
+                Console.WriteLine("Invalid data sent in PRIVMSG");
+                return false;
+            }
+
+
+            Console.WriteLine("Got a PRIVMSG");
+            if (target.StartsWith("#")) {
                 // PRIVMSG a channel
                 // TODO: We don't have +n yet so just check if they're in the room...
                 if(ircd.channelManager.exists(target)) {
                     Channel channel = ircd.channelManager.get(target);
                     if(channel.inhabits(client)) {
-                        channel.send_to_room(client, String.Format(":{0} PRIVMSG {1} :{2}", client.mask(), channel.name, message));
+                        channel.send_to_room(client, String.Format(":{0} PRIVMSG {1} :{2}", client.mask(), channel.name, message), false);
                     }
                 }
             } else {
                 // PRIVMSG a user
             }
 
-            Console.WriteLine("Got a PRIVMSG");
             return true;
         }
 

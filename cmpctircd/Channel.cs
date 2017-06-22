@@ -28,8 +28,18 @@ namespace cmpctircd {
          * Useful internals (public methods) 
         */
         public void send_to_room(Client client, String message) {
-            clients.AsParallel().ForAll(pair => { pair.Value.write(message); });
+            // Default: assume send to everyone including the client
+            send_to_room(client, message, true);
         }
+        public void send_to_room(Client client, String message, Boolean sendSelf) {
+            Parallel.ForEach(clients, (iClient) => {
+                if (!sendSelf && iClient.Value.Equals(client)) {
+                    return;
+                }
+                iClient.Value.write(message);
+            });
+        }
+
         public bool inhabits(Client client) {
             return clients.ContainsValue(client);
         }

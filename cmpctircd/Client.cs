@@ -65,14 +65,14 @@ namespace cmpctircd
 
         public void send_rules() {
             try {
-                string[] motd = System.IO.File.ReadAllLines("ircd.rules");
+                string[] rules = System.IO.File.ReadAllLines("ircd.rules");
                 write(String.Format(":{0} {1} {2} :- {3} server rules -", ircd.host, IrcNumeric.RPL_MOTDSTART.Printable(), nick, ircd.host));
-                for(int i = 0; i < motd.Length; i++) {
-                    if((i == motd.Length) && String.IsNullOrEmpty(motd[i])) {
+                for(int i = 0; i < rules.Length; i++) {
+                    if((i == rules.Length) && String.IsNullOrEmpty(rules[i])) {
                         // If end of the file and a new line, don't print.
                         break;
                     }
-                    write(String.Format(":{0} {1} {2} : - {3}", ircd.host, IrcNumeric.RPL_MOTD.Printable(), nick, motd[i]));
+                    write(String.Format(":{0} {1} {2} : - {3}", ircd.host, IrcNumeric.RPL_MOTD.Printable(), nick, rules[i]));
                 }
                 write(String.Format(":{0} {1} {2} :End of RULES command.", ircd.host, IrcNumeric.RPL_ENDOFMOTD.Printable(), nick));
             } catch(System.IO.FileNotFoundException e) {

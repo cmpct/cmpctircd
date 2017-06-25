@@ -15,18 +15,25 @@ namespace cmpctircd {
                 throw new InvalidOperationException("User is already in the room!");
             }
             clients.Add(client.nick, client);
+            Console.WriteLine("Added {0} to {1}", client.nick, name);
 
             // Tell everyone we've joined
             send_to_room(client, String.Format(":{0} JOIN :{1}", client.mask(), this.name));
             foreach(var room_client in clients) {
                 client.write(String.Format(":{0} {1} {2} = {3} :{4}",
-                        client.ircd,
+                        client.ircd.host,
                         IrcNumeric.RPL_NAMREPLY.Printable(),
                         client.nick,
                         name,
                         room_client.Value.nick
                 ));
             }
+            client.write(String.Format(":{0} {1} {2} {3} :End of /NAMES list.",
+                    client.ircd.host,
+                    IrcNumeric.RPL_ENDOFNAMES.Printable(),
+                    client.nick,
+                    name
+            ));
 
             // TODO: op if size == 1
 

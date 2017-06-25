@@ -18,6 +18,16 @@ namespace cmpctircd {
 
             // Tell everyone we've joined
             send_to_room(client, String.Format(":{0} JOIN :{1}", client.mask(), this.name));
+            foreach(var room_client in clients) {
+                client.write(String.Format(":{0} {1} {2} = {3} :{4}",
+                        client.ircd,
+                        IrcNumeric.RPL_NAMREPLY.Printable(),
+                        client.nick,
+                        name,
+                        room_client.Value.nick
+                ));
+            }
+
             // TODO: op if size == 1
 
         }

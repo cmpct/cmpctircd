@@ -74,6 +74,7 @@ namespace cmpctircd {
                                 if (parts[0].Contains("\0")) continue;
                                 _ircd.packetManager.findHandler(parts[0], args);
                             }
+                            client.Buffer = new Byte[1024];
                         } else {
                             Console.WriteLine("No data, killing client");
                             // Close the connection

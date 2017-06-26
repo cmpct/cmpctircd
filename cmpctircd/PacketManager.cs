@@ -23,9 +23,9 @@ namespace cmpctircd {
         public bool findHandler(String packet, Array args) {
             try {
                 handlers[packet.ToUpper()].Invoke(args);
-                Console.WriteLine("Handler for " + packet + " executed");
+                Console.WriteLine("Handler for " + packet.ToUpper() + " executed");
             } catch(KeyNotFoundException) {
-                Console.WriteLine("No handler for " + packet);
+                Console.WriteLine("No handler for " + packet.ToUpper());
             }
             return true;
         }

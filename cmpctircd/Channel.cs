@@ -83,7 +83,6 @@ namespace cmpctircd {
             return clients.ContainsKey(nick);
         }
         public void remove(Client client) {
-            // TODO: need a PART/QUIT too which this will call
             clients.Remove(client.nick);
         }
         public int size() {

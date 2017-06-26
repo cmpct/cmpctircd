@@ -54,6 +54,7 @@
     <Compile Include="Packets\Login.cs" />
     <Compile Include="Packets\Motd.cs" />
     <Compile Include="Packets\Channels.cs" />
+    <Compile Include="Packets\Queries.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SocketListener.cs" />

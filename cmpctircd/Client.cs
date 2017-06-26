@@ -21,6 +21,11 @@ namespace cmpctircd
         public String real_name;
         public ClientState state {get; set; }
 
+        public void send_version()
+        {
+            write(String.Format(":{0} {1} {2} :cmpctircd-{3}", ircd.host, IrcNumeric.RPL_VERSION.Printable(), nick, ircd.version));
+        }
+
         public Client() {
             state = ClientState.PreAuth;
         }

@@ -11,6 +11,7 @@ namespace cmpctircd.Packets {
         public Login(IRCd ircd) {
             ircd.packetManager.register("USER", userHandler);
             ircd.packetManager.register("NICK", nickHandler);
+            ircd.packetManager.register("QUIT", quitHandler);
         }
 
         public Boolean userHandler(Array args) {
@@ -36,6 +37,17 @@ namespace cmpctircd.Packets {
 
             Console.WriteLine("Changing nick to {0}", newNick);
             client.setNick(newNick);
+            return true;
+        }
+
+        private Boolean quitHandler(Array args) {
+            IRCd ircd = (IRCd)args.GetValue(0);
+            Client client = (Client)args.GetValue(1);
+            String rawLine = args.GetValue(2).ToString();
+            String[] splitLine = rawLine.Split(new char[] { ':' }, 2);
+            String reason = splitLine[1];
+
+            client.disconnect(reason, true);
             return true;
         }
 

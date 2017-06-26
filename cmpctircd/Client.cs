@@ -7,12 +7,12 @@ using System.Net.Sockets;
 
 namespace cmpctircd
 {
-    class Client
-    {
+    class Client {
         // Internals
         public IRCd ircd;
         public TcpClient TcpClient { get; set; }
         public byte[] Buffer { get; set; }
+        public SocketListener Listener { get; set; }
 
         // Metadata
         // TODO: Make these read-only apart from via setNick()?
@@ -124,13 +124,23 @@ namespace cmpctircd
             TcpClient.GetStream().Write(packetBytes, 0, packetBytes.Length);
         }
 
-        public void disconnect() {
-            // Inform all of the channels we're a member of that we are leaving
-            foreach (var channel in ircd.channelManager.list()) {
-                if(channel.Value.inhabits(this)) {
-                    channel.Value.remove(this);
+
+        public void disconnect(Boolean graceful) {
+            disconnect("", graceful);
+        }
+        public void disconnect(String quitReason, Boolean graceful) {
+            if (graceful) {
+                // Inform all of the channels we're a member of that we are leaving
+                foreach (var channel in ircd.channelManager.list()) {
+                    if (channel.Value.inhabits(this)) {
+                        channel.Value.quit(this, quitReason);
+                        channel.Value.remove(this);
+                    }
                 }
+                write(String.Format(":{0} QUIT :{1}", mask(), quitReason));
             }
+
+            Listener.remove(this);
         }
 
     }

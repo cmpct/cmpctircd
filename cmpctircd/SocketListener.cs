@@ -54,6 +54,7 @@ namespace cmpctircd {
             client.ircd = _ircd;
             client.TcpClient = tc;
             client.Buffer = new byte[1024];
+            client.Listener = this;
 
             lock (_clients)
                 _clients.Add(client.TcpClient);
@@ -76,21 +77,20 @@ namespace cmpctircd {
                         } else {
                             Console.WriteLine("No data, killing client");
                             // Close the connection
-                            client.disconnect();
-                            client.TcpClient.Close();
-                            lock (_clients) {
-                                _clients.Remove(client.TcpClient);
-                            }
+                            client.disconnect(false);
                         }
                     } catch(ObjectDisposedException) {
-                        client.disconnect();
-                        lock(_clients) {
-                            if(_clients.Contains(client.TcpClient))
-                                _clients.Remove(client.TcpClient);
-                        }
+                        client.disconnect(false);
                         break;
                     };
                 }
+            }
+        }
+
+        public void remove(Client client) {
+            client.TcpClient.Close();
+            lock (_clients) {
+                _clients.Remove(client.TcpClient);
             }
         }
     }

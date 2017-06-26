@@ -40,6 +40,16 @@ namespace cmpctircd {
         }
 
 
+        public void quit(Client client, String reason) {
+            if(!inhabits(client)) {
+                throw new InvalidOperationException("User isn't in the room!");
+            }
+
+            Console.WriteLine("Removing {0} from {1}", client.nick, name);
+            send_to_room(client, String.Format(":{0} QUIT {1}", client.mask(), reason), false);
+            clients.Remove(client.nick);
+        }
+
 
         /*
          * Useful internals (public methods) 

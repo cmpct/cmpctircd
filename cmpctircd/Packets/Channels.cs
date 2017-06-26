@@ -11,6 +11,7 @@ namespace cmpctircd.Packets {
         public Channels(IRCd ircd) {
             ircd.packetManager.register("JOIN", joinHandler);
             ircd.packetManager.register("PRIVMSG", privmsgHandler);
+            ircd.packetManager.register("PART", partHandler);
         }
 
         public Boolean joinHandler(Array args) {
@@ -66,6 +67,19 @@ namespace cmpctircd.Packets {
                 // PRIVMSG a user
             }
 
+            return true;
+        }
+
+        public Boolean partHandler(Array args) {
+            IRCd ircd = (IRCd)args.GetValue(0);
+            Client client = (Client)args.GetValue(1);
+            String rawLine = args.GetValue(2).ToString();
+            String[] splitLine = rawLine.Split(new string[] { ":" }, 2, StringSplitOptions.None);
+            String[] splitLineSpace = rawLine.Split(new string[] { " " }, 3, StringSplitOptions.None);
+            String channel = splitLineSpace[1];
+            String reason = splitLine[1];
+
+            ircd.channelManager.get(channel).part(client, reason);
             return true;
         }
 

@@ -40,6 +40,15 @@ namespace cmpctircd {
         }
 
 
+        public void part(Client client, String reason) {
+            if(!inhabits(client)) {
+                throw new InvalidOperationException("User isn't in the room!");
+            }
+            Console.WriteLine("Removing {0} from {1}", client.nick, name);
+            send_to_room(client, String.Format(":{0} PART {1} :{2}", client.mask(), name, reason), true);
+            clients.Remove(client.nick);
+        }
+
         public void quit(Client client, String reason) {
             if(!inhabits(client)) {
                 throw new InvalidOperationException("User isn't in the room!");

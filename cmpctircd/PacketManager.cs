@@ -20,12 +20,20 @@ namespace cmpctircd {
             return true;
         }
 
-        public bool findHandler(String packet, Array args) {
-            try {
+        public bool findHandler(String packet, Array args)
+        {
+            try
+            {
                 handlers[packet.ToUpper()].Invoke(args);
                 Console.WriteLine("Handler for " + packet.ToUpper() + " executed");
-            } catch(KeyNotFoundException) {
+            }
+            catch (KeyNotFoundException)
+            {
                 Console.WriteLine("No handler for " + packet.ToUpper());
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Exception: " + e.ToString());
             }
             return true;
         }

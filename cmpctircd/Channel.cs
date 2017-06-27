@@ -9,6 +9,7 @@ namespace cmpctircd {
         public String name;
         // A dictionary of clients in the room (nick => client)
         private Dictionary<String, Client> clients = new Dictionary<string, Client>();
+        public Topic topic = new Topic();
 
         public void addClient(Client client) {
             if(inhabits(client)) {

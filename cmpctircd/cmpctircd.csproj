@@ -47,6 +47,7 @@
     <Compile Include="ChannelManager.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="ClientState.cs" />
+    <Compile Include="Errors.cs" />
     <Compile Include="IRCd.cs" />
     <Compile Include="IrcNumeric.cs" />
     <Compile Include="IrcNumericExtensions.cs" />
@@ -58,6 +59,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SocketListener.cs" />
+    <Compile Include="Topic.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

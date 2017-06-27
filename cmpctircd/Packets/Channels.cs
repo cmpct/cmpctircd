@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
+using static cmpctircd.Errors;
 
 namespace cmpctircd.Packets {
     class Channels {
@@ -12,6 +14,40 @@ namespace cmpctircd.Packets {
             ircd.packetManager.register("JOIN", joinHandler);
             ircd.packetManager.register("PRIVMSG", privmsgHandler);
             ircd.packetManager.register("PART", partHandler);
+            ircd.packetManager.register("TOPIC", topicHandler);
+        }
+
+        public Boolean topicHandler(Array args)
+        {
+            IRCd ircd = (IRCd)args.GetValue(0);
+            Client client = (Client)args.GetValue(1);
+            Topic topic;
+            String rawLine = args.GetValue(2).ToString();
+            String[] rawSplit;
+            String target;
+
+            rawSplit = rawLine.Split(' ');
+            switch (rawSplit.Length) {
+                case 1:
+                    throw new IrcErrNotEnoughParametersException(client);
+                case 2:
+                    target = rawSplit[1];
+                    if (!ircd.channelManager.list().ContainsKey(target)) {
+                        throw new IrcErrNoSuchTargetException(client, target);
+                    }
+                    topic = ircd.channelManager.get(target).topic;
+                    topic.get_topic(client, target);
+                    return true;
+
+                default:
+                    target = rawSplit[1];
+                    if (!ircd.channelManager.list().ContainsKey(target)) {
+                        throw new IrcErrNoSuchTargetException(client, target);
+                    }
+                    topic = ircd.channelManager.get(target).topic;
+                    topic.set_topic(client, target, rawLine);
+                    return true;
+            }
         }
 
         public Boolean joinHandler(Array args) {

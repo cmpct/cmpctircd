@@ -88,26 +88,36 @@ namespace cmpctircd
 
         public Boolean setNick(String nick) {
             // Return if nick is the same
-            if (String.Compare(nick, this.nick, false) == 0)
+            String oldNick = this.nick;
+            String newNick = nick;
+
+            if (String.Compare(newNick, oldNick, false) == 0)
                 return true;
 
             // Does a user with this nick already exist?
             foreach(var clientList in ircd.clientLists) {
                 foreach(var clientDict in clientList) {
-                   if(clientDict.Key.nick == nick) {
+                   if(clientDict.Key.nick == newNick) {
                       write(String.Format(":{0} {1} * {2} :Nickname is already in use",
                                                                         ircd.host,
                                                                         IrcNumeric.ERR_NICKNAMEINUSE.Printable(),
-                                                                        nick));
+                                                                        newNick));
                        Console.WriteLine("Nick already exists!");
                        return false;
                    }
                 }
+            };
+
+            foreach(var channel in ircd.channelManager.list()) {
+                if(!channel.Value.inhabits(this)) continue;
+                channel.Value.send_to_room(this, String.Format(":{0} NICK :{1}", mask(), newNick), false);
+                channel.Value.remove(oldNick);
+                channel.Value.add(this, newNick);
             }
 
             // TODO: Verify the nickname is safe
             write(String.Format(":{0} NICK {1}", mask(), nick));
-            this.nick = nick;
+            this.nick = newNick;
 
             send_welcome();
             return true;

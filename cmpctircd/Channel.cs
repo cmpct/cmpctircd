@@ -82,8 +82,14 @@ namespace cmpctircd {
         public bool inhabits(String nick) {
             return clients.ContainsKey(nick);
         }
+        public void add(Client client, String nick) {
+            clients.Add(nick, client);
+        }
         public void remove(Client client) {
             clients.Remove(client.nick);
+        }
+        public void remove(String nick) {
+            clients.Remove(nick);
         }
         public int size() {
             return clients.Count();

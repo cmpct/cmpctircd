@@ -106,8 +106,8 @@ namespace cmpctircd
             }
 
             // TODO: Verify the nickname is safe
+            write(String.Format(":{0} NICK {1}", mask(), nick));
             this.nick = nick;
-            write(String.Format(":{0} NICK {1}", get_host(), nick));
 
             send_welcome();
             return true;

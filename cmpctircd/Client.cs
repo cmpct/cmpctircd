@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -89,6 +90,20 @@ namespace cmpctircd
             // Return if nick is the same
             if (String.Compare(nick, this.nick, false) == 0)
                 return true;
+
+            // Does a user with this nick already exist?
+            foreach(var clientList in ircd.clientLists) {
+                foreach(var clientDict in clientList) {
+                   if(clientDict.Key.nick == nick) {
+                      write(String.Format(":{0} {1} * {2} :Nickname is already in use",
+                                                                        ircd.host,
+                                                                        IrcNumeric.ERR_NICKNAMEINUSE.Printable(),
+                                                                        nick));
+                       Console.WriteLine("Nick already exists!");
+                       return false;
+                   }
+                }
+            }
 
             // TODO: Verify the nickname is safe
             this.nick = nick;

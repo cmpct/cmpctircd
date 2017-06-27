@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Net.Sockets;
 
 using cmpctircd.Packets;
 
@@ -11,6 +13,7 @@ namespace cmpctircd {
         private Dictionary<String, SocketListener> listeners;
         public PacketManager packetManager;
         public ChannelManager channelManager;
+        public List<Dictionary<Client, TcpClient>> clientLists;
 
         // TODO: constants which will go into the config
         public String host = "irc.cmpct.info";
@@ -22,6 +25,7 @@ namespace cmpctircd {
             Console.WriteLine("Starting cmpctircd");
             Console.WriteLine("==> Host: irc.cmpct.info");
             Console.WriteLine("==> Listening on: 127.0.0.1:6669");
+            clientLists = new List<Dictionary<Client, TcpClient>>();
             SocketListener sl = new SocketListener(this, "127.0.0.1", 6669);
             packetManager = new PacketManager(this);
             channelManager = new ChannelManager(this);

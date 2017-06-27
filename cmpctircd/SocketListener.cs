@@ -14,14 +14,12 @@ namespace cmpctircd {
         private IRCd _ircd;
         private Boolean _started = false;
         private TcpListener _listener = null;
-        // port
-        //private Dictionary<TcpClient, Client> client_mapping = new Dictionary<Socket, Client>();
-        // maybe this should be Client?
-        private List<TcpClient> _clients = new List<TcpClient>();
+        private Dictionary<Client, TcpClient> _clients = new Dictionary<Client, TcpClient>();
 
         public SocketListener(IRCd ircd, String IP, int port) {
             this._ircd = ircd;
             _listener = new TcpListener(IPAddress.Any, port);
+            _ircd.clientLists.Add(_clients);
         }
         ~SocketListener() {
             stop();
@@ -57,7 +55,7 @@ namespace cmpctircd {
             client.Listener = this;
 
             lock (_clients)
-                _clients.Add(client.TcpClient);
+                _clients.Add(client, client.TcpClient);
             
             using (var s = client.TcpClient.GetStream()) {
                 while (true) {
@@ -91,7 +89,7 @@ namespace cmpctircd {
         public void remove(Client client) {
             client.TcpClient.Close();
             lock (_clients) {
-                _clients.Remove(client.TcpClient);
+                _clients.Remove(client);
             }
         }
     }

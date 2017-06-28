@@ -12,6 +12,7 @@ namespace cmpctircd.Packets {
             ircd.packetManager.register("USER", userHandler);
             ircd.packetManager.register("NICK", nickHandler);
             ircd.packetManager.register("QUIT", quitHandler);
+            ircd.packetManager.register("PONG", pongHandler);
         }
 
         public Boolean userHandler(Array args) {
@@ -48,6 +49,21 @@ namespace cmpctircd.Packets {
             String reason = splitLine[1];
 
             client.disconnect(reason, true);
+            return true;
+        }
+
+        private Boolean pongHandler(Array args) {
+            IRCd ircd = (IRCd)args.GetValue(0);
+            Client client = (Client)args.GetValue(1);
+            String rawLine = args.GetValue(2).ToString();
+            String[] splitLine = rawLine.Split(new char[] { ':' }, 2);
+            String cookie = splitLine[1];
+
+            if(client.pingCookie == cookie) {
+                client.waitingForPong = false;
+                client.lastPong = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            }
+
             return true;
         }
 

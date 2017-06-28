@@ -22,6 +22,12 @@ namespace cmpctircd
         public String real_name;
         public ClientState state {get; set; }
 
+        // Ping information
+        public Boolean waitingForPong = false;
+        public int lastPong = 0;
+        public String pingCookie = "";
+
+
         public void send_version()
         {
             write(String.Format(":{0} {1} {2} :cmpctircd-{3}", ircd.host, IrcNumeric.RPL_VERSION.Printable(), nick, ircd.version));
@@ -30,6 +36,12 @@ namespace cmpctircd
         public Client() {
             state = ClientState.PreAuth;
         }
+
+        public void begin_tasks() {
+            // Check for PING/PONG events due (TODO: and DNS)
+            check_timeout();
+        }
+
         public void send_welcome() {
             // Refuse if the user hasn't yet authenticated (or is already)
             if(String.IsNullOrWhiteSpace(nick) || String.IsNullOrWhiteSpace(ident)) return;
@@ -132,6 +144,35 @@ namespace cmpctircd
             return true;
         }
 
+
+        public void check_timeout() {
+            // By default, no pong cookie is required
+            Int32 time = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            Boolean requirePong = false;
+            int period = (lastPong) + (ircd.pingTimeout);
+
+            requirePong = (ircd.requirePong) && (lastPong == 0);
+
+            // Is the user due a PING?
+            if((requirePong) || (time > period && !waitingForPong)) {
+                pingCookie = create_ping_cookie();
+                lastPong = time;
+                waitingForPong = true;
+
+                write(String.Format("PING :{0}", pingCookie));
+            }
+
+            // Has the user taken too long to reply with a PONG?
+            if(waitingForPong && (time > (lastPong + (ircd.pingTimeout * 2)))) {
+                disconnect("Ping timeout", true);
+            }
+
+            Task.Delay(60000).ContinueWith(t => check_timeout());
+        }
+
+        public String create_ping_cookie() {
+            return System.IO.Path.GetRandomFileName().Substring(0, 7);
+        }
 
         // Returns the user's host (raw IP)
         // TODO: DNS?

@@ -57,6 +57,8 @@ namespace cmpctircd {
             lock (_clients)
                 _clients.Add(client, client.TcpClient);
             
+            client.begin_tasks();
+
             using (var s = client.TcpClient.GetStream()) {
                 while (true) {
                     try {

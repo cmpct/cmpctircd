@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using static cmpctircd.Errors;
+
 namespace cmpctircd {
     class PacketManager {
         private IRCd ircd;
@@ -22,8 +24,19 @@ namespace cmpctircd {
 
         public bool findHandler(String packet, Array args)
         {
+            List<String> registrationCommands = new List<String>();
+            registrationCommands.Add("USER");
+            registrationCommands.Add("NICK");
+            registrationCommands.Add("PONG");
+
+            Client client = (Client)args.GetValue(1);
             try
             {
+
+                // Restrict the commands which non-registered (i.e. pre PONG, pre USER/NICK) users can execute
+                if(client.state.Equals(ClientState.PreAuth) && !registrationCommands.Contains(packet)) {
+                    throw new IrcErrNotRegisteredException(client);
+                }
                 handlers[packet.ToUpper()].Invoke(args);
                 Console.WriteLine("Handler for " + packet.ToUpper() + " executed");
             }

@@ -34,5 +34,16 @@ namespace cmpctircd
                 client.write(String.Format(":{0} {1} {2} TOPIC :Not enough parameters", client.ircd.host, IrcNumeric.ERR_NEEDMOREPARAMS.Printable(), client.nick));
             }
         }
+
+        public class IrcErrNotRegisteredException : Exception
+        {
+            private Client client;
+
+            public IrcErrNotRegisteredException(Client client)
+            {
+                this.client = client;
+                client.write(String.Format(":{0} {1} * :You have not registered", client.ircd.host, IrcNumeric.ERR_NOTREGISTERED.Printable()));
+            }
+        }
     }
 }

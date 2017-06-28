@@ -5,5 +5,4 @@ namespace cmpctircd {
         PreAuth = 0, // Pre-authentication (limited set of commands, e.g. USER/NICK)
         //Shun  = -1 // Logged in but can now longer run commands
     }
-    // Should we have a PingState too?
 }

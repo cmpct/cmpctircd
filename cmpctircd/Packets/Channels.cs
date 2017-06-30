@@ -75,18 +75,22 @@ namespace cmpctircd.Packets {
 
         public Boolean privmsgHandler(Array args) {
             // Only for channel PRIVMSGs (PRIVMSG #channel ...)
-            IRCd ircd = (IRCd) args.GetValue(0);
+            IRCd ircd = (IRCd)args.GetValue(0);
             Client client = (Client)args.GetValue(1);
             String rawLine = args.GetValue(2).ToString();
+            String[] rawSplit;
             String target;
             String message;
+            String command;
+
+            rawSplit = rawLine.Split(' ');
+            command = rawSplit[0].ToUpper();
 
             try {
-                target = rawLine.Split(' ')[1];
+                target = rawSplit[1];
                 message = rawLine.Split(new string[] { ":" }, 2, StringSplitOptions.None)[1];
-            } catch(IndexOutOfRangeException) {
-                Console.WriteLine("Invalid data sent in PRIVMSG");
-                return false;
+            } catch (IndexOutOfRangeException) {
+                throw new IrcErrNotEnoughParametersException(client, command);
             }
 
 
@@ -101,9 +105,17 @@ namespace cmpctircd.Packets {
                     }
                 }
             } else {
-                // PRIVMSG a user
+                // Check the user exists
+                foreach (var clientList in ircd.clientLists) {
+                    foreach (var clientDict in clientList) {
+                        if (clientDict.Key.nick.ToLower() == target.ToLower()) {
+                            clientDict.Key.write(String.Format(":{0} PRIVMSG {1} :{2}", client.mask(), target, message));
+                            return true;
+                        }
+                    }
+                }
+                throw new IrcErrNoSuchTargetException(client, target);
             }
-
             return true;
         }
 

@@ -52,5 +52,14 @@ namespace cmpctircd {
                 client.write(String.Format(":{0} {1} {2} {3} :Erroneous nickname: Illegal characters", client.ircd.host, IrcNumeric.ERR_ERRONEUSNICKNAME.Printable(), currentNick, badNick));
             }
         }
+
+        public class IrcErrNicknameInUse : Exception {
+            private Client client;
+
+            public IrcErrNicknameInUse(Client client, String nick) {
+                this.client = client;
+                client.write(String.Format(":{0} {1} * {2} :Nickname is already in use", client.ircd.host, IrcNumeric.ERR_NICKNAMEINUSE.Printable(), nick));
+            }
+        }
     }
 }

@@ -120,13 +120,9 @@ namespace cmpctircd
             // Does a user with this nick already exist?
             foreach(var clientList in ircd.clientLists) {
                 foreach(var clientDict in clientList) {
-                   if(clientDict.Key.nick == newNick) {
-                      write(String.Format(":{0} {1} * {2} :Nickname is already in use",
-                                                                        ircd.host,
-                                                                        IrcNumeric.ERR_NICKNAMEINUSE.Printable(),
-                                                                        newNick));
-                       Console.WriteLine("Nick already exists!");
-                       return false;
+                    if(clientDict.Key.nick == newNick) {
+                        throw new IrcErrNicknameInUse(this, newNick);
+                        return false;
                    }
                 }
             };

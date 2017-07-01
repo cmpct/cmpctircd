@@ -3,8 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+
+using static cmpctircd.Errors;
 
 namespace cmpctircd
 {
@@ -105,6 +108,14 @@ namespace cmpctircd
 
             if (String.Compare(newNick, oldNick, false) == 0)
                 return true;
+
+            // Is the nick safe?
+            Regex safeNicks = new Regex(@"[A-Za-z{}\[\]_\\^|`][A-Za-z{}\[\]_\-\\^|`0-9]*", RegexOptions.IgnoreCase);
+            Boolean safeNick = safeNicks.Match(newNick).Success;
+            if (!safeNick) {
+                throw new IrcErrErroneusNickname(this, newNick);
+            }
+
 
             // Does a user with this nick already exist?
             foreach(var clientList in ircd.clientLists) {

@@ -37,5 +37,20 @@ namespace cmpctircd {
                 client.write(String.Format(":{0} {1} * :You have not registered", client.ircd.host, IrcNumeric.ERR_NOTREGISTERED.Printable()));
             }
         }
+
+        public class IrcErrErroneusNickname : Exception {
+            private Client client;
+
+            public IrcErrErroneusNickname(Client client, String badNick) {
+                this.client = client;
+                // Ironically, the word 'erroenous' was spelt 'erroneus' (sans 'o') in the RFC.
+                // But we'll spell it right when we send it to the user...
+                String currentNick = client.nick;
+                if(String.IsNullOrEmpty(currentNick)) {
+                    currentNick = "NICK";
+                }
+                client.write(String.Format(":{0} {1} {2} {3} :Erroneous nickname: Illegal characters", client.ircd.host, IrcNumeric.ERR_ERRONEUSNICKNAME.Printable(), currentNick, badNick));
+            }
+        }
     }
 }

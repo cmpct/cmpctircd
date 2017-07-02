@@ -107,6 +107,7 @@ namespace cmpctircd.Packets {
                     Channel channel = ircd.channelManager.get(target);
                     if(channel.inhabits(client)) {
                         channel.send_to_room(client, String.Format(":{0} PRIVMSG {1} :{2}", client.mask(), channel.name, message), false);
+                        return true;
                     }
                 }
             } else {
@@ -119,9 +120,8 @@ namespace cmpctircd.Packets {
                         }
                     }
                 }
-                throw new IrcErrNoSuchTargetException(client, target);
             }
-            return true;
+            throw new IrcErrNoSuchTargetException(client, target);
         }
 
         public Boolean partHandler(Array args) {

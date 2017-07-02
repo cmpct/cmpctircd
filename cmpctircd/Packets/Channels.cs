@@ -58,12 +58,17 @@ namespace cmpctircd.Packets {
 
             String[] splitLine = rawLine.Split(' ');
             String[] splitColonLine = rawLine.Split(new char[] { ':' }, 2);
-
-            String channel_name = splitLine[1];
+            String channel_name;
             Channel channel;
 
+            try {
+                channel_name = splitLine[1];
+            } catch(IndexOutOfRangeException) {
+                throw new IrcErrNotEnoughParametersException(client, "JOIN");
+            }
+
             // Get the channel object, creating it if it doesn't already exist
-            // TODO: validation
+            // TODO: only applicable error is ERR_NEEDMOREPARAMS for now, more for limits/bans/invites
             if (ircd.channelManager.exists(channel_name)) {
                 channel = ircd.channelManager.get(channel_name);
             } else {

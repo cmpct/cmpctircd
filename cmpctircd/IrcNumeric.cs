@@ -80,6 +80,7 @@ namespace cmpctircd
         ERR_USERONCHANNEL    = 443,
         ERR_NOTREGISTERED    = 451,
         ERR_NEEDMOREPARAMS   = 461,
+        ERR_ALREADYREGISTERED = 462,
         ERR_CHANNELISFULL    = 471,
         ERR_BANNEDFROMCHAN   = 474,
         ERR_CHANOPRIVSNEEDED = 482,

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static cmpctircd.Errors;
 
 namespace cmpctircd.Packets {
     class Login {
@@ -22,9 +23,20 @@ namespace cmpctircd.Packets {
 
             String[] splitLine = rawLine.Split(' ');
             String[] splitColonLine = rawLine.Split(new char[] { ':' }, 2);
+            String username;
+            String real_name;
 
-            String username = splitLine[1];
-            String real_name = splitColonLine[1];
+            try {
+                username = splitLine[1];
+                real_name = splitColonLine[1];
+            } catch(IndexOutOfRangeException) {
+                throw new IrcErrNotEnoughParametersException(client, "");
+            }
+
+            // Only allow one registration
+            if(client.state.CompareTo(ClientState.PreAuth) > 0) {
+                throw new IrcErrAlreadyRegisteredException(client);
+            }
 
             client.setUser(username, real_name);
             return true;

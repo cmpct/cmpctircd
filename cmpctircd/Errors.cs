@@ -25,7 +25,11 @@ namespace cmpctircd {
 
             public IrcErrNotEnoughParametersException(Client client, String command) {
                 this.client = client;
-                client.write(String.Format(":{0} {1} {2} {3} :Not enough parameters", client.ircd.host, IrcNumeric.ERR_NEEDMOREPARAMS.Printable(), client.nick, command));
+                String currentNick = client.nick;
+                if(String.IsNullOrEmpty(currentNick)) {
+                    currentNick = "NICK";
+                }
+                client.write(String.Format(":{0} {1} {2} {3} :Not enough parameters", client.ircd.host, IrcNumeric.ERR_NEEDMOREPARAMS.Printable(), currentNick, command));
             }
         }
 
@@ -35,6 +39,15 @@ namespace cmpctircd {
             public IrcErrNotRegisteredException(Client client) {
                 this.client = client;
                 client.write(String.Format(":{0} {1} * :You have not registered", client.ircd.host, IrcNumeric.ERR_NOTREGISTERED.Printable()));
+            }
+        }
+
+        public class IrcErrAlreadyRegisteredException : Exception {
+            private Client client;
+
+            public IrcErrAlreadyRegisteredException(Client client) {
+                this.client = client;
+                client.write(String.Format(":{0} {1} * :You may not reregister", client.ircd.host, IrcNumeric.ERR_ALREADYREGISTERED.Printable()));
             }
         }
 

@@ -61,5 +61,14 @@ namespace cmpctircd {
                 client.write(String.Format(":{0} {1} * {2} :Nickname is already in use", client.ircd.host, IrcNumeric.ERR_NICKNAMEINUSE.Printable(), nick));
             }
         }
+
+        public class IrcErrNotOnChannelException : Exception {
+            private Client client;
+
+            public IrcErrNotOnChannelException(Client client, String channel) {
+                this.client = client;
+                client.write(String.Format(":{0} {1} {2} {3} :You're not on that channel", client.ircd.host, IrcNumeric.ERR_NOTONCHANNEL.Printable(), client.nick, channel));
+            }
+        }
     }
 }

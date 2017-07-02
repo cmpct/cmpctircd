@@ -130,10 +130,34 @@ namespace cmpctircd.Packets {
             String rawLine = args.GetValue(2).ToString();
             String[] splitLine = rawLine.Split(new string[] { ":" }, 2, StringSplitOptions.None);
             String[] splitLineSpace = rawLine.Split(new string[] { " " }, 3, StringSplitOptions.None);
-            String channel = splitLineSpace[1];
-            String reason = splitLine[1];
 
-            ircd.channelManager.get(channel).part(client, reason);
+            String channel;
+            String reason;
+
+            try {
+                channel = splitLineSpace[1];
+            } catch(IndexOutOfRangeException) {
+                throw new IrcErrNotEnoughParametersException(client, "PART");
+            }
+
+            try {
+                reason = splitLine[1];
+            } catch(IndexOutOfRangeException) {
+                reason = "Leaving";
+            }
+
+            // Does the channel exist?
+            if(!ircd.channelManager.exists(channel)) {
+                throw new IrcErrNoSuchTargetException(client, channel);
+            }
+
+            // Are we in the channel?
+            Channel channelObj = ircd.channelManager.get(channel);
+            if(!channelObj.inhabits(client)) {
+                throw new IrcErrNotOnChannelException(client, channel);
+            }
+
+            channelObj.part(client, reason);
             return true;
         }
 

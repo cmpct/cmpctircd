@@ -113,7 +113,7 @@ namespace cmpctircd
             Regex safeNicks = new Regex(@"[A-Za-z{}\[\]_\\^|`][A-Za-z{}\[\]_\-\\^|`0-9]*", RegexOptions.IgnoreCase);
             Boolean safeNick = safeNicks.Match(newNick).Success;
             if (!safeNick) {
-                throw new IrcErrErroneusNickname(this, newNick);
+                throw new IrcErrErroneusNicknameException(this, newNick);
             }
 
 
@@ -121,7 +121,7 @@ namespace cmpctircd
             foreach(var clientList in ircd.clientLists) {
                 foreach(var clientDict in clientList) {
                     if(clientDict.Key.nick == newNick) {
-                        throw new IrcErrNicknameInUse(this, newNick);
+                        throw new IrcErrNicknameInUseException(this, newNick);
                         return false;
                    }
                 }

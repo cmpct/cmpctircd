@@ -38,10 +38,10 @@ namespace cmpctircd {
             }
         }
 
-        public class IrcErrErroneusNickname : Exception {
+        public class IrcErrErroneusNicknameException : Exception {
             private Client client;
 
-            public IrcErrErroneusNickname(Client client, String badNick) {
+            public IrcErrErroneusNicknameException(Client client, String badNick) {
                 this.client = client;
                 // Ironically, the word 'erroenous' was spelt 'erroneus' (sans 'o') in the RFC.
                 // But we'll spell it right when we send it to the user...
@@ -53,10 +53,10 @@ namespace cmpctircd {
             }
         }
 
-        public class IrcErrNicknameInUse : Exception {
+        public class IrcErrNicknameInUseException : Exception {
             private Client client;
 
-            public IrcErrNicknameInUse(Client client, String nick) {
+            public IrcErrNicknameInUseException(Client client, String nick) {
                 this.client = client;
                 client.write(String.Format(":{0} {1} * {2} :Nickname is already in use", client.ircd.host, IrcNumeric.ERR_NICKNAMEINUSE.Printable(), nick));
             }

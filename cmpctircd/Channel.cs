@@ -15,24 +15,24 @@ namespace cmpctircd {
             if(inhabits(client)) {
                 throw new InvalidOperationException("User is already in the room!");
             }
-            clients.Add(client.nick, client);
-            Console.WriteLine("Added {0} to {1}", client.nick, name);
+            clients.Add(client.Nick, client);
+            Console.WriteLine("Added {0} to {1}", client.Nick, name);
 
             // Tell everyone we've joined
             send_to_room(client, String.Format(":{0} JOIN :{1}", client.mask(), this.name));
             foreach(var room_client in clients) {
                 client.write(String.Format(":{0} {1} {2} = {3} :{4}",
-                        client.ircd.host,
+                        client.IRCd.host,
                         IrcNumeric.RPL_NAMREPLY.Printable(),
-                        client.nick,
+                        client.Nick,
                         name,
-                        room_client.Value.nick
+                        room_client.Value.Nick
                 ));
             }
             client.write(String.Format(":{0} {1} {2} {3} :End of /NAMES list.",
-                    client.ircd.host,
+                    client.IRCd.host,
                     IrcNumeric.RPL_ENDOFNAMES.Printable(),
-                    client.nick,
+                    client.Nick,
                     name
             ));
 
@@ -45,9 +45,9 @@ namespace cmpctircd {
             if(!inhabits(client)) {
                 throw new InvalidOperationException("User isn't in the room!");
             }
-            Console.WriteLine("Removing {0} from {1}", client.nick, name);
+            Console.WriteLine("Removing {0} from {1}", client.Nick, name);
             send_to_room(client, String.Format(":{0} PART {1} :{2}", client.mask(), name, reason), true);
-            clients.Remove(client.nick);
+            clients.Remove(client.Nick);
         }
 
         public void quit(Client client, String reason) {
@@ -55,9 +55,9 @@ namespace cmpctircd {
                 throw new InvalidOperationException("User isn't in the room!");
             }
 
-            Console.WriteLine("Removing {0} from {1}", client.nick, name);
+            Console.WriteLine("Removing {0} from {1}", client.Nick, name);
             send_to_room(client, String.Format(":{0} QUIT {1}", client.mask(), reason), false);
-            clients.Remove(client.nick);
+            clients.Remove(client.Nick);
         }
 
 
@@ -87,7 +87,7 @@ namespace cmpctircd {
             clients.Add(nick, client);
         }
         public void remove(Client client) {
-            clients.Remove(client.nick);
+            clients.Remove(client.Nick);
         }
         public void remove(String nick) {
             clients.Remove(nick);

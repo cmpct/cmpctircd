@@ -49,7 +49,7 @@ namespace cmpctircd {
 
         async Task HandleClient(TcpClient tc) {
             var client = new Client();
-            client.ircd = _ircd;
+            client.IRCd = _ircd;
             client.TcpClient = tc;
             client.Buffer = new byte[1024];
             client.Listener = this;

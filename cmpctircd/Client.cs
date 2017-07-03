@@ -13,31 +13,32 @@ namespace cmpctircd
 {
     class Client {
         // Internals
-        public IRCd ircd;
+        // TODO: Many of these look like they shouldn't be public. Review?
+        public IRCd IRCd { get; set; }
         public TcpClient TcpClient { get; set; }
-        public byte[] Buffer { get; set; }
         public SocketListener Listener { get; set; }
+        public byte[] Buffer { get; set; }
 
         // Metadata
         // TODO: Make these read-only apart from via setNick()?
-        public String nick;
-        public String ident;
-        public String real_name;
-        public ClientState state {get; set; }
+        public String Nick { get; set; }
+        public String Ident { get; set; }
+        public String RealName { get; set; }
+        public ClientState State { get; set; }
 
         // Ping information
-        public Boolean waitingForPong = false;
-        public int lastPong = 0;
-        public String pingCookie = "";
+        public Boolean WaitingForPong { get; set; } = false;
+        public int LastPong { get; set; } = 0;
+        public String PingCookie { get; set; } = "";
 
 
         public void send_version()
         {
-            write(String.Format(":{0} {1} {2} :cmpctircd-{3}", ircd.host, IrcNumeric.RPL_VERSION.Printable(), nick, ircd.version));
+            write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.version));
         }
 
         public Client() {
-            state = ClientState.PreAuth;
+            State = ClientState.PreAuth;
         }
 
         public void begin_tasks() {
@@ -47,20 +48,20 @@ namespace cmpctircd
 
         public void send_welcome() {
             // Refuse if the user hasn't yet authenticated (or is already)
-            if(String.IsNullOrWhiteSpace(nick) || String.IsNullOrWhiteSpace(ident)) return;
-            if(state.CompareTo(ClientState.PreAuth) > 0) return;
+            if(String.IsNullOrWhiteSpace(Nick) || String.IsNullOrWhiteSpace(Ident)) return;
+            if(State.CompareTo(ClientState.PreAuth) > 0) return;
 
             // Henceforth, we assume user can become Authenticated!
-            state = ClientState.Auth;
+            State = ClientState.Auth;
 
-            write(String.Format(":{0} {1} {2} :Welcome to the {3} IRC Network {4}", ircd.host, IrcNumeric.RPL_WELCOME.Printable(), nick, ircd.network, mask()));
-            write(String.Format(":{0} {1} {2} :Your host is {3}, running version cmpctircd-{4}", ircd.host, IrcNumeric.RPL_YOURHOST.Printable(), nick, ircd.host, ircd.version));
-            write(String.Format(":{0} {1} {2} :This server was created {3}", ircd.host, IrcNumeric.RPL_CREATED.Printable(), nick, ircd.host, 0));
+            write(String.Format(":{0} {1} {2} :Welcome to the {3} IRC Network {4}", IRCd.host, IrcNumeric.RPL_WELCOME.Printable(), Nick, IRCd.network, mask()));
+            write(String.Format(":{0} {1} {2} :Your host is {3}, running version cmpctircd-{4}", IRCd.host, IrcNumeric.RPL_YOURHOST.Printable(), Nick, IRCd.host, IRCd.version));
+            write(String.Format(":{0} {1} {2} :This server was created {3}", IRCd.host, IrcNumeric.RPL_CREATED.Printable(), Nick, IRCd.host, 0));
             // TODO: This was commented out in the Perl version, probably not something to use for now.
             // TODO: I don't think MYINFO is very popular?
             //write(String.Format(":{0} {1} {2} {3} {4} x ntlo", ircd.host, IrcNumeric.RPL_MYINFO.Printable(), nick, ircd.host, ircd.version));
-            write(String.Format(":{0} {1} {2} :CASEMAPPING=rfc1459 PREFIX=(ov)@+ STATUSMSG=@+ NETWORK={3} MAXTARGETS={4} :are supported by this server", ircd.host, IrcNumeric.RPL_ISUPPORT.Printable(), nick, ircd.network, ircd.maxTargets));
-            write(String.Format(":{0} {1} {2} :CHANTYPES=# CHANMODES=b,,l,ntm :are supported by this server", ircd.host, IrcNumeric.RPL_ISUPPORT.Printable(), nick));
+            write(String.Format(":{0} {1} {2} :CASEMAPPING=rfc1459 PREFIX=(ov)@+ STATUSMSG=@+ NETWORK={3} MAXTARGETS={4} :are supported by this server", IRCd.host, IrcNumeric.RPL_ISUPPORT.Printable(), Nick, IRCd.network, IRCd.maxTargets));
+            write(String.Format(":{0} {1} {2} :CHANTYPES=# CHANMODES=b,,l,ntm :are supported by this server", IRCd.host, IrcNumeric.RPL_ISUPPORT.Printable(), Nick));
 
             // Send MOTD
             send_motd();
@@ -69,15 +70,15 @@ namespace cmpctircd
         public void send_motd() {
             try {
                 string[] motd = System.IO.File.ReadAllLines("ircd.motd");
-                write(String.Format(":{0} {1} {2} : - {3} Message of the Day -", ircd.host, IrcNumeric.RPL_MOTDSTART.Printable(), nick, ircd.host));
+                write(String.Format(":{0} {1} {2} : - {3} Message of the Day -", IRCd.host, IrcNumeric.RPL_MOTDSTART.Printable(), Nick, IRCd.host));
                 for(int i = 0; i < motd.Length; i++) {
                     if((i == motd.Length) && String.IsNullOrEmpty(motd[i])) {
                         // If end of the file and a new line, don't print.
                         break;
                     }
-                    write(String.Format(":{0} {1} {2} : - {3}", ircd.host, IrcNumeric.RPL_MOTD.Printable(), nick, motd[i]));
+                    write(String.Format(":{0} {1} {2} : - {3}", IRCd.host, IrcNumeric.RPL_MOTD.Printable(), Nick, motd[i]));
                 }
-                write(String.Format(":{0} {1} {2} :End of /MOTD command.", ircd.host, IrcNumeric.RPL_ENDOFMOTD.Printable(), nick));
+                write(String.Format(":{0} {1} {2} :End of /MOTD command.", IRCd.host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
             } catch(System.IO.FileNotFoundException e) {
                 Console.WriteLine("ircd.motd doesn't exist!");
             }
@@ -87,15 +88,15 @@ namespace cmpctircd
         public void send_rules() {
             try {
                 string[] rules = System.IO.File.ReadAllLines("ircd.rules");
-                write(String.Format(":{0} {1} {2} :- {3} server rules -", ircd.host, IrcNumeric.RPL_MOTDSTART.Printable(), nick, ircd.host));
+                write(String.Format(":{0} {1} {2} :- {3} server rules -", IRCd.host, IrcNumeric.RPL_MOTDSTART.Printable(), Nick, IRCd.host));
                 for(int i = 0; i < rules.Length; i++) {
                     if((i == rules.Length) && String.IsNullOrEmpty(rules[i])) {
                         // If end of the file and a new line, don't print.
                         break;
                     }
-                    write(String.Format(":{0} {1} {2} : - {3}", ircd.host, IrcNumeric.RPL_MOTD.Printable(), nick, rules[i]));
+                    write(String.Format(":{0} {1} {2} : - {3}", IRCd.host, IrcNumeric.RPL_MOTD.Printable(), Nick, rules[i]));
                 }
-                write(String.Format(":{0} {1} {2} :End of RULES command.", ircd.host, IrcNumeric.RPL_ENDOFMOTD.Printable(), nick));
+                write(String.Format(":{0} {1} {2} :End of RULES command.", IRCd.host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
             } catch(System.IO.FileNotFoundException e) {
                 Console.WriteLine("ircd.rules doesn't exist!");
             }
@@ -103,7 +104,7 @@ namespace cmpctircd
 
         public Boolean setNick(String nick) {
             // Return if nick is the same
-            String oldNick = this.nick;
+            String oldNick = this.Nick;
             String newNick = nick;
 
             if (String.Compare(newNick, oldNick, false) == 0)
@@ -118,16 +119,16 @@ namespace cmpctircd
 
 
             // Does a user with this nick already exist?
-            foreach(var clientList in ircd.clientLists) {
+            foreach(var clientList in IRCd.clientLists) {
                 foreach(var clientDict in clientList) {
-                    if(clientDict.Key.nick == newNick) {
+                    if(clientDict.Key.Nick == newNick) {
                         throw new IrcErrNicknameInUseException(this, newNick);
                         return false;
                    }
                 }
             };
 
-            foreach(var channel in ircd.channelManager.list()) {
+            foreach(var channel in IRCd.channelManager.list()) {
                 if(!channel.Value.inhabits(this)) continue;
                 channel.Value.send_to_room(this, String.Format(":{0} NICK :{1}", mask(), newNick), false);
                 channel.Value.remove(oldNick);
@@ -136,15 +137,15 @@ namespace cmpctircd
 
             // TODO: Verify the nickname is safe
             write(String.Format(":{0} NICK {1}", mask(), nick));
-            this.nick = newNick;
+            this.Nick = newNick;
 
             send_welcome();
             return true;
         }
         public Boolean setUser(String ident, String real_name) {
             // TOOD: validation
-            this.ident = ident;
-            this.real_name = real_name;
+            this.Ident = ident;
+            this.RealName = real_name;
 
             send_welcome();
             // this.sendWelcome() a lá cmpctircd?
@@ -156,21 +157,21 @@ namespace cmpctircd
             // By default, no pong cookie is required
             Int32 time = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
             Boolean requirePong = false;
-            int period = (lastPong) + (ircd.pingTimeout);
+            int period = (LastPong) + (IRCd.pingTimeout);
 
-            requirePong = (ircd.requirePong) && (lastPong == 0);
+            requirePong = (IRCd.requirePong) && (LastPong == 0);
 
             // Is the user due a PING?
-            if((requirePong) || (time > period && !waitingForPong)) {
-                pingCookie = create_ping_cookie();
-                lastPong = time;
-                waitingForPong = true;
+            if((requirePong) || (time > period && !WaitingForPong)) {
+                PingCookie = create_ping_cookie();
+                LastPong = time;
+                WaitingForPong = true;
 
-                write(String.Format("PING :{0}", pingCookie));
+                write(String.Format("PING :{0}", PingCookie));
             }
 
             // Has the user taken too long to reply with a PONG?
-            if(waitingForPong && (time > (lastPong + (ircd.pingTimeout * 2)))) {
+            if(WaitingForPong && (time > (LastPong + (IRCd.pingTimeout * 2)))) {
                 disconnect("Ping timeout", true);
             }
 
@@ -190,9 +191,9 @@ namespace cmpctircd
         // Returns the user's mask
         // TODO: cloaking
         public String mask() {
-            String nick = this.nick;
-            String user = this.ident;
-            String real_name = this.real_name;
+            String nick = this.Nick;
+            String user = this.Ident;
+            String real_name = this.RealName;
             String host = this.get_host();
             return String.Format("{0}!{1}@{2}", nick, user, host);
         }
@@ -214,7 +215,7 @@ namespace cmpctircd
         public void disconnect(String quitReason, Boolean graceful) {
             if (graceful) {
                 // Inform all of the channels we're a member of that we are leaving
-                foreach (var channel in ircd.channelManager.list()) {
+                foreach (var channel in IRCd.channelManager.list()) {
                     if (channel.Value.inhabits(this)) {
                         channel.Value.quit(this, quitReason);
                         channel.Value.remove(this);

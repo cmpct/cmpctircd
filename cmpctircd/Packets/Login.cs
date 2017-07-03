@@ -34,7 +34,7 @@ namespace cmpctircd.Packets {
             }
 
             // Only allow one registration
-            if(client.state.CompareTo(ClientState.PreAuth) > 0) {
+            if(client.State.CompareTo(ClientState.PreAuth) > 0) {
                 throw new IrcErrAlreadyRegisteredException(client);
             }
 
@@ -71,9 +71,9 @@ namespace cmpctircd.Packets {
             String[] splitLine = rawLine.Split(new char[] { ':' }, 2);
             String cookie = splitLine[1];
 
-            if(client.pingCookie == cookie) {
-                client.waitingForPong = false;
-                client.lastPong = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            if(client.PingCookie == cookie) {
+                client.WaitingForPong = false;
+                client.LastPong = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
             }
 
             return true;

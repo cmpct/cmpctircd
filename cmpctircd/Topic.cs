@@ -18,18 +18,18 @@ namespace cmpctircd
         {
             if (topic == null)
             {
-                client.write(String.Format(":{0} {1} {2} {3} :No topic is set.", client.ircd.host, IrcNumeric.RPL_NOTOPIC.Printable(), client.nick, target));
+                client.write(String.Format(":{0} {1} {2} {3} :No topic is set.", client.IRCd.host, IrcNumeric.RPL_NOTOPIC.Printable(), client.Nick, target));
             } else
             {
-                client.write(String.Format(":{0} {1} {2} {3} :{4}", client.ircd.host, IrcNumeric.RPL_TOPIC.Printable(), client.nick, target, topic));
-                client.write(String.Format(":{0} {1} {2} {3} {4} {5}", client.ircd.host, IrcNumeric.RPL_TOPICWHOTIME.Printable(), client.nick, target, user.mask(), date));
+                client.write(String.Format(":{0} {1} {2} {3} :{4}", client.IRCd.host, IrcNumeric.RPL_TOPIC.Printable(), client.Nick, target, topic));
+                client.write(String.Format(":{0} {1} {2} {3} {4} {5}", client.IRCd.host, IrcNumeric.RPL_TOPICWHOTIME.Printable(), client.Nick, target, user.mask(), date));
             }
         }
 
         internal void set_topic(Client client, string target, string rawLine)
         {
             topic = rawLine.Split(':')[1];
-            channel = client.ircd.channelManager.get(target);
+            channel = client.IRCd.channelManager.get(target);
             if (channel.inhabits(client))
             {
                 // TO DO: Change how we get the unix timestamp

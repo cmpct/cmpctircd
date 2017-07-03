@@ -30,10 +30,7 @@ namespace cmpctircd
         public int LastPong { get; set; } = 0;
         public String PingCookie { get; set; } = "";
 
-        public void SendVersion()
-        {
-            Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.version));
-        }
+        public void SendVersion() => Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.version));
 
         public Client(IRCd ircd, TcpClient tc, SocketListener sl) {
             Buffer = new byte[1024];
@@ -188,19 +185,11 @@ namespace cmpctircd
             Task.Delay(60000).ContinueWith(t => CheckTimeout());
         }
 
-        public static String CreatePingCookie() {
-            return System.IO.Path.GetRandomFileName().Substring(0, 7);
-        }
+        public static String CreatePingCookie() => System.IO.Path.GetRandomFileName().Substring(0, 7);
 
         // Returns the user's host (raw IP)
         // TODO: DNS?
-        public String Host
-        {
-            get
-            {
-                return ((System.Net.IPEndPoint)TcpClient.Client.RemoteEndPoint).Address.ToString();
-            }
-        }
+        public String Host => ((System.Net.IPEndPoint)TcpClient.Client.RemoteEndPoint).Address.ToString();
 
         // Returns the user's mask
         // TODO: cloaking
@@ -223,9 +212,7 @@ namespace cmpctircd
             ClientStream.Write(packetBytes, 0, packetBytes.Length);
         }
 
-        public void Disconnect(Boolean graceful) {
-            Disconnect("", graceful);
-        }
+        public void Disconnect(Boolean graceful) => Disconnect("", graceful);
 
         public void Disconnect(String quitReason, Boolean graceful) {
             if (graceful) {

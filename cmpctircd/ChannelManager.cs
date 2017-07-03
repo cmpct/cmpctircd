@@ -37,12 +37,6 @@ namespace cmpctircd {
             return Channels.ContainsKey(channel);
         }
 
-        public int Size
-        {
-            get
-            {
-                return Channels.Count();
-            }
-        }
+        public int Size => Channels.Count();
     }
 }

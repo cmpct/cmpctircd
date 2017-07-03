@@ -48,43 +48,36 @@ namespace cmpctircd {
         }
 
         async Task HandleClient(TcpClient tc) {
-            var client = new Client();
-            client.IRCd = _ircd;
-            client.TcpClient = tc;
-            client.Buffer = new byte[1024];
-            client.Listener = this;
-
+            var client = new Client(_ircd, tc, this);
             lock (_clients)
                 _clients.Add(client);
             
             client.BeginTasks();
 
-            using (var s = client.TcpClient.GetStream()) {
-                while (true) {
-                    try {
-                        int bytesRead = await s.ReadAsync(client.Buffer, 0, client.Buffer.Length);
-                        if (bytesRead > 0) {
-                            // Would a TcpClient have ReadLine for us?
-                            string data = Encoding.UTF8.GetString(client.Buffer);
-                            string[] lines = Regex.Split(data, "\r\n");
-                            foreach (string line in lines) {
-                                // Split each line into bits
-                                string[] parts = Regex.Split(line, " ");
-                                var args = new HandlerArgs(_ircd, client, line);
-                                if (parts[0].Contains("\0")) continue;
-                                _ircd.PacketManager.FindHandler(parts[0], args);
-                            }
-                            client.Buffer = new Byte[1024];
-                        } else {
-                            Console.WriteLine("No data, killing client");
-                            // Close the connection
-                            client.Disconnect(false);
+            while (true) {
+                try {
+                    int bytesRead = await client.ClientStream.ReadAsync(client.Buffer, 0, client.Buffer.Length);
+                    if (bytesRead > 0) {
+                        // Would a TcpClient have ReadLine for us?
+                        string data = Encoding.UTF8.GetString(client.Buffer);
+                        string[] lines = Regex.Split(data, "\r\n");
+                        foreach (string line in lines) {
+                            // Split each line into bits
+                            string[] parts = Regex.Split(line, " ");
+                            var args = new HandlerArgs(_ircd, client, line);
+                            if (parts[0].Contains("\0")) continue;
+                            _ircd.PacketManager.FindHandler(parts[0], args);
                         }
-                    } catch(ObjectDisposedException) {
+                        client.Buffer = new Byte[1024];
+                    } else {
+                        Console.WriteLine("No data, killing client");
+                        // Close the connection
                         client.Disconnect(false);
-                        break;
-                    };
-                }
+                    }
+                } catch(ObjectDisposedException) {
+                    client.Disconnect(false);
+                    break;
+                };
             }
         }
 

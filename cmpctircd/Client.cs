@@ -11,9 +11,10 @@ namespace cmpctircd
 {
     public class Client {
         // Internals
-        // TODO: Many of these look like they shouldn't be public. Review?
+        // TODO: Many of these look like they shouldn't be public or should be private set. Review?
         public IRCd IRCd { get; set; }
         public TcpClient TcpClient { get; set; }
+        public NetworkStream ClientStream { get; private set; }
         public SocketListener Listener { get; set; }
         public byte[] Buffer { get; set; }
 
@@ -34,11 +35,24 @@ namespace cmpctircd
             Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.version));
         }
 
-        public Client() {
+        public Client(IRCd ircd, TcpClient tc, SocketListener sl) {
+            Buffer = new byte[1024];
+
             State = ClientState.PreAuth;
+
+            IRCd = ircd;
+            TcpClient = tc;
+            Listener = sl;
+        }
+
+        ~Client() {
+            ClientStream?.Close();
+            TcpClient?.Close();
         }
 
         public void BeginTasks() {
+            // Initialize the stream
+            ClientStream = TcpClient.GetStream();
             // Check for PING/PONG events due (TODO: and DNS)
             CheckTimeout();
         }
@@ -206,10 +220,7 @@ namespace cmpctircd
             byte[] packetBytes = Encoding.UTF8.GetBytes(packet + "\r\n");
             // TODO: I'm unsure if we should be constantly using GetStream, or
             // reuse the same object
-            using (var s = TcpClient.GetStream())
-            {
-                s.Write(packetBytes, 0, packetBytes.Length);
-            }
+            ClientStream.Write(packetBytes, 0, packetBytes.Length);
         }
 
         public void Disconnect(Boolean graceful) {

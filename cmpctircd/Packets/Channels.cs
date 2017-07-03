@@ -14,6 +14,7 @@ namespace cmpctircd.Packets {
             ircd.PacketManager.Register("PRIVMSG", privmsgHandler);
             ircd.PacketManager.Register("PART", partHandler);
             ircd.PacketManager.Register("TOPIC", topicHandler);
+            ircd.PacketManager.Register("NOTICE", noticeHandler);
         }
 
         public Boolean topicHandler(HandlerArgs args) {
@@ -125,6 +126,73 @@ namespace cmpctircd.Packets {
             }
             throw new IrcErrNoSuchTargetException(client, target);
         }
+
+        public bool noticeHandler(HandlerArgs args) {
+            IRCd ircd = args.IRCd;
+            Client client = args.Client;
+            String rawLine = args.Line;
+
+            Client targetClient = null;
+            String target;
+            String message;
+            String fmtMessage;
+            String[] rawSplit;
+            bool userExists = false;
+
+            rawSplit = rawLine.Split(' ');
+            target = rawSplit[1];
+
+            // Check the client has sent the expected amount of params (3)
+            if (rawSplit.Count() >= 2) {
+                // Check the target exists
+                if(target.StartsWith("#")) {
+                    // The target is a channel
+                    if(!ircd.ChannelManager.Exists(target)) {
+                        throw new IrcErrNoSuchTargetException(client, target);
+                    }
+                } else {
+                    // The target is a user
+                    foreach (var clientList in ircd.ClientLists) {
+                        foreach (var clientSearch in clientList) {
+                            if (clientSearch.Nick.ToLower() == target.ToLower()) {
+                                targetClient = clientSearch;
+                                userExists = true;
+                            }
+                        }
+                    }
+
+                    if (!userExists) {
+                        throw new IrcErrNoSuchTargetException(client, target);
+                    }
+                }
+
+
+                if (rawSplit.Count() < 3) {
+                    switch (rawSplit.Count()) {
+                        case 1:
+                            // Client has only sent "NOTICE", nothing to respond
+                            return false;
+                        case 2:
+                            // Client has provided a target but no message
+                            throw new IrcErrNoTextToSendException(client);
+                    }
+                }
+
+                message = rawSplit[2];
+                fmtMessage = String.Format(":{0} NOTICE {1} {2}", client.Mask, target, message);
+                if (target.StartsWith("#")) {
+                    Channel channel = ircd.ChannelManager[target];
+                    channel.SendToRoom(client, fmtMessage, false);
+                    return true;
+                } else {
+                    targetClient.Write(fmtMessage);
+                    return true;
+                }
+
+            }
+            // XXX: RFC states there should never be a response to NOTICE, but Unreal and others send a No Such Target error message. We will follow them for now.
+            return true;
+         }
 
         public Boolean partHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;

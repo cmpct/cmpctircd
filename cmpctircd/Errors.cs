@@ -80,4 +80,13 @@ namespace cmpctircd {
             client.Write(String.Format(":{0} {1} {2} {3} :You're not on that channel", client.IRCd.host, IrcNumeric.ERR_NOTONCHANNEL.Printable(), client.Nick, channel));
         }
     }
+
+    public class IrcErrNoTextToSendException : Exception {
+        private Client client;
+
+        public IrcErrNoTextToSendException(Client client) {
+            client.Write(String.Format(":{0} {1} {2} :No text to send", client.IRCd.host, IrcNumeric.ERR_NOTEXTTOSEND.Printable(), client.Nick));
+        }
+    }
+
 }

@@ -199,13 +199,18 @@ namespace cmpctircd
 
         public void write(String packet) {
             byte[] packetBytes = Encoding.UTF8.GetBytes(packet + "\r\n");
-            TcpClient.GetStream().Write(packetBytes, 0, packetBytes.Length);
+            // TODO: I'm unsure if we should be constantly using GetStream, or
+            // reuse the same object
+            using (var s = TcpClient.GetStream())
+            {
+                s.Write(packetBytes, 0, packetBytes.Length);
+            }
         }
-
 
         public void disconnect(Boolean graceful) {
             disconnect("", graceful);
         }
+
         public void disconnect(String quitReason, Boolean graceful) {
             if (graceful) {
                 // Inform all of the channels we're a member of that we are leaving

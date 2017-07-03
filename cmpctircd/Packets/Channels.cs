@@ -58,23 +58,26 @@ namespace cmpctircd.Packets {
 
             String[] splitLine = rawLine.Split(' ');
             String[] splitColonLine = rawLine.Split(new char[] { ':' }, 2);
-            String channel_name;
+            String[] splitCommaLine;
             Channel channel;
 
             try {
-                channel_name = splitLine[1];
+                splitCommaLine = splitLine[1].Split(new char[] { ','});
             } catch(IndexOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(client, "JOIN");
             }
 
-            // Get the channel object, creating it if it doesn't already exist
-            // TODO: only applicable error is ERR_NEEDMOREPARAMS for now, more for limits/bans/invites
-            if (ircd.channelManager.exists(channel_name)) {
-                channel = ircd.channelManager.get(channel_name);
-            } else {
-                channel = ircd.channelManager.create(channel_name);
+            foreach(String channel_name in splitCommaLine) {
+                // Get the channel object, creating it if it doesn't already exist
+                // TODO: only applicable error is ERR_NEEDMOREPARAMS for now, more for limits/bans/invites
+                if (ircd.channelManager.exists(channel_name)) {
+                    channel = ircd.channelManager.get(channel_name);
+                } else {
+                    channel = ircd.channelManager.create(channel_name);
+                }
+                channel.addClient(client);
             }
-            channel.addClient(client);
+
             return true;
         }
 

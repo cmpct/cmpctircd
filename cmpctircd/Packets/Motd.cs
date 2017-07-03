@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace cmpctircd.Packets {
-    class Motd {
+    public class Motd {
 
         // This class is for the MOTD and RULES commands
         // TODO: Attach to user logon event and fire client.send_motd() there?

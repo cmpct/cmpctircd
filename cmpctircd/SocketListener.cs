@@ -10,7 +10,7 @@ using System.Collections;
 using System.Text.RegularExpressions;
 
 namespace cmpctircd {
-    class SocketListener {
+    public class SocketListener {
         private IRCd _ircd;
         private Boolean _started = false;
         private TcpListener _listener = null;

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace cmpctircd
 {
-    class Topic
+    public class Topic
     {
         // Hold our topic metadata: The topic itself, user who set it, date & time set, channel set on
         public string TopicText { get; set; }

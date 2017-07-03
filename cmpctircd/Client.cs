@@ -7,11 +7,9 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 
-using static cmpctircd.Errors;
-
 namespace cmpctircd
 {
-    class Client {
+    public class Client {
         // Internals
         // TODO: Many of these look like they shouldn't be public. Review?
         public IRCd IRCd { get; set; }

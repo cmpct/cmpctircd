@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace cmpctircd {
-    class ChannelManager {
+    public class ChannelManager {
         private IRCd IRCd { get; set; }
         public Dictionary<String, Channel> Channels
         {

@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static cmpctircd.Errors;
 
 namespace cmpctircd.Packets {
-    class Login {
+    public class Login {
         //private IRCd ircd;
 
         public Login(IRCd ircd) {

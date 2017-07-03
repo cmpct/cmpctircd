@@ -9,7 +9,7 @@ using System.Net.Sockets;
 using cmpctircd.Packets;
 
 namespace cmpctircd {
-    class IRCd {
+    public class IRCd {
         private Dictionary<String, SocketListener> listeners;
         public PacketManager PacketManager { get; set; }
         public ChannelManager ChannelManager { get; set; }

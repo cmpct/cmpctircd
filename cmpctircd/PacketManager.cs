@@ -4,10 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using static cmpctircd.Errors;
-
 namespace cmpctircd {
-    class PacketManager {
+    public class PacketManager {
         private IRCd ircd;
         // XXX: Instead of Array, this could be a bundle which we send with each packet - args baked in, ircd, etc?
         public Dictionary<String, Func<Array, Boolean>> handlers = new Dictionary<string, Func<Array, Boolean>>();

@@ -4,10 +4,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
-using static cmpctircd.Errors;
 
 namespace cmpctircd.Packets {
-    class Channels {
+    public class Channels {
         //private IRCd ircd;
 
         public Channels(IRCd ircd) {

@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace cmpctircd {
-    class Channel {
+    public class Channel {
         public String Name { get; set; }
         // A dictionary of clients in the room (nick => client)
         private Dictionary<String, Client> Clients

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace cmpctircd.Packets
 {
-    class Queries
+    public class Queries
     {
 
         // This class is for the server query group of commands

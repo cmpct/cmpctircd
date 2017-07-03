@@ -115,9 +115,9 @@ namespace cmpctircd.Packets {
             } else {
                 // Check the user exists
                 foreach (var clientList in ircd.ClientLists) {
-                    foreach (var clientDict in clientList) {
-                        if (clientDict.Key.Nick.ToLower() == target.ToLower()) {
-                            clientDict.Key.Write(String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, target, message));
+                    foreach (var clientItem in clientList) {
+                        if (clientItem.Nick.ToLower() == target.ToLower()) {
+                            clientItem.Write(String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, target, message));
                             return true;
                         }
                     }

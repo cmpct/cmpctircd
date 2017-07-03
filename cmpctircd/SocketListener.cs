@@ -14,7 +14,7 @@ namespace cmpctircd {
         private IRCd _ircd;
         private Boolean _started = false;
         private TcpListener _listener = null;
-        private Dictionary<Client, TcpClient> _clients = new Dictionary<Client, TcpClient>();
+        private List<Client> _clients = new List<Client>();
 
         public SocketListener(IRCd ircd, String IP, int port) {
             this._ircd = ircd;
@@ -55,7 +55,7 @@ namespace cmpctircd {
             client.Listener = this;
 
             lock (_clients)
-                _clients.Add(client, client.TcpClient);
+                _clients.Add(client);
             
             client.BeginTasks();
 

@@ -13,7 +13,7 @@ namespace cmpctircd {
         private Dictionary<String, SocketListener> listeners;
         public PacketManager PacketManager { get; set; }
         public ChannelManager ChannelManager { get; set; }
-        public List<Dictionary<Client, TcpClient>> ClientLists { get; set; }
+        public List<List<Client>> ClientLists { get; set; }
 
         // TODO: constants which will go into the config (not changing until then)
         public String host = "irc.cmpct.info";
@@ -28,7 +28,7 @@ namespace cmpctircd {
             Console.WriteLine("Starting cmpctircd");
             Console.WriteLine("==> Host: irc.cmpct.info");
             Console.WriteLine("==> Listening on: 127.0.0.1:6669");
-            ClientLists = new List<Dictionary<Client, TcpClient>>();
+            ClientLists = new List<List<Client>>();
             SocketListener sl = new SocketListener(this, "127.0.0.1", 6669);
             PacketManager = new PacketManager(this);
             ChannelManager = new ChannelManager(this);

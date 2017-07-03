@@ -19,20 +19,30 @@ namespace cmpctircd {
         /*
          * Useful methods for managing channels 
         */
-        public Channel create(String channel_name) {
+        public Channel Create(String channel_name) {
             Channel channel = new Channel();
             channel.Name = channel_name;
             Channels.Add(channel_name, channel);
             return channel;
         }
-        public Channel get(String channel) {
-            return Channels[channel];
+
+        public Channel this[String channel] {
+            get
+            {
+                return Channels[channel];
+            }
         }
-        public bool exists(String channel) {
+
+        public bool Exists(String channel) {
             return Channels.ContainsKey(channel);
         }
-        public int size() {
-            return Channels.Count();
+
+        public int Size
+        {
+            get
+            {
+                return Channels.Count();
+            }
         }
     }
 }

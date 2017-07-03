@@ -30,7 +30,7 @@ namespace cmpctircd
         internal void set_topic(Client client, string target, string rawLine)
         {
             TopicText = rawLine.Split(':')[1];
-            Channel = client.IRCd.ChannelManager.get(target);
+            Channel = client.IRCd.ChannelManager[target];
             if (Channel.inhabits(client))
             {
                 // TO DO: Change how we get the unix timestamp

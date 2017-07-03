@@ -70,10 +70,10 @@ namespace cmpctircd.Packets {
             foreach(String channel_name in splitCommaLine) {
                 // Get the channel object, creating it if it doesn't already exist
                 // TODO: only applicable error is ERR_NEEDMOREPARAMS for now, more for limits/bans/invites
-                if (ircd.ChannelManager.exists(channel_name)) {
+                if (ircd.ChannelManager.Exists(channel_name)) {
                     channel = ircd.ChannelManager.get(channel_name);
                 } else {
-                    channel = ircd.ChannelManager.create(channel_name);
+                    channel = ircd.ChannelManager.Create(channel_name);
                 }
                 channel.addClient(client);
             }
@@ -106,7 +106,7 @@ namespace cmpctircd.Packets {
             if (target.StartsWith("#")) {
                 // PRIVMSG a channel
                 // TODO: We don't have +n yet so just check if they're in the room...
-                if(ircd.ChannelManager.exists(target)) {
+                if(ircd.ChannelManager.Exists(target)) {
                     Channel channel = ircd.ChannelManager.get(target);
                     if(channel.inhabits(client)) {
                         channel.send_to_room(client, String.Format(":{0} PRIVMSG {1} :{2}", client.mask(), channel.Name, message), false);
@@ -150,7 +150,7 @@ namespace cmpctircd.Packets {
             }
 
             // Does the channel exist?
-            if(!ircd.ChannelManager.exists(channel)) {
+            if(!ircd.ChannelManager.Exists(channel)) {
                 throw new IrcErrNoSuchTargetException(client, channel);
             }
 

@@ -26,16 +26,9 @@ namespace cmpctircd {
             return channel;
         }
 
-        public Channel this[String channel] {
-            get
-            {
-                return Channels[channel];
-            }
-        }
+        public Channel this[String channel] => Channels[channel];
 
-        public bool Exists(String channel) {
-            return Channels.ContainsKey(channel);
-        }
+        public bool Exists(String channel) => Channels.ContainsKey(channel);
 
         public int Size => Channels.Count();
     }

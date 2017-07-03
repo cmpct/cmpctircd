@@ -11,10 +11,10 @@ namespace cmpctircd.Packets {
         //private IRCd ircd;
 
         public Channels(IRCd ircd) {
-            ircd.PacketManager.register("JOIN", joinHandler);
-            ircd.PacketManager.register("PRIVMSG", privmsgHandler);
-            ircd.PacketManager.register("PART", partHandler);
-            ircd.PacketManager.register("TOPIC", topicHandler);
+            ircd.PacketManager.Register("JOIN", joinHandler);
+            ircd.PacketManager.Register("PRIVMSG", privmsgHandler);
+            ircd.PacketManager.Register("PART", partHandler);
+            ircd.PacketManager.Register("TOPIC", topicHandler);
         }
 
         public Boolean topicHandler(Array args) {
@@ -33,20 +33,20 @@ namespace cmpctircd.Packets {
                     throw new IrcErrNotEnoughParametersException(client, command);
                 case 2:
                     target = rawSplit[1];
-                    if (!ircd.ChannelManager.list().ContainsKey(target)) {
+                    if (!ircd.ChannelManager.Channels.ContainsKey(target)) {
                         throw new IrcErrNoSuchTargetException(client, target);
                     }
-                    topic = ircd.ChannelManager.get(target).Topic;
-                    topic.get_topic(client, target);
+                    topic = ircd.ChannelManager[target].Topic;
+                    topic.GetTopic(client, target);
                     return true;
 
                 default:
                     target = rawSplit[1];
-                    if (!ircd.ChannelManager.list().ContainsKey(target)) {
+                    if (!ircd.ChannelManager.Channels.ContainsKey(target)) {
                         throw new IrcErrNoSuchTargetException(client, target);
                     }
-                    topic = ircd.ChannelManager.get(target).Topic;
-                    topic.set_topic(client, target, rawLine);
+                    topic = ircd.ChannelManager[target].Topic;
+                    topic.SetTopic(client, target, rawLine);
                     return true;
             }
         }
@@ -71,11 +71,11 @@ namespace cmpctircd.Packets {
                 // Get the channel object, creating it if it doesn't already exist
                 // TODO: only applicable error is ERR_NEEDMOREPARAMS for now, more for limits/bans/invites
                 if (ircd.ChannelManager.Exists(channel_name)) {
-                    channel = ircd.ChannelManager.get(channel_name);
+                    channel = ircd.ChannelManager[channel_name];
                 } else {
                     channel = ircd.ChannelManager.Create(channel_name);
                 }
-                channel.addClient(client);
+                channel.AddClient(client);
             }
 
             return true;
@@ -107,9 +107,9 @@ namespace cmpctircd.Packets {
                 // PRIVMSG a channel
                 // TODO: We don't have +n yet so just check if they're in the room...
                 if(ircd.ChannelManager.Exists(target)) {
-                    Channel channel = ircd.ChannelManager.get(target);
-                    if(channel.inhabits(client)) {
-                        channel.send_to_room(client, String.Format(":{0} PRIVMSG {1} :{2}", client.mask(), channel.Name, message), false);
+                    Channel channel = ircd.ChannelManager[target];
+                    if(channel.Inhabits(client)) {
+                        channel.SendToRoom(client, String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, channel.Name, message), false);
                         return true;
                     }
                 }
@@ -118,7 +118,7 @@ namespace cmpctircd.Packets {
                 foreach (var clientList in ircd.ClientLists) {
                     foreach (var clientDict in clientList) {
                         if (clientDict.Key.Nick.ToLower() == target.ToLower()) {
-                            clientDict.Key.write(String.Format(":{0} PRIVMSG {1} :{2}", client.mask(), target, message));
+                            clientDict.Key.Write(String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, target, message));
                             return true;
                         }
                     }
@@ -155,12 +155,12 @@ namespace cmpctircd.Packets {
             }
 
             // Are we in the channel?
-            Channel channelObj = ircd.ChannelManager.get(channel);
-            if(!channelObj.inhabits(client)) {
+            Channel channelObj = ircd.ChannelManager[channel];
+            if(!channelObj.Inhabits(client)) {
                 throw new IrcErrNotOnChannelException(client, channel);
             }
 
-            channelObj.part(client, reason);
+            channelObj.Part(client, reason);
             return true;
         }
 

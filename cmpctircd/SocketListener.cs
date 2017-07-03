@@ -22,22 +22,22 @@ namespace cmpctircd {
             _ircd.ClientLists.Add(_clients);
         }
         ~SocketListener() {
-            stop();
+            Stop();
         }
 
         // Bind to the port and start listening
-        public void bind() {
+        public void Bind() {
             _listener.Start();
             _started = true;
         }
-        public void stop() {
+        public void Stop() {
             _listener.Stop();
             _started = false;
         }
 
         // Accept + read from clients.
         // This function should be called in a loop, and waited on
-        public async Task listenToClients() {
+        public async Task ListenToClients() {
             if (!_started) {
                 throw new InvalidOperationException("Bind() not called or has been stopped.");
             }
@@ -57,7 +57,7 @@ namespace cmpctircd {
             lock (_clients)
                 _clients.Add(client, client.TcpClient);
             
-            client.begin_tasks();
+            client.BeginTasks();
 
             using (var s = client.TcpClient.GetStream()) {
                 while (true) {
@@ -72,23 +72,23 @@ namespace cmpctircd {
                                 string[] parts = Regex.Split(line, " ");
                                 object[] args = new object[] { _ircd, client, line };
                                 if (parts[0].Contains("\0")) continue;
-                                _ircd.PacketManager.findHandler(parts[0], args);
+                                _ircd.PacketManager.FindHandler(parts[0], args);
                             }
                             client.Buffer = new Byte[1024];
                         } else {
                             Console.WriteLine("No data, killing client");
                             // Close the connection
-                            client.disconnect(false);
+                            client.Disconnect(false);
                         }
                     } catch(ObjectDisposedException) {
-                        client.disconnect(false);
+                        client.Disconnect(false);
                         break;
                     };
                 }
             }
         }
 
-        public void remove(Client client) {
+        public void Remove(Client client) {
             client.TcpClient.Close();
             lock (_clients) {
                 _clients.Remove(client);

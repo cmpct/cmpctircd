@@ -16,13 +16,13 @@ namespace cmpctircd {
             this.ircd = ircd;
         }
 
-        public bool register(String packet, Func<Array, Boolean> handler) {
+        public bool Register(String packet, Func<Array, Boolean> handler) {
             Console.WriteLine("Registering packet: " + packet);
             handlers.Add(packet.ToUpper(), handler);
             return true;
         }
 
-        public bool findHandler(String packet, Array args)
+        public bool FindHandler(String packet, Array args)
         {
             List<String> registrationCommands = new List<String>();
             registrationCommands.Add("USER");
@@ -51,7 +51,7 @@ namespace cmpctircd {
             return true;
         }
 
-        public bool load() {
+        public bool Load() {
             var classes = AppDomain.CurrentDomain.GetAssemblies()
                                    .SelectMany(t => t.GetTypes())
                                    .Where(t => t.IsClass && t.Namespace == "cmpctircd.Packets");

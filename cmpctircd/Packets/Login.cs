@@ -10,10 +10,10 @@ namespace cmpctircd.Packets {
         //private IRCd ircd;
 
         public Login(IRCd ircd) {
-            ircd.PacketManager.register("USER", userHandler);
-            ircd.PacketManager.register("NICK", nickHandler);
-            ircd.PacketManager.register("QUIT", quitHandler);
-            ircd.PacketManager.register("PONG", pongHandler);
+            ircd.PacketManager.Register("USER", userHandler);
+            ircd.PacketManager.Register("NICK", nickHandler);
+            ircd.PacketManager.Register("QUIT", quitHandler);
+            ircd.PacketManager.Register("PONG", pongHandler);
         }
 
         public Boolean userHandler(Array args) {
@@ -38,7 +38,7 @@ namespace cmpctircd.Packets {
                 throw new IrcErrAlreadyRegisteredException(client);
             }
 
-            client.setUser(username, real_name);
+            client.SetUser(username, real_name);
             return true;
         }
 
@@ -49,7 +49,7 @@ namespace cmpctircd.Packets {
             String newNick = rawLine.Split(' ')[1];
 
             Console.WriteLine("Changing nick to {0}", newNick);
-            client.setNick(newNick);
+            client.SetNick(newNick);
             return true;
         }
 
@@ -60,7 +60,7 @@ namespace cmpctircd.Packets {
             String[] splitLine = rawLine.Split(new char[] { ':' }, 2);
             String reason = splitLine[1];
 
-            client.disconnect(reason, true);
+            client.Disconnect(reason, true);
             return true;
         }
 

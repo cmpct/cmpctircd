@@ -11,7 +11,7 @@ namespace cmpctircd
         static void Main(string[] args)
         {
             IRCd ircd = new cmpctircd.IRCd();
-            ircd.run();
+            ircd.Run();
         }
     }
 }

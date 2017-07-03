@@ -10,15 +10,15 @@ namespace cmpctircd.Packets {
         // This class is for the MOTD and RULES commands
         // TODO: Attach to user logon event and fire client.send_motd() there?
         public Motd(IRCd ircd) {
-            ircd.PacketManager.register("MOTD", motdHandler);
-            ircd.PacketManager.register("RULES", rulesHandler);
+            ircd.PacketManager.Register("MOTD", motdHandler);
+            ircd.PacketManager.Register("RULES", rulesHandler);
         }
 
         public Boolean motdHandler(Array args) {
             IRCd ircd = (IRCd)args.GetValue(0);
             Client client = (Client)args.GetValue(1);
 
-            client.send_motd();
+            client.SendMotd();
             return true;
         }
 
@@ -26,7 +26,7 @@ namespace cmpctircd.Packets {
             IRCd ircd = (IRCd) args.GetValue(0);
             Client client = (Client)args.GetValue(1);
 
-            client.send_rules();
+            client.SendRules();
             return true;
         }
 

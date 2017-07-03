@@ -13,7 +13,7 @@ namespace cmpctircd.Packets
         // TODO: Stats & Links?
         public Queries(IRCd ircd)
         {
-            ircd.PacketManager.register("VERSION", versionHandler);
+            ircd.PacketManager.Register("VERSION", versionHandler);
         }
 
         public Boolean versionHandler(Array args)
@@ -21,7 +21,7 @@ namespace cmpctircd.Packets
             IRCd ircd = (IRCd)args.GetValue(0);
             Client client = (Client)args.GetValue(1);
 
-            client.send_version();
+            client.SendVersion();
             return true;
         }
     }

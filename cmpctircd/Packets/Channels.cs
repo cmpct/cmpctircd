@@ -16,11 +16,11 @@ namespace cmpctircd.Packets {
             ircd.PacketManager.Register("TOPIC", topicHandler);
         }
 
-        public Boolean topicHandler(Array args) {
-            IRCd ircd = (IRCd)args.GetValue(0);
-            Client client = (Client)args.GetValue(1);
+        public Boolean topicHandler(HandlerArgs args) {
+            IRCd ircd = args.IRCd;
+            Client client = args.Client;
             Topic topic;
-            String rawLine = args.GetValue(2).ToString();
+            String rawLine = args.Line;
             String[] rawSplit;
             String target;
             String command;
@@ -50,10 +50,10 @@ namespace cmpctircd.Packets {
             }
         }
 
-        public Boolean joinHandler(Array args) {
-            IRCd ircd = (IRCd)args.GetValue(0);
-            Client client = (Client)args.GetValue(1);
-            String rawLine = args.GetValue(2).ToString();
+        public Boolean joinHandler(HandlerArgs args) {
+            IRCd ircd = args.IRCd;
+            Client client = args.Client;
+            String rawLine = args.Line;
 
             String[] splitLine = rawLine.Split(' ');
             String[] splitColonLine = rawLine.Split(new char[] { ':' }, 2);
@@ -80,11 +80,11 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public Boolean privmsgHandler(Array args) {
+        public Boolean privmsgHandler(HandlerArgs args) {
             // Only for channel PRIVMSGs (PRIVMSG #channel ...)
-            IRCd ircd = (IRCd)args.GetValue(0);
-            Client client = (Client)args.GetValue(1);
-            String rawLine = args.GetValue(2).ToString();
+            IRCd ircd = args.IRCd;
+            Client client = args.Client;
+            String rawLine = args.Line;
             String[] rawSplit;
             String target;
             String message;
@@ -126,10 +126,10 @@ namespace cmpctircd.Packets {
             throw new IrcErrNoSuchTargetException(client, target);
         }
 
-        public Boolean partHandler(Array args) {
-            IRCd ircd = (IRCd)args.GetValue(0);
-            Client client = (Client)args.GetValue(1);
-            String rawLine = args.GetValue(2).ToString();
+        public Boolean partHandler(HandlerArgs args) {
+            IRCd ircd = args.IRCd;
+            Client client = args.Client;
+            String rawLine = args.Line;
             String[] splitLine = rawLine.Split(new string[] { ":" }, 2, StringSplitOptions.None);
             String[] splitLineSpace = rawLine.Split(new string[] { " " }, 3, StringSplitOptions.None);
 

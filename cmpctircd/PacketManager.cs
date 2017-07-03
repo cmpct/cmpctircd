@@ -8,26 +8,26 @@ namespace cmpctircd {
     public class PacketManager {
         private IRCd ircd;
         // XXX: Instead of Array, this could be a bundle which we send with each packet - args baked in, ircd, etc?
-        public Dictionary<String, Func<Array, Boolean>> handlers = new Dictionary<string, Func<Array, Boolean>>();
+        public Dictionary<String, Func<HandlerArgs, Boolean>> handlers = new Dictionary<string, Func<HandlerArgs, Boolean>>();
            
         public PacketManager(IRCd ircd) {
             this.ircd = ircd;
         }
 
-        public bool Register(String packet, Func<Array, Boolean> handler) {
+        public bool Register(String packet, Func<HandlerArgs, Boolean> handler) {
             Console.WriteLine("Registering packet: " + packet);
             handlers.Add(packet.ToUpper(), handler);
             return true;
         }
 
-        public bool FindHandler(String packet, Array args)
+        public bool FindHandler(String packet, HandlerArgs args)
         {
             List<String> registrationCommands = new List<String>();
             registrationCommands.Add("USER");
             registrationCommands.Add("NICK");
             registrationCommands.Add("PONG");
 
-            Client client = (Client)args.GetValue(1);
+            var client = args.Client;
             try
             {
 

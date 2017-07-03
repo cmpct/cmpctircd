@@ -8,7 +8,6 @@ namespace cmpctircd.Packets
 {
     public class Queries
     {
-
         // This class is for the server query group of commands
         // TODO: Stats & Links?
         public Queries(IRCd ircd)
@@ -16,12 +15,9 @@ namespace cmpctircd.Packets
             ircd.PacketManager.Register("VERSION", versionHandler);
         }
 
-        public Boolean versionHandler(Array args)
+        public Boolean versionHandler(HandlerArgs args)
         {
-            IRCd ircd = (IRCd)args.GetValue(0);
-            Client client = (Client)args.GetValue(1);
-
-            client.SendVersion();
+            args.Client.SendVersion();
             return true;
         }
     }

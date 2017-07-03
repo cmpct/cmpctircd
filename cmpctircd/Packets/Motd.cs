@@ -14,19 +14,13 @@ namespace cmpctircd.Packets {
             ircd.PacketManager.Register("RULES", rulesHandler);
         }
 
-        public Boolean motdHandler(Array args) {
-            IRCd ircd = (IRCd)args.GetValue(0);
-            Client client = (Client)args.GetValue(1);
-
-            client.SendMotd();
+        public Boolean motdHandler(HandlerArgs args) {
+            args.Client.SendMotd();
             return true;
         }
 
-        public Boolean rulesHandler(Array args) {
-            IRCd ircd = (IRCd) args.GetValue(0);
-            Client client = (Client)args.GetValue(1);
-
-            client.SendRules();
+        public Boolean rulesHandler(HandlerArgs args) {
+            args.Client.SendRules();
             return true;
         }
 

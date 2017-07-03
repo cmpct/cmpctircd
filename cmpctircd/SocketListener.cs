@@ -70,7 +70,7 @@ namespace cmpctircd {
                             foreach (string line in lines) {
                                 // Split each line into bits
                                 string[] parts = Regex.Split(line, " ");
-                                object[] args = new object[] { _ircd, client, line };
+                                var args = new HandlerArgs(_ircd, client, line);
                                 if (parts[0].Contains("\0")) continue;
                                 _ircd.PacketManager.FindHandler(parts[0], args);
                             }

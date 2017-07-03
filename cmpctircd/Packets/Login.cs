@@ -15,10 +15,10 @@ namespace cmpctircd.Packets {
             ircd.PacketManager.Register("PONG", pongHandler);
         }
 
-        public Boolean userHandler(Array args) {
-            IRCd ircd = (IRCd)args.GetValue(0);
-            Client client = (Client)args.GetValue(1);
-            String rawLine = args.GetValue(2).ToString();
+        public Boolean userHandler(HandlerArgs args) {
+            IRCd ircd = args.IRCd;
+            Client client = args.Client;
+            String rawLine = args.Line;
 
             String[] splitLine = rawLine.Split(' ');
             String[] splitColonLine = rawLine.Split(new char[] { ':' }, 2);
@@ -41,10 +41,10 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public Boolean nickHandler(Array args) {
-            IRCd ircd = (IRCd) args.GetValue(0);
-            Client client = (Client)args.GetValue(1);
-            String rawLine = args.GetValue(2).ToString();
+        public Boolean nickHandler(HandlerArgs args) {
+            IRCd ircd = args.IRCd;
+            Client client = args.Client;
+            String rawLine = args.Line;
             String newNick = rawLine.Split(' ')[1];
 
             Console.WriteLine("Changing nick to {0}", newNick);
@@ -52,10 +52,10 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        private Boolean quitHandler(Array args) {
-            IRCd ircd = (IRCd)args.GetValue(0);
-            Client client = (Client)args.GetValue(1);
-            String rawLine = args.GetValue(2).ToString();
+        private Boolean quitHandler(HandlerArgs args) {
+            IRCd ircd = args.IRCd;
+            Client client = args.Client;
+            String rawLine = args.Line;
             String[] splitLine = rawLine.Split(new char[] { ':' }, 2);
             String reason = splitLine[1];
 
@@ -63,10 +63,10 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        private Boolean pongHandler(Array args) {
-            IRCd ircd = (IRCd)args.GetValue(0);
-            Client client = (Client)args.GetValue(1);
-            String rawLine = args.GetValue(2).ToString();
+        private Boolean pongHandler(HandlerArgs args) {
+            IRCd ircd = args.IRCd;
+            Client client = args.Client;
+            String rawLine = args.Line;
             String[] splitLine = rawLine.Split(new char[] { ':' }, 2);
             String cookie = splitLine[1];
 

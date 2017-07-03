@@ -6,11 +6,14 @@ using System.Threading.Tasks;
 
 namespace cmpctircd {
     class ChannelManager {
-        private IRCd ircd;
-        private Dictionary<String, Channel> channels = new Dictionary<string, Channel>();
+        private IRCd IRCd { get; set; }
+        private Dictionary<String, Channel> Channels
+        {
+            get; set;
+        } = new Dictionary<string, Channel>();
 
         public ChannelManager(IRCd ircd) {
-            this.ircd = ircd;
+            this.IRCd = ircd;
         }
 
         /*
@@ -18,21 +21,21 @@ namespace cmpctircd {
         */
         public Channel create(String channel_name) {
             Channel channel = new Channel();
-            channel.name = channel_name;
-            channels.Add(channel_name, channel);
+            channel.Name = channel_name;
+            Channels.Add(channel_name, channel);
             return channel;
         }
         public Channel get(String channel) {
-            return channels[channel];
+            return Channels[channel];
         }
         public bool exists(String channel) {
-            return channels.ContainsKey(channel);
+            return Channels.ContainsKey(channel);
         }
         public int size() {
-            return channels.Count();
+            return Channels.Count();
         }
         public Dictionary<String, Channel> list() {
-            return channels;
+            return Channels;
         }
 
 

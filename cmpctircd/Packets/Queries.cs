@@ -13,7 +13,7 @@ namespace cmpctircd.Packets
         // TODO: Stats & Links?
         public Queries(IRCd ircd)
         {
-            ircd.packetManager.register("VERSION", versionHandler);
+            ircd.PacketManager.register("VERSION", versionHandler);
         }
 
         public Boolean versionHandler(Array args)

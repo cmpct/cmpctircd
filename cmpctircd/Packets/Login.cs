@@ -10,10 +10,10 @@ namespace cmpctircd.Packets {
         //private IRCd ircd;
 
         public Login(IRCd ircd) {
-            ircd.packetManager.register("USER", userHandler);
-            ircd.packetManager.register("NICK", nickHandler);
-            ircd.packetManager.register("QUIT", quitHandler);
-            ircd.packetManager.register("PONG", pongHandler);
+            ircd.PacketManager.register("USER", userHandler);
+            ircd.PacketManager.register("NICK", nickHandler);
+            ircd.PacketManager.register("QUIT", quitHandler);
+            ircd.PacketManager.register("PONG", pongHandler);
         }
 
         public Boolean userHandler(Array args) {

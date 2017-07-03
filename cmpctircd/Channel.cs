@@ -6,26 +6,29 @@ using System.Threading.Tasks;
 
 namespace cmpctircd {
     class Channel {
-        public String name;
+        public String Name { get; set; }
         // A dictionary of clients in the room (nick => client)
-        private Dictionary<String, Client> clients = new Dictionary<string, Client>();
-        public Topic topic = new Topic();
+        private Dictionary<String, Client> Clients
+        {
+            get; set;
+        } = new Dictionary<string, Client>();
+        public Topic Topic = new Topic();
 
         public void addClient(Client client) {
             if(inhabits(client)) {
                 throw new InvalidOperationException("User is already in the room!");
             }
-            clients.Add(client.Nick, client);
-            Console.WriteLine("Added {0} to {1}", client.Nick, name);
+            Clients.Add(client.Nick, client);
+            Console.WriteLine("Added {0} to {1}", client.Nick, Name);
 
             // Tell everyone we've joined
-            send_to_room(client, String.Format(":{0} JOIN :{1}", client.mask(), this.name));
-            foreach(var room_client in clients) {
+            send_to_room(client, String.Format(":{0} JOIN :{1}", client.mask(), this.Name));
+            foreach(var room_client in Clients) {
                 client.write(String.Format(":{0} {1} {2} = {3} :{4}",
                         client.IRCd.host,
                         IrcNumeric.RPL_NAMREPLY.Printable(),
                         client.Nick,
-                        name,
+                        Name,
                         room_client.Value.Nick
                 ));
             }
@@ -33,7 +36,7 @@ namespace cmpctircd {
                     client.IRCd.host,
                     IrcNumeric.RPL_ENDOFNAMES.Printable(),
                     client.Nick,
-                    name
+                    Name
             ));
 
             // TODO: op if size == 1
@@ -45,9 +48,9 @@ namespace cmpctircd {
             if(!inhabits(client)) {
                 throw new InvalidOperationException("User isn't in the room!");
             }
-            Console.WriteLine("Removing {0} from {1}", client.Nick, name);
-            send_to_room(client, String.Format(":{0} PART {1} :{2}", client.mask(), name, reason), true);
-            clients.Remove(client.Nick);
+            Console.WriteLine("Removing {0} from {1}", client.Nick, Name);
+            send_to_room(client, String.Format(":{0} PART {1} :{2}", client.mask(), Name, reason), true);
+            Clients.Remove(client.Nick);
         }
 
         public void quit(Client client, String reason) {
@@ -55,9 +58,9 @@ namespace cmpctircd {
                 throw new InvalidOperationException("User isn't in the room!");
             }
 
-            Console.WriteLine("Removing {0} from {1}", client.Nick, name);
+            Console.WriteLine("Removing {0} from {1}", client.Nick, Name);
             send_to_room(client, String.Format(":{0} QUIT {1}", client.mask(), reason), false);
-            clients.Remove(client.Nick);
+            Clients.Remove(client.Nick);
         }
 
 
@@ -69,7 +72,7 @@ namespace cmpctircd {
             send_to_room(client, message, true);
         }
         public void send_to_room(Client client, String message, Boolean sendSelf) {
-            Parallel.ForEach(clients, (iClient) => {
+            Parallel.ForEach(Clients, (iClient) => {
                 if (!sendSelf && iClient.Value.Equals(client)) {
                     return;
                 }
@@ -78,22 +81,22 @@ namespace cmpctircd {
         }
 
         public bool inhabits(Client client) {
-            return clients.ContainsValue(client);
+            return Clients.ContainsValue(client);
         }
         public bool inhabits(String nick) {
-            return clients.ContainsKey(nick);
+            return Clients.ContainsKey(nick);
         }
         public void add(Client client, String nick) {
-            clients.Add(nick, client);
+            Clients.Add(nick, client);
         }
         public void remove(Client client) {
-            clients.Remove(client.Nick);
+            Clients.Remove(client.Nick);
         }
         public void remove(String nick) {
-            clients.Remove(nick);
+            Clients.Remove(nick);
         }
         public int size() {
-            return clients.Count();
+            return Clients.Count();
         }
 
     }

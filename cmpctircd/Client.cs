@@ -119,7 +119,7 @@ namespace cmpctircd
 
 
             // Does a user with this nick already exist?
-            foreach(var clientList in IRCd.clientLists) {
+            foreach(var clientList in IRCd.ClientLists) {
                 foreach(var clientDict in clientList) {
                     if(clientDict.Key.Nick == newNick) {
                         throw new IrcErrNicknameInUseException(this, newNick);
@@ -128,7 +128,7 @@ namespace cmpctircd
                 }
             };
 
-            foreach(var channel in IRCd.channelManager.list()) {
+            foreach(var channel in IRCd.ChannelManager.list()) {
                 if(!channel.Value.inhabits(this)) continue;
                 channel.Value.send_to_room(this, String.Format(":{0} NICK :{1}", mask(), newNick), false);
                 channel.Value.remove(oldNick);
@@ -157,9 +157,9 @@ namespace cmpctircd
             // By default, no pong cookie is required
             Int32 time = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
             Boolean requirePong = false;
-            int period = (LastPong) + (IRCd.pingTimeout);
+            int period = (LastPong) + (IRCd.PingTimeout);
 
-            requirePong = (IRCd.requirePong) && (LastPong == 0);
+            requirePong = (IRCd.RequirePong) && (LastPong == 0);
 
             // Is the user due a PING?
             if((requirePong) || (time > period && !WaitingForPong)) {
@@ -171,7 +171,7 @@ namespace cmpctircd
             }
 
             // Has the user taken too long to reply with a PONG?
-            if(WaitingForPong && (time > (LastPong + (IRCd.pingTimeout * 2)))) {
+            if(WaitingForPong && (time > (LastPong + (IRCd.PingTimeout * 2)))) {
                 disconnect("Ping timeout", true);
             }
 
@@ -215,7 +215,7 @@ namespace cmpctircd
         public void disconnect(String quitReason, Boolean graceful) {
             if (graceful) {
                 // Inform all of the channels we're a member of that we are leaving
-                foreach (var channel in IRCd.channelManager.list()) {
+                foreach (var channel in IRCd.ChannelManager.list()) {
                     if (channel.Value.inhabits(this)) {
                         channel.Value.quit(this, quitReason);
                         channel.Value.remove(this);

@@ -19,7 +19,7 @@ namespace cmpctircd {
         public SocketListener(IRCd ircd, String IP, int port) {
             this._ircd = ircd;
             _listener = new TcpListener(IPAddress.Any, port);
-            _ircd.clientLists.Add(_clients);
+            _ircd.ClientLists.Add(_clients);
         }
         ~SocketListener() {
             stop();
@@ -72,7 +72,7 @@ namespace cmpctircd {
                                 string[] parts = Regex.Split(line, " ");
                                 object[] args = new object[] { _ircd, client, line };
                                 if (parts[0].Contains("\0")) continue;
-                                _ircd.packetManager.findHandler(parts[0], args);
+                                _ircd.PacketManager.findHandler(parts[0], args);
                             }
                             client.Buffer = new Byte[1024];
                         } else {

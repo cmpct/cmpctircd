@@ -11,10 +11,10 @@ namespace cmpctircd.Packets {
         //private IRCd ircd;
 
         public Channels(IRCd ircd) {
-            ircd.packetManager.register("JOIN", joinHandler);
-            ircd.packetManager.register("PRIVMSG", privmsgHandler);
-            ircd.packetManager.register("PART", partHandler);
-            ircd.packetManager.register("TOPIC", topicHandler);
+            ircd.PacketManager.register("JOIN", joinHandler);
+            ircd.PacketManager.register("PRIVMSG", privmsgHandler);
+            ircd.PacketManager.register("PART", partHandler);
+            ircd.PacketManager.register("TOPIC", topicHandler);
         }
 
         public Boolean topicHandler(Array args) {
@@ -33,19 +33,19 @@ namespace cmpctircd.Packets {
                     throw new IrcErrNotEnoughParametersException(client, command);
                 case 2:
                     target = rawSplit[1];
-                    if (!ircd.channelManager.list().ContainsKey(target)) {
+                    if (!ircd.ChannelManager.list().ContainsKey(target)) {
                         throw new IrcErrNoSuchTargetException(client, target);
                     }
-                    topic = ircd.channelManager.get(target).topic;
+                    topic = ircd.ChannelManager.get(target).Topic;
                     topic.get_topic(client, target);
                     return true;
 
                 default:
                     target = rawSplit[1];
-                    if (!ircd.channelManager.list().ContainsKey(target)) {
+                    if (!ircd.ChannelManager.list().ContainsKey(target)) {
                         throw new IrcErrNoSuchTargetException(client, target);
                     }
-                    topic = ircd.channelManager.get(target).topic;
+                    topic = ircd.ChannelManager.get(target).Topic;
                     topic.set_topic(client, target, rawLine);
                     return true;
             }
@@ -70,10 +70,10 @@ namespace cmpctircd.Packets {
             foreach(String channel_name in splitCommaLine) {
                 // Get the channel object, creating it if it doesn't already exist
                 // TODO: only applicable error is ERR_NEEDMOREPARAMS for now, more for limits/bans/invites
-                if (ircd.channelManager.exists(channel_name)) {
-                    channel = ircd.channelManager.get(channel_name);
+                if (ircd.ChannelManager.exists(channel_name)) {
+                    channel = ircd.ChannelManager.get(channel_name);
                 } else {
-                    channel = ircd.channelManager.create(channel_name);
+                    channel = ircd.ChannelManager.create(channel_name);
                 }
                 channel.addClient(client);
             }
@@ -106,16 +106,16 @@ namespace cmpctircd.Packets {
             if (target.StartsWith("#")) {
                 // PRIVMSG a channel
                 // TODO: We don't have +n yet so just check if they're in the room...
-                if(ircd.channelManager.exists(target)) {
-                    Channel channel = ircd.channelManager.get(target);
+                if(ircd.ChannelManager.exists(target)) {
+                    Channel channel = ircd.ChannelManager.get(target);
                     if(channel.inhabits(client)) {
-                        channel.send_to_room(client, String.Format(":{0} PRIVMSG {1} :{2}", client.mask(), channel.name, message), false);
+                        channel.send_to_room(client, String.Format(":{0} PRIVMSG {1} :{2}", client.mask(), channel.Name, message), false);
                         return true;
                     }
                 }
             } else {
                 // Check the user exists
-                foreach (var clientList in ircd.clientLists) {
+                foreach (var clientList in ircd.ClientLists) {
                     foreach (var clientDict in clientList) {
                         if (clientDict.Key.Nick.ToLower() == target.ToLower()) {
                             clientDict.Key.write(String.Format(":{0} PRIVMSG {1} :{2}", client.mask(), target, message));
@@ -150,12 +150,12 @@ namespace cmpctircd.Packets {
             }
 
             // Does the channel exist?
-            if(!ircd.channelManager.exists(channel)) {
+            if(!ircd.ChannelManager.exists(channel)) {
                 throw new IrcErrNoSuchTargetException(client, channel);
             }
 
             // Are we in the channel?
-            Channel channelObj = ircd.channelManager.get(channel);
+            Channel channelObj = ircd.ChannelManager.get(channel);
             if(!channelObj.inhabits(client)) {
                 throw new IrcErrNotOnChannelException(client, channel);
             }

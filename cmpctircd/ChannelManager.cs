@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 namespace cmpctircd {
     class ChannelManager {
         private IRCd IRCd { get; set; }
-        private Dictionary<String, Channel> Channels
+        public Dictionary<String, Channel> Channels
         {
-            get; set;
+            get; private set;
         } = new Dictionary<string, Channel>();
 
         public ChannelManager(IRCd ircd) {
@@ -34,10 +34,5 @@ namespace cmpctircd {
         public int size() {
             return Channels.Count();
         }
-        public Dictionary<String, Channel> list() {
-            return Channels;
-        }
-
-
     }
 }

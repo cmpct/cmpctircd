@@ -128,7 +128,7 @@ namespace cmpctircd
                 }
             };
 
-            foreach(var channel in IRCd.ChannelManager.list()) {
+            foreach(var channel in IRCd.ChannelManager.Channels) {
                 if(!channel.Value.inhabits(this)) continue;
                 channel.Value.send_to_room(this, String.Format(":{0} NICK :{1}", mask(), newNick), false);
                 channel.Value.remove(oldNick);
@@ -215,7 +215,7 @@ namespace cmpctircd
         public void disconnect(String quitReason, Boolean graceful) {
             if (graceful) {
                 // Inform all of the channels we're a member of that we are leaving
-                foreach (var channel in IRCd.ChannelManager.list()) {
+                foreach (var channel in IRCd.ChannelManager.Channels) {
                     if (channel.Value.inhabits(this)) {
                         channel.Value.quit(this, quitReason);
                         channel.Value.remove(this);

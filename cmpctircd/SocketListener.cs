@@ -82,7 +82,6 @@ namespace cmpctircd {
         }
 
         public void Remove(Client client) {
-            client.TcpClient.Close();
             lock (_clients) {
                 _clients.Remove(client);
             }

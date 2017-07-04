@@ -87,7 +87,7 @@ namespace cmpctircd
                     Write(String.Format(":{0} {1} {2} : - {3}", IRCd.host, IrcNumeric.RPL_MOTD.Printable(), Nick, motd[i]));
                 }
                 Write(String.Format(":{0} {1} {2} :End of /MOTD command.", IRCd.host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
-            } catch(System.IO.FileNotFoundException e) {
+            } catch(System.IO.FileNotFoundException) {
                 Console.WriteLine("ircd.motd doesn't exist!");
             }
         }
@@ -105,7 +105,7 @@ namespace cmpctircd
                     Write(String.Format(":{0} {1} {2} : - {3}", IRCd.host, IrcNumeric.RPL_MOTD.Printable(), Nick, rules[i]));
                 }
                 Write(String.Format(":{0} {1} {2} :End of RULES command.", IRCd.host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
-            } catch(System.IO.FileNotFoundException e) {
+            } catch(System.IO.FileNotFoundException) {
                 Console.WriteLine("ircd.rules doesn't exist!");
             }
         }

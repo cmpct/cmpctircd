@@ -25,6 +25,7 @@ namespace cmpctircd {
             List<String> registrationCommands = new List<String>();
             registrationCommands.Add("USER");
             registrationCommands.Add("NICK");
+            registrationCommands.Add("CAP"); // TODO: NOT YET IMPLEMENTED
             registrationCommands.Add("PONG");
 
             var client = args.Client;

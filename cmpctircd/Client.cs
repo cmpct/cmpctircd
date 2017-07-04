@@ -128,8 +128,9 @@ namespace cmpctircd
 
             // Does a user with this nick already exist?
             foreach(var clientList in IRCd.ClientLists) {
-                foreach(var client in clientList) {
-                    if(client.Nick.ToLower() == newNick.ToLower()) {
+                foreach(var clientSearch in clientList) {
+                    if(String.IsNullOrEmpty(clientSearch.Nick)) continue;
+                    if(clientSearch.Nick.ToLower() == newNick.ToLower()) {
                         throw new IrcErrNicknameInUseException(this, newNick);
                    }
                 }

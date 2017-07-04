@@ -208,9 +208,11 @@ namespace cmpctircd
 
         public void Write(String packet) {
             byte[] packetBytes = Encoding.UTF8.GetBytes(packet + "\r\n");
-            // TODO: I'm unsure if we should be constantly using GetStream, or
-            // reuse the same object
-            ClientStream.Write(packetBytes, 0, packetBytes.Length);
+            try {
+                ClientStream.Write(packetBytes, 0, packetBytes.Length);
+            } catch(System.IO.IOException) {
+                Disconnect("Connection reset by host", true);
+            }
         }
 
         public void Disconnect(Boolean graceful) => Disconnect("", graceful);

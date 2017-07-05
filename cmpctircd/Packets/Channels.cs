@@ -68,6 +68,13 @@ namespace cmpctircd.Packets {
             }
 
             foreach(String channel_name in splitCommaLine) {
+                // TODO: Regex, error handling
+                // We don't need to check for commas because the split handled that.
+                // Do check for proper initializing char, and check for BEL and space.
+                if ((channel_name.StartsWith("#") || channel_name.StartsWith("&")) &&
+                    (!channel_name.Contains(" ") || !channel_name.Contains("\a"))) {
+                    continue;
+                }
                 // Get the channel object, creating it if it doesn't already exist
                 // TODO: only applicable error is ERR_NEEDMOREPARAMS for now, more for limits/bans/invites
                 if (ircd.ChannelManager.Exists(channel_name)) {

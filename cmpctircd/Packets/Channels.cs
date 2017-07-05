@@ -71,8 +71,8 @@ namespace cmpctircd.Packets {
                 // TODO: Regex, error handling
                 // We don't need to check for commas because the split handled that.
                 // Do check for proper initializing char, and check for BEL and space.
-                if ((channel_name.StartsWith("#") || channel_name.StartsWith("&")) &&
-                    (!channel_name.Contains(" ") || !channel_name.Contains("\a"))) {
+                if (!(channel_name.StartsWith("#") || channel_name.StartsWith("&")) &&
+                    (channel_name.Contains(" ") || channel_name.Contains("\a"))) {
                     continue;
                 }
                 // Get the channel object, creating it if it doesn't already exist

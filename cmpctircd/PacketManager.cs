@@ -28,13 +28,24 @@ namespace cmpctircd {
             registrationCommands.Add("CAP"); // TODO: NOT YET IMPLEMENTED
             registrationCommands.Add("PONG");
 
+            List<String> idleCommands = new List<String>();
+            idleCommands.Add("PING");
+            idleCommands.Add("PONG");
+            idleCommands.Add("WHOIS");
+            idleCommands.Add("WHO"); // TODO: NOT YET IMPLEMENTED
+            idleCommands.Add("NAMES");
             var client = args.Client;
             try
             {
 
                 // Restrict the commands which non-registered (i.e. pre PONG, pre USER/NICK) users can execute
-                if(client.State.Equals(ClientState.PreAuth) && !registrationCommands.Contains(packet)) {
+                if(client.State.Equals(ClientState.PreAuth) && !registrationCommands.Contains(packet.ToUpper())) {
                     throw new IrcErrNotRegisteredException(client);
+                }
+
+                // Only certain commands should reset the idle clock
+                if(!idleCommands.Contains(packet.ToUpper())) {
+                    client.IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 }
                 handlers[packet.ToUpper()].Invoke(args);
                 Console.WriteLine("Handler for " + packet.ToUpper() + " executed");

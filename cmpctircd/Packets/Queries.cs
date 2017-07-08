@@ -26,6 +26,7 @@ namespace cmpctircd.Packets
             String[] splitLine = args.Line.Split(' ');
             String target;
             Client targetClient;
+            int idleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds - args.Client.IdleTime;
 
             try {
                 target = splitLine[1];
@@ -67,6 +68,8 @@ namespace cmpctircd.Packets
             }
 
             args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_WHOISSERVER.Printable()} {args.Client.Nick} {targetClient.Nick} {args.IRCd.host} :{args.IRCd.desc}");
+
+            args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_WHOISIDLE.Printable()} {args.Client.Nick} {targetClient.Nick} {idleTime} {targetClient.SignonTime} :seconds idle, signon time");
             args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_ENDOFWHOIS.Printable()} {args.Client.Nick} {targetClient.Nick} :End of /WHOIS list");
             return true;
         }

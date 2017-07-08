@@ -23,6 +23,8 @@ namespace cmpctircd
         public String Nick { get; set; }
         public String Ident { get; set; }
         public String RealName { get; set; }
+        public int IdleTime { get; set; }
+        public int SignonTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
         public ClientState State { get; set; }
 
         // Ping information
@@ -40,6 +42,8 @@ namespace cmpctircd
             IRCd = ircd;
             TcpClient = tc;
             Listener = sl;
+
+            IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
         }
 
         ~Client() {

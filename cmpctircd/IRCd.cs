@@ -17,8 +17,9 @@ namespace cmpctircd {
 
         // TODO: constants which will go into the config (not changing until then)
         public String host = "irc.cmpct.info";
+        public String desc = "the c# ircd";
         public String network = "cmpct";
-        public String version = "0.1.0";
+        public String version = "0.1.1-dev";
         public int maxTargets = 200;
 
         public Boolean RequirePong { get; set; } = true;
@@ -46,6 +47,17 @@ namespace cmpctircd {
                     sl.Stop();
                 }
             }
+        }
+
+        public Client getClientByNick(String nick) {
+            foreach (var clientList in ClientLists) {
+                foreach (var clientItem in clientList) {
+                    if (clientItem.Nick.ToLower() == nick.ToLower()) {
+                        return clientItem;
+                    }
+                }
+            }
+            throw new InvalidOperationException("No such user exists");
         }
 
 

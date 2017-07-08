@@ -125,6 +125,10 @@ namespace cmpctircd.Packets {
                 foreach (var clientList in ircd.ClientLists) {
                     foreach (var clientItem in clientList) {
                         if (clientItem.Nick.ToLower() == target.ToLower()) {
+                            if(!String.IsNullOrWhiteSpace(clientItem.AwayMessage)) {
+                                // If the target client (recipient) is away, warn the person (source) sending the message to them.
+                                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_AWAY.Printable()} {args.Client.Nick} {target} :{clientItem.AwayMessage}");
+                            }
                             clientItem.Write(String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, target, message));
                             return true;
                         }

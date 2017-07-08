@@ -34,6 +34,7 @@ namespace cmpctircd {
             idleCommands.Add("WHOIS");
             idleCommands.Add("WHO"); // TODO: NOT YET IMPLEMENTED
             idleCommands.Add("NAMES");
+            idleCommands.Add("AWAY");
             var client = args.Client;
             try
             {

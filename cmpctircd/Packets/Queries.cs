@@ -14,6 +14,7 @@ namespace cmpctircd.Packets
         {
             ircd.PacketManager.Register("VERSION", versionHandler);
             ircd.PacketManager.Register("WHOIS", WhoisHandler);
+            ircd.PacketManager.Register("AWAY", AwayHandler);
         }
 
         public Boolean versionHandler(HandlerArgs args)
@@ -69,8 +70,33 @@ namespace cmpctircd.Packets
 
             args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_WHOISSERVER.Printable()} {args.Client.Nick} {targetClient.Nick} {args.IRCd.host} :{args.IRCd.desc}");
 
+            if(!String.IsNullOrWhiteSpace(targetClient.AwayMessage)) {
+                // Only show if the user is away
+                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_AWAY.Printable()} {args.Client.Nick} {targetClient.Nick} :{targetClient.AwayMessage}");
+            }
+
             args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_WHOISIDLE.Printable()} {args.Client.Nick} {targetClient.Nick} {idleTime} {targetClient.SignonTime} :seconds idle, signon time");
             args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_ENDOFWHOIS.Printable()} {args.Client.Nick} {targetClient.Nick} :End of /WHOIS list");
+            return true;
+        }
+        public Boolean AwayHandler(HandlerArgs args) {
+            String[] splitLine = args.Line.Split(' ');
+            String[] splitColonLine = args.Line.Split(':');
+            String message;
+
+            try {
+                message = splitColonLine[1];
+            } catch(IndexOutOfRangeException) {
+                message = "";
+            }
+
+            args.Client.AwayMessage = message;
+            if(args.Client.AwayMessage != "") {
+                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_NOWAWAY} {args.Client.Nick} :You have been marked as being away");
+            } else {
+                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_UNAWAY} {args.Client.Nick} :You are no longer marked as being away");
+            }
+
             return true;
         }
     }

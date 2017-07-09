@@ -132,14 +132,10 @@ namespace cmpctircd
 
 
             // Does a user with this nick already exist?
-            foreach(var clientList in IRCd.ClientLists) {
-                foreach(var clientSearch in clientList) {
-                    if(String.IsNullOrEmpty(clientSearch.Nick)) continue;
-                    if(clientSearch.Nick.ToLower() == newNick.ToLower()) {
-                        throw new IrcErrNicknameInUseException(this, newNick);
-                   }
-                }
-            };
+            try {
+                IRCd.GetClientByNick(newNick);
+                throw new IrcErrNicknameInUseException(this, newNick);
+            } catch(InvalidOperationException) {}
 
             foreach(var channel in IRCd.ChannelManager.Channels) {
                 if(!channel.Value.Inhabits(this)) continue;

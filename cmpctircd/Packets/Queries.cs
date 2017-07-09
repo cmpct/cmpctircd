@@ -37,7 +37,7 @@ namespace cmpctircd.Packets
 
             // Need the client object of the target...
             try {
-                targetClient = args.IRCd.getClientByNick(target);
+                targetClient = args.IRCd.GetClientByNick(target);
             } catch(InvalidOperationException) {
                 throw new IrcErrNoSuchTargetException(args.Client, target);
             }

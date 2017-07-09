@@ -117,25 +117,26 @@ namespace cmpctircd.Packets {
                     Channel channel = ircd.ChannelManager[target];
                     if(channel.Inhabits(client)) {
                         channel.SendToRoom(client, String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, channel.Name, message), false);
-                        return true;
                     }
+                } else {
+                    throw new IrcErrNoSuchTargetException(client, target);
                 }
             } else {
+                Client targetClient;
                 // Check the user exists
-                foreach (var clientList in ircd.ClientLists) {
-                    foreach (var clientItem in clientList) {
-                        if (clientItem.Nick.ToLower() == target.ToLower()) {
-                            if(!String.IsNullOrWhiteSpace(clientItem.AwayMessage)) {
-                                // If the target client (recipient) is away, warn the person (source) sending the message to them.
-                                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_AWAY.Printable()} {args.Client.Nick} {target} :{clientItem.AwayMessage}");
-                            }
-                            clientItem.Write(String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, target, message));
-                            return true;
-                        }
-                    }
+                try {
+                    targetClient = ircd.GetClientByNick(target);
+                } catch(InvalidOperationException) {
+                    throw new IrcErrNoSuchTargetException(client, target);
                 }
+
+                if(!String.IsNullOrWhiteSpace(targetClient.AwayMessage)) {
+                    // If the target client (recipient) is away, warn the person (source) sending the message to them.
+                    args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_AWAY.Printable()} {args.Client.Nick} {target} :{targetClient.AwayMessage}");
+                }
+                targetClient.Write(String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, target, message));
             }
-            throw new IrcErrNoSuchTargetException(client, target);
+            return true;
         }
 
         public bool noticeHandler(HandlerArgs args) {

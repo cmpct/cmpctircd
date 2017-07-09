@@ -49,9 +49,13 @@ namespace cmpctircd {
             }
         }
 
-        public Client getClientByNick(String nick) {
+        public Client GetClientByNick(String nick) {
             foreach (var clientList in ClientLists) {
                 foreach (var clientItem in clientList) {
+                    // User may not have a nick yet
+                    if (String.IsNullOrEmpty(clientItem.Nick)) continue;
+
+                    // Check if user has the nick we're looking for
                     if (clientItem.Nick.ToLower() == nick.ToLower()) {
                         return clientItem;
                     }

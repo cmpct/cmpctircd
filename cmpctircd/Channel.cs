@@ -8,9 +8,9 @@ namespace cmpctircd {
     public class Channel {
         public String Name { get; set; }
         // A dictionary of clients in the room (nick => client)
-        private Dictionary<String, Client> Clients
+        public Dictionary<String, Client> Clients
         {
-            get; set;
+            get; private set;
         } = new Dictionary<string, Client>();
         public Topic Topic { get; set; } = new Topic();
 

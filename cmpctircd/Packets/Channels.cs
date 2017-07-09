@@ -15,6 +15,7 @@ namespace cmpctircd.Packets {
             ircd.PacketManager.Register("PART", partHandler);
             ircd.PacketManager.Register("TOPIC", topicHandler);
             ircd.PacketManager.Register("NOTICE", noticeHandler);
+            ircd.PacketManager.Register("WHO", WhoHandler);
         }
 
         public Boolean topicHandler(HandlerArgs args) {
@@ -240,6 +241,43 @@ namespace cmpctircd.Packets {
             }
 
             channelObj.Part(client, reason);
+            return true;
+        }
+
+        public Boolean WhoHandler(HandlerArgs args) {
+            String[] splitLine = args.Line.Split(new string[] { ":" }, 2, StringSplitOptions.None);
+            String[] splitLineSpace = args.Line.Split(new string[] { " " }, 3, StringSplitOptions.None);
+            String target;
+            Channel targetChannel;
+
+            try {
+                target = splitLineSpace[1];
+            } catch(IndexOutOfRangeException) {
+                throw new IrcErrNotEnoughParametersException(args.Client, "WHO");
+            }
+
+            try {
+                targetChannel = args.IRCd.ChannelManager.Channels[target];
+            } catch(InvalidOperationException) {
+                throw new IrcErrNoSuchTargetException(args.Client, target);
+            }
+
+            foreach(var client in targetChannel.Clients) {
+                // TODO: Needs updating for when we have ircop, ops
+                // TODO: Also for when we have links (:0 is hopcount)
+                var userSymbol = "";
+                var hopCount = 0;
+
+                var away = "";
+                if(String.IsNullOrEmpty(client.Value.AwayMessage)) {
+                    away = "H"; // "Here"
+                } else {
+                    away = "G"; // "Gone"
+                }
+                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {target} {client.Value.Ident} {client.Value.Host} {args.IRCd.host} {client.Value.Nick} {away}{userSymbol} :{hopCount} {client.Value.RealName}");
+            }
+
+            args.Client.Write($"{args.IRCd.host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {args.Client.Nick} {target} :End of /WHO list.");
             return true;
         }
 

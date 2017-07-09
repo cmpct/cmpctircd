@@ -256,25 +256,31 @@ namespace cmpctircd.Packets {
                 throw new IrcErrNotEnoughParametersException(args.Client, "WHO");
             }
 
-            try {
-                targetChannel = args.IRCd.ChannelManager.Channels[target];
-            } catch(InvalidOperationException) {
-                throw new IrcErrNoSuchTargetException(args.Client, target);
-            }
-
-            foreach(var client in targetChannel.Clients) {
-                // TODO: Needs updating for when we have ircop, ops
-                // TODO: Also for when we have links (:0 is hopcount)
-                var userSymbol = "";
-                var hopCount = 0;
-
-                var away = "";
-                if(String.IsNullOrEmpty(client.Value.AwayMessage)) {
-                    away = "H"; // "Here"
-                } else {
-                    away = "G"; // "Gone"
+            if(target.StartsWith("#")) {
+                // The target is a channel
+                try {
+                    targetChannel = args.IRCd.ChannelManager.Channels[target];
+                } catch(InvalidOperationException) {
+                    throw new IrcErrNoSuchTargetException(args.Client, target);
                 }
-                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {target} {client.Value.Ident} {client.Value.Host} {args.IRCd.host} {client.Value.Nick} {away}{userSymbol} :{hopCount} {client.Value.RealName}");
+
+                foreach(var client in targetChannel.Clients) {
+                    // TODO: Needs updating for when we have ircop, ops
+                    // TODO: Also for when we have links (:0 is hopcount)
+                    var userSymbol = "";
+                    var hopCount = 0;
+
+                    var away = "";
+                    if(String.IsNullOrEmpty(client.Value.AwayMessage)) {
+                        away = "H"; // "Here"
+                    } else {
+                        away = "G"; // "Gone"
+                    }
+                    args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {target} {client.Value.Ident} {client.Value.Host} {args.IRCd.host} {client.Value.Nick} {away}{userSymbol} :{hopCount} {client.Value.RealName}");
+                }
+            } else {
+                // The target is a user
+                // TODO: implement this once we have +i (invisible mode)
             }
 
             args.Client.Write($"{args.IRCd.host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {args.Client.Nick} {target} :End of /WHO list.");

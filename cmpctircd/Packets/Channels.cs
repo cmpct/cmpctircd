@@ -16,6 +16,7 @@ namespace cmpctircd.Packets {
             ircd.PacketManager.Register("TOPIC", topicHandler);
             ircd.PacketManager.Register("NOTICE", noticeHandler);
             ircd.PacketManager.Register("WHO", WhoHandler);
+            ircd.PacketManager.Register("NAMES", NamesHandler);
         }
 
         public Boolean topicHandler(HandlerArgs args) {
@@ -284,6 +285,38 @@ namespace cmpctircd.Packets {
             }
 
             args.Client.Write($"{args.IRCd.host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {args.Client.Nick} {target} :End of /WHO list.");
+            return true;
+        }
+        public Boolean NamesHandler(HandlerArgs args) {
+            String[] splitLine = args.Line.Split(new string[] { ":" }, 2, StringSplitOptions.None);
+            String[] splitLineSpace = args.Line.Split(new string[] { " " }, 3, StringSplitOptions.None);
+            String [] splitCommaLine;
+
+            try {
+                splitCommaLine = splitLineSpace[1].Split(new char[] { ','});
+            } catch(IndexOutOfRangeException) {
+                throw new IrcErrNotEnoughParametersException(args.Client, "NAMES");
+            }
+
+            foreach(var channel_name in splitCommaLine) {
+                // TODO: error handling, but need to figure out how to do it in JoinHandler() too
+                // See validation in JoinHandler()
+                if (!(channel_name.StartsWith("#") || channel_name.StartsWith("&")) &&
+                    (channel_name.Contains(" ") || channel_name.Contains("\a"))) {
+                    continue;
+                }
+
+                if(args.IRCd.ChannelManager.Exists(channel_name)) {
+                    Channel targetChannel = args.IRCd.ChannelManager[channel_name];
+                    foreach(var client in targetChannel.Clients) {
+                        // TODO: modify userSymbol when MODES are implemented
+                        var userSymbol = "";
+                        args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_NAMREPLY.Printable()} {args.Client.Nick} = {channel_name} :{userSymbol}{client.Value.Nick}");
+                    }
+                    args.Client.Write($"{args.IRCd.host} {IrcNumeric.RPL_ENDOFNAMES.Printable()} {args.Client.Nick} {channel_name} :End of /NAMES list.");
+                }
+            }
+
             return true;
         }
 

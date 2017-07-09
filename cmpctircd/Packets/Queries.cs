@@ -92,9 +92,9 @@ namespace cmpctircd.Packets
 
             args.Client.AwayMessage = message;
             if(args.Client.AwayMessage != "") {
-                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_NOWAWAY} {args.Client.Nick} :You have been marked as being away");
+                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_NOWAWAY.Printable()} {args.Client.Nick} :You have been marked as being away");
             } else {
-                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_UNAWAY} {args.Client.Nick} :You are no longer marked as being away");
+                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_UNAWAY.Printable()} {args.Client.Nick} :You are no longer marked as being away");
             }
 
             return true;

@@ -168,7 +168,7 @@ namespace cmpctircd.Packets {
                     // The target is a user
                     foreach (var clientList in ircd.ClientLists) {
                         foreach (var clientSearch in clientList) {
-                            if (clientSearch.Nick.ToLower() == target.ToLower()) {
+                            if (clientSearch.Nick.Equals(target, StringComparison.OrdinalIgnoreCase)) {
                                 targetClient = clientSearch;
                                 userExists = true;
                             }

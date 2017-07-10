@@ -56,7 +56,7 @@ namespace cmpctircd {
                     if (String.IsNullOrEmpty(clientItem.Nick)) continue;
 
                     // Check if user has the nick we're looking for
-                    if (clientItem.Nick.ToLower() == nick.ToLower()) {
+                    if (clientItem.Nick.Equals(nick, StringComparison.OrdinalIgnoreCase)) {
                         return clientItem;
                     }
                 }

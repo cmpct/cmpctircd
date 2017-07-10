@@ -9,7 +9,7 @@ namespace cmpctircd {
         private IRCd ircd;
         // XXX: Instead of Array, this could be a bundle which we send with each packet - args baked in, ircd, etc?
         public Dictionary<String, Func<HandlerArgs, Boolean>> handlers = new Dictionary<string, Func<HandlerArgs, Boolean>>();
-           
+
         public PacketManager(IRCd ircd) {
             this.ircd = ircd;
         }
@@ -35,6 +35,7 @@ namespace cmpctircd {
             idleCommands.Add("WHO"); // TODO: NOT YET IMPLEMENTED
             idleCommands.Add("NAMES");
             idleCommands.Add("AWAY");
+
             var client = args.Client;
             try
             {
@@ -48,15 +49,15 @@ namespace cmpctircd {
                 if(!idleCommands.Contains(packet.ToUpper())) {
                     client.IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 }
-                handlers[packet.ToUpper()].Invoke(args);
+
+                if(handlers.TryGetValue(packet.ToUpper(), out var handler)) {
+                    handler.Invoke(args);
+                } else {
+                    Console.WriteLine("No handler for " + packet.ToUpper());
+                    throw new IrcErrUnknownCommandException(client, packet.ToUpper());
+                }
                 Console.WriteLine("Handler for " + packet.ToUpper() + " executed");
-            }
-            catch (KeyNotFoundException)
-            {
-                Console.WriteLine("No handler for " + packet.ToUpper());
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 Console.WriteLine("Exception: " + e.ToString());
             }
             return true;

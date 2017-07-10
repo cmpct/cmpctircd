@@ -89,4 +89,12 @@ namespace cmpctircd {
         }
     }
 
+     public class IrcErrUnknownCommandException : Exception {
+        private Client client;
+
+        public IrcErrUnknownCommandException(Client client, String packet) {
+            client.Write($":{client.IRCd.host} {IrcNumeric.ERR_UNKNOWNCOMMAND.Printable()} {client.Nick} {packet} :Unknown command");
+        }
+    }
+
 }

@@ -35,6 +35,8 @@ namespace cmpctircd
 
         public void SendVersion() => Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.version));
 
+        public readonly static object nickLock = new object();
+
         public Client(IRCd ircd, TcpClient tc, SocketListener sl) {
             Buffer = new byte[1024];
 
@@ -116,40 +118,42 @@ namespace cmpctircd
         }
 
         public Boolean SetNick(String nick) {
-            // Return if nick is the same
-            String oldNick = this.Nick;
-            String newNick = nick;
+            lock(nickLock) {
+                // Return if nick is the same
+                String oldNick = this.Nick;
+                String newNick = nick;
 
-            if (String.Compare(newNick, oldNick, false) == 0)
+                if (String.Compare(newNick, oldNick, false) == 0)
+                    return true;
+
+                // Is the nick safe?
+                Regex safeNicks = new Regex(@"[A-Za-z{}\[\]_\\^|`][A-Za-z{}\[\]_\-\\^|`0-9]*", RegexOptions.IgnoreCase);
+                Boolean safeNick = safeNicks.Match(newNick).Success;
+                if (!safeNick) {
+                    throw new IrcErrErroneusNicknameException(this, newNick);
+                }
+
+
+                // Does a user with this nick already exist?
+                try {
+                    IRCd.GetClientByNick(newNick);
+                    throw new IrcErrNicknameInUseException(this, newNick);
+                } catch(InvalidOperationException) {}
+
+                foreach(var channel in IRCd.ChannelManager.Channels) {
+                    if(!channel.Value.Inhabits(this)) continue;
+                    channel.Value.SendToRoom(this, String.Format(":{0} NICK :{1}", Mask, newNick), false);
+                    channel.Value.Remove(oldNick);
+                    channel.Value.Add(this, newNick);
+                }
+
+                // TODO: Verify the nickname is safe
+                Write(String.Format(":{0} NICK {1}", Mask, nick));
+                this.Nick = newNick;
+
+                SendWelcome();
                 return true;
-
-            // Is the nick safe?
-            Regex safeNicks = new Regex(@"[A-Za-z{}\[\]_\\^|`][A-Za-z{}\[\]_\-\\^|`0-9]*", RegexOptions.IgnoreCase);
-            Boolean safeNick = safeNicks.Match(newNick).Success;
-            if (!safeNick) {
-                throw new IrcErrErroneusNicknameException(this, newNick);
             }
-
-
-            // Does a user with this nick already exist?
-            try {
-                IRCd.GetClientByNick(newNick);
-                throw new IrcErrNicknameInUseException(this, newNick);
-            } catch(InvalidOperationException) {}
-
-            foreach(var channel in IRCd.ChannelManager.Channels) {
-                if(!channel.Value.Inhabits(this)) continue;
-                channel.Value.SendToRoom(this, String.Format(":{0} NICK :{1}", Mask, newNick), false);
-                channel.Value.Remove(oldNick);
-                channel.Value.Add(this, newNick);
-            }
-
-            // TODO: Verify the nickname is safe
-            Write(String.Format(":{0} NICK {1}", Mask, nick));
-            this.Nick = newNick;
-
-            SendWelcome();
-            return true;
         }
 
         public Boolean SetUser(String ident, String real_name) {

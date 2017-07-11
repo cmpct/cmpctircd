@@ -87,13 +87,19 @@ namespace cmpctircd {
             return Clients.ContainsKey(nick);
         }
         public void Add(Client client, String nick) {
-            Clients.Add(nick, client);
+            lock(Clients) {
+                Clients.Add(nick, client);
+            }
         }
         public void Remove(Client client) {
-            Clients.Remove(client.Nick);
+            lock(Clients) {
+                Clients.Remove(client.Nick);
+            }
         }
         public void Remove(String nick) {
-            Clients.Remove(nick);
+            lock(Clients) {
+                Clients.Remove(nick);
+            }
         }
         public int Size => Clients.Count();
     }

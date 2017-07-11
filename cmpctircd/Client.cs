@@ -114,7 +114,7 @@ namespace cmpctircd
                 Console.WriteLine("ircd.rules doesn't exist!");
             }
         }
-        
+
         public Boolean SetNick(String nick) {
             // Return if nick is the same
             String oldNick = this.Nick;
@@ -212,13 +212,14 @@ namespace cmpctircd
             try {
                 ClientStream.Write(packetBytes, 0, packetBytes.Length);
             } catch(System.IO.IOException) {
-                Disconnect("Connection reset by host", true);
+                Disconnect("Connection reset by host", true, false);
             }
         }
 
-        public void Disconnect(Boolean graceful) => Disconnect("", graceful);
+        public void Disconnect(Boolean graceful) => Disconnect("", graceful, true);
+        public void Disconnect(String quitReason, Boolean graceful) => Disconnect(quitReason, graceful, true);
 
-        public void Disconnect(String quitReason, Boolean graceful) {
+        public void Disconnect(String quitReason, Boolean graceful, Boolean sendToSelf) {
             if (graceful) {
                 // Inform all of the channels we're a member of that we are leaving
                 foreach (var channel in IRCd.ChannelManager.Channels) {
@@ -227,7 +228,12 @@ namespace cmpctircd
                         channel.Value.Remove(this);
                     }
                 }
-                Write(String.Format(":{0} QUIT :{1}", Mask, quitReason));
+            }
+
+            if (sendToSelf) {
+                // Need this flag to prevent infinite loop of calls to Disconnect() upon IOException
+                // No need to guard the Channel quit because they do not send to the user leaving
+                Write($":{Mask} QUIT :{quitReason}");
             }
 
             Listener.Remove(this);

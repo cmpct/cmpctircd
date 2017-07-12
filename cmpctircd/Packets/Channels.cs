@@ -88,16 +88,16 @@ namespace cmpctircd.Packets {
                 topic = channel.Topic;
                 channel.AddClient(client);
                 topic.GetTopic(client, channel_name, true);
-                
+
             }
 
             return true;
         }
 
         public Boolean privmsgHandler(HandlerArgs args) {
-            // Only for channel PRIVMSGs (PRIVMSG #channel ...)
             IRCd ircd = args.IRCd;
             Client client = args.Client;
+            Client targetClient = null;
             String rawLine = args.Line;
             String[] rawSplit;
             String target;
@@ -107,15 +107,24 @@ namespace cmpctircd.Packets {
             rawSplit = rawLine.Split(' ');
             command = rawSplit[0].ToUpper();
 
-            try {
+            if(rawSplit.Count() >= 2) {
                 target = rawSplit[1];
-                message = rawLine.Split(new string[] { ":" }, 2, StringSplitOptions.None)[1];
-            } catch (IndexOutOfRangeException) {
-                throw new IrcErrNotEnoughParametersException(client, command);
+                // Check the user exists
+                try {
+                    targetClient = ircd.GetClientByNick(target);
+                } catch(InvalidOperationException) {
+                    throw new IrcErrNoSuchTargetNickException(client, target);
+                }
             }
+            switch(rawSplit.Count()) {
+                case 1:
+                    throw new IrcErrNoRecipientException(client, "PRIVMSG");
+                case 2:
+                    throw new IrcErrNoTextToSendException(client);
+            }
+            target = rawSplit[1];
+            message = rawLine.Split(new string[] { ":" }, 2, StringSplitOptions.None)[1];
 
-
-            Console.WriteLine("Got a PRIVMSG");
             if (target.StartsWith("#")) {
                 // PRIVMSG a channel
                 // TODO: We don't have +n yet so just check if they're in the room...
@@ -127,15 +136,7 @@ namespace cmpctircd.Packets {
                 } else {
                     throw new IrcErrNoSuchTargetNickException(client, target);
                 }
-            } else {
-                Client targetClient;
-                // Check the user exists
-                try {
-                    targetClient = ircd.GetClientByNick(target);
-                } catch(InvalidOperationException) {
-                    throw new IrcErrNoSuchTargetNickException(client, target);
-                }
-
+            } else if(targetClient != null) {
                 if(!String.IsNullOrWhiteSpace(targetClient.AwayMessage)) {
                     // If the target client (recipient) is away, warn the person (source) sending the message to them.
                     args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_AWAY.Printable()} {args.Client.Nick} {target} :{targetClient.AwayMessage}");
@@ -210,7 +211,7 @@ namespace cmpctircd.Packets {
             }
             // XXX: RFC states there should never be a response to NOTICE, but Unreal and others send a No Such Target error message. We will follow them for now.
             return true;
-         }
+        }
 
         public Boolean partHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;

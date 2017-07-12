@@ -24,6 +24,14 @@ namespace cmpctircd {
         }
     }
 
+    public class IrcErrNoRecipientException : Exception {
+        private Client client;
+
+        public IrcErrNoRecipientException(Client client, String command) {
+            this.client = client;
+            client.Write(String.Format(":{0} {1} {2} :No recipient given ({3})", client.IRCd.host, IrcNumeric.ERR_NORECIPIENT.Printable(), client.Nick, command));
+        }
+    }
 
     public class IrcErrNotEnoughParametersException : Exception {
         private Client client;

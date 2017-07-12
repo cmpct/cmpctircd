@@ -62,6 +62,7 @@ namespace cmpctircd.Packets {
             String[] splitColonLine = rawLine.Split(new char[] { ':' }, 2);
             String[] splitCommaLine;
             Channel channel;
+            Topic topic;
 
             try {
                 splitCommaLine = splitLine[1].Split(new char[] { ','});
@@ -84,7 +85,10 @@ namespace cmpctircd.Packets {
                 } else {
                     channel = ircd.ChannelManager.Create(channel_name);
                 }
+                topic = channel.Topic;
                 channel.AddClient(client);
+                topic.GetTopic(client, channel_name, true);
+                
             }
 
             return true;

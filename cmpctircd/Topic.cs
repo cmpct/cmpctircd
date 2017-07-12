@@ -14,10 +14,10 @@ namespace cmpctircd {
 
         // TODO: Revise function definition (could be properties?)
         public void GetTopic(Client client, string target, bool onJoin = false) {
-            if (TopicText == null && !onJoin) {
+            if (String.IsNullOrWhiteSpace(TopicText) && !onJoin) {
                 client.Write(String.Format(":{0} {1} {2} {3} :No topic is set.", client.IRCd.host, IrcNumeric.RPL_NOTOPIC.Printable(), client.Nick, target));
             }
-            else if (TopicText != null) {
+            else if (!String.IsNullOrWhiteSpace(TopicText)) {
                 client.Write(String.Format(":{0} {1} {2} {3} :{4}", client.IRCd.host, IrcNumeric.RPL_TOPIC.Printable(), client.Nick, target, TopicText));
                 client.Write(String.Format(":{0} {1} {2} {3} {4} {5}", client.IRCd.host, IrcNumeric.RPL_TOPICWHOTIME.Printable(), client.Nick, target, User.Mask, Date));
             }
@@ -30,7 +30,7 @@ namespace cmpctircd {
                 // TO DO: Change how we get the unix timestamp
                 Date = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 User = client;
-                client.Write(String.Format(":{0} TOPIC {1} :{2}", client.Mask, Channel.Name, TopicText));
+                Channel.SendToRoom(client, String.Format(":{0} TOPIC {1} :{2}", client.Mask, Channel.Name, TopicText), true);
             }
         }
     }

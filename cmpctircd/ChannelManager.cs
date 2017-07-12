@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 namespace cmpctircd {
     public class ChannelManager {
         private IRCd IRCd { get; set; }
-        public Dictionary<String, Channel> Channels
+        public ConcurrentDictionary<String, Channel> Channels
         {
             get; private set;
-        } = new Dictionary<string, Channel>();
+        } = new ConcurrentDictionary<string, Channel>();
 
         public ChannelManager(IRCd ircd) {
             this.IRCd = ircd;
@@ -22,7 +22,7 @@ namespace cmpctircd {
         public Channel Create(String channel_name) {
             Channel channel = new Channel();
             channel.Name = channel_name;
-            Channels.Add(channel_name, channel);
+            Channels.TryAdd(channel_name, channel);
             return channel;
         }
 

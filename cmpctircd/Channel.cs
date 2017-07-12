@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,17 +8,18 @@ namespace cmpctircd {
     public class Channel {
         public String Name { get; set; }
         // A dictionary of clients in the room (nick => client)
-        public Dictionary<String, Client> Clients
+        public ConcurrentDictionary<String, Client> Clients
         {
             get; private set;
-        } = new Dictionary<string, Client>();
+        } = new ConcurrentDictionary<string, Client>();
         public Topic Topic { get; set; } = new Topic();
 
         public void AddClient(Client client) {
             if(Inhabits(client)) {
+                // TODO: Send ERR_USERONCHANNEL? Not clear if other ircds do this.
                 throw new InvalidOperationException("User is already in the room!");
             }
-            Clients.Add(client.Nick, client);
+            if(!Clients.TryAdd(client.Nick, client)) { return; }
             Console.WriteLine("Added {0} to {1}", client.Nick, Name);
 
             // Tell everyone we've joined
@@ -50,7 +51,7 @@ namespace cmpctircd {
             }
             Console.WriteLine("Removing {0} from {1}", client.Nick, Name);
             SendToRoom(client, String.Format(":{0} PART {1} :{2}", client.Mask, Name, reason), true);
-            Clients.Remove(client.Nick);
+            Clients.TryRemove(client.Nick, out _);
         }
 
         public void Quit(Client client, String reason) {
@@ -60,7 +61,7 @@ namespace cmpctircd {
 
             Console.WriteLine("Removing {0} from {1}", client.Nick, Name);
             SendToRoom(client, String.Format(":{0} QUIT {1}", client.Mask, reason), false);
-            Clients.Remove(client.Nick);
+            Clients.TryRemove(client.Nick, out _);
         }
 
 
@@ -81,25 +82,19 @@ namespace cmpctircd {
         }
 
         public bool Inhabits(Client client) {
-            return Clients.ContainsValue(client);
+            return Clients.Values.Contains(client);
         }
         public bool Inhabits(String nick) {
             return Clients.ContainsKey(nick);
         }
         public void Add(Client client, String nick) {
-            lock(Clients) {
-                Clients.Add(nick, client);
-            }
+            Clients.TryAdd(nick, client);
         }
         public void Remove(Client client) {
-            lock(Clients) {
-                Clients.Remove(client.Nick);
-            }
+            Clients.TryRemove(client.Nick, out _);
         }
         public void Remove(String nick) {
-            lock(Clients) {
-                Clients.Remove(nick);
-            }
+            Clients.TryRemove(nick, out _);
         }
         public int Size => Clients.Count();
     }

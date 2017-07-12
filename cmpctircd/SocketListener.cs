@@ -19,7 +19,9 @@ namespace cmpctircd {
         public SocketListener(IRCd ircd, String IP, int port) {
             this._ircd = ircd;
             _listener = new TcpListener(IPAddress.Any, port);
-            _ircd.ClientLists.Add(_clients);
+            lock(_ircd.ClientLists) {
+                _ircd.ClientLists.Add(_clients);
+            }
         }
         ~SocketListener() {
             Stop();

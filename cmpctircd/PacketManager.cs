@@ -66,7 +66,11 @@ namespace cmpctircd {
         public bool Load() {
             var classes = AppDomain.CurrentDomain.GetAssemblies()
                                    .SelectMany(t => t.GetTypes())
-                                   .Where(t => t.IsClass && t.Namespace == "cmpctircd.Packets");
+                                   .Where(
+                                       t => t.IsClass &&
+                                            t.Namespace == "cmpctircd.Packets" &&
+                                            t.GetCustomAttributes(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), true).Count() == 0
+                                    );
             foreach(Type className in classes) {
                 Activator.CreateInstance(Type.GetType(className.ToString()), ircd);
             }

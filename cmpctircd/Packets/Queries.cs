@@ -39,7 +39,7 @@ namespace cmpctircd.Packets
             try {
                 targetClient = args.IRCd.GetClientByNick(target);
             } catch(InvalidOperationException) {
-                throw new IrcErrNoSuchTargetException(args.Client, target);
+                throw new IrcErrNoSuchTargetNickException(args.Client, target);
             }
 
             args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_WHOISUSER.Printable()} {args.Client.Nick} {targetClient.Nick} {targetClient.Ident} {targetClient.Host} * :{targetClient.RealName}");

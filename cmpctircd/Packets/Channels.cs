@@ -36,7 +36,7 @@ namespace cmpctircd.Packets {
                 case 2:
                     target = rawSplit[1];
                     if (!ircd.ChannelManager.Channels.ContainsKey(target)) {
-                        throw new IrcErrNoSuchTargetException(client, target);
+                        throw new IrcErrNoSuchTargetNickException(client, target);
                     }
                     topic = ircd.ChannelManager[target].Topic;
                     topic.GetTopic(client, target);
@@ -45,7 +45,7 @@ namespace cmpctircd.Packets {
                 default:
                     target = rawSplit[1];
                     if (!ircd.ChannelManager.Channels.ContainsKey(target)) {
-                        throw new IrcErrNoSuchTargetException(client, target);
+                        throw new IrcErrNoSuchTargetNickException(client, target);
                     }
                     topic = ircd.ChannelManager[target].Topic;
                     topic.SetTopic(client, target, rawLine);
@@ -74,9 +74,9 @@ namespace cmpctircd.Packets {
                 // TODO: Regex, error handling
                 // We don't need to check for commas because the split handled that.
                 // Do check for proper initializing char, and check for BEL and space.
-                if (!(channel_name.StartsWith("#") || channel_name.StartsWith("&")) &&
+                if (!channel_name.StartsWith("#") || !channel_name.StartsWith("&") &&
                     (channel_name.Contains(" ") || channel_name.Contains("\a"))) {
-                    continue;
+                    throw new IrcErrNoSuchTargetChannelException(client, channel_name);
                 }
                 // Get the channel object, creating it if it doesn't already exist
                 // TODO: only applicable error is ERR_NEEDMOREPARAMS for now, more for limits/bans/invites
@@ -125,7 +125,7 @@ namespace cmpctircd.Packets {
                         channel.SendToRoom(client, String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, channel.Name, message), false);
                     }
                 } else {
-                    throw new IrcErrNoSuchTargetException(client, target);
+                    throw new IrcErrNoSuchTargetNickException(client, target);
                 }
             } else {
                 Client targetClient;
@@ -133,7 +133,7 @@ namespace cmpctircd.Packets {
                 try {
                     targetClient = ircd.GetClientByNick(target);
                 } catch(InvalidOperationException) {
-                    throw new IrcErrNoSuchTargetException(client, target);
+                    throw new IrcErrNoSuchTargetNickException(client, target);
                 }
 
                 if(!String.IsNullOrWhiteSpace(targetClient.AwayMessage)) {
@@ -166,7 +166,7 @@ namespace cmpctircd.Packets {
                 if(target.StartsWith("#")) {
                     // The target is a channel
                     if(!ircd.ChannelManager.Exists(target)) {
-                        throw new IrcErrNoSuchTargetException(client, target);
+                        throw new IrcErrNoSuchTargetNickException(client, target);
                     }
                 } else {
                     // The target is a user
@@ -180,7 +180,7 @@ namespace cmpctircd.Packets {
                     }
 
                     if (!userExists) {
-                        throw new IrcErrNoSuchTargetException(client, target);
+                        throw new IrcErrNoSuchTargetNickException(client, target);
                     }
                 }
 
@@ -236,7 +236,7 @@ namespace cmpctircd.Packets {
 
             // Does the channel exist?
             if(!ircd.ChannelManager.Exists(channel)) {
-                throw new IrcErrNoSuchTargetException(client, channel);
+                throw new IrcErrNoSuchTargetChannelException(client, channel);
             }
 
             // Are we in the channel?
@@ -266,7 +266,7 @@ namespace cmpctircd.Packets {
                 try {
                     targetChannel = args.IRCd.ChannelManager.Channels[target];
                 } catch(InvalidOperationException) {
-                    throw new IrcErrNoSuchTargetException(args.Client, target);
+                    throw new IrcErrNoSuchTargetNickException(args.Client, target);
                 }
 
                 foreach(var client in targetChannel.Clients) {

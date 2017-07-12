@@ -6,13 +6,21 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace cmpctircd {
-    public class IrcErrNoSuchTargetException : Exception {
+    public class IrcErrNoSuchTargetNickException : Exception {
         private Client client;
 
-        public IrcErrNoSuchTargetException(Client client, String target) {
+        public IrcErrNoSuchTargetNickException(Client client, String target) {
             this.client = client;
-            // >> :irc.cmpct.info 401 Josh dhd :No such nick/channel
             client.Write(String.Format(":{0} {1} {2} {3} :No such nick/channel", client.IRCd.host, IrcNumeric.ERR_NOSUCHNICK.Printable(), client.Nick, target));
+        }
+    }
+
+    public class IrcErrNoSuchTargetChannelException : Exception {
+        private Client client;
+
+        public IrcErrNoSuchTargetChannelException(Client client, String target) {
+            this.client = client;
+            client.Write(String.Format(":{0} {1} {2} {3} :No such nick/channel", client.IRCd.host, IrcNumeric.ERR_NOSUCHCHANNEL.Printable(), client.Nick, target));
         }
     }
 

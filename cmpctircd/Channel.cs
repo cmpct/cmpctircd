@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 namespace cmpctircd {
     public class Channel {
         public String Name { get; set; }
+        public ChannelManager Manager { get; private set;}
         // A dictionary of clients in the room (nick => client)
         public ConcurrentDictionary<String, Client> Clients
         {
@@ -14,6 +15,9 @@ namespace cmpctircd {
         } = new ConcurrentDictionary<string, Client>();
         public Topic Topic { get; set; } = new Topic();
 
+        public Channel(ChannelManager manager, IRCd ircd) {
+            this.Manager = manager;
+        }
         public void AddClient(Client client) {
             if(Inhabits(client)) {
                 // TODO: Send ERR_USERONCHANNEL? Not clear if other ircds do this.
@@ -52,6 +56,11 @@ namespace cmpctircd {
             Console.WriteLine("Removing {0} from {1}", client.Nick, Name);
             SendToRoom(client, String.Format(":{0} PART {1} :{2}", client.Mask, Name, reason), true);
             Clients.TryRemove(client.Nick, out _);
+
+            // Destroy if last user to leave room (TODO: will need modification for cloaking)
+            if(Size == 0) {
+                Manager.Remove(this.Name);
+            }
         }
 
         public void Quit(Client client, String reason) {
@@ -62,6 +71,11 @@ namespace cmpctircd {
             Console.WriteLine("Removing {0} from {1}", client.Nick, Name);
             SendToRoom(client, String.Format(":{0} QUIT {1}", client.Mask, reason), false);
             Clients.TryRemove(client.Nick, out _);
+
+            // Destroy if last user to leave room (TODO: will need modification for cloaking)
+            if(Size == 0) {
+                Manager.Remove(this.Name);
+            }
         }
 
 

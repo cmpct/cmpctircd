@@ -20,10 +20,14 @@ namespace cmpctircd {
          * Useful methods for managing channels 
         */
         public Channel Create(String channel_name) {
-            Channel channel = new Channel();
+            Channel channel = new Channel(this, IRCd);
             channel.Name = channel_name;
             Channels.TryAdd(channel_name, channel);
             return channel;
+        }
+
+        public void Remove(String channel_name) {
+            Channels.TryRemove(channel_name, out var _);
         }
 
         public Channel this[String channel] => Channels[channel];

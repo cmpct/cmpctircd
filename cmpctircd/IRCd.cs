@@ -19,7 +19,7 @@ namespace cmpctircd {
         public String host = "irc.cmpct.info";
         public String desc = "the c# ircd";
         public String network = "cmpct";
-        public String version = "0.1.1-dev";
+        public String version = "0.1.1";
         public int maxTargets = 200;
 
         public Boolean RequirePong { get; set; } = true;

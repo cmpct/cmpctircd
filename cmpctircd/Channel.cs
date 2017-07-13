@@ -104,6 +104,19 @@ namespace cmpctircd {
             }
         }
 
+        public ChannelPrivilege Status(Client client) {
+            ChannelPrivilege privilege = ChannelPrivilege.Normal;
+
+            // Iterate through all of the modes, finding the highest rank the user holds
+            foreach(var mode in Modes) {
+                Mode modeObject = mode.Value;
+                if(modeObject.Has(client) && modeObject.Level > privilege) {
+                    privilege = modeObject.Level;
+                }
+            }
+            return privilege;
+        }
+
 
         /*
          * Useful internals (public methods) 

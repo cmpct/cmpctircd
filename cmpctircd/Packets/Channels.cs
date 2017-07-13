@@ -5,6 +5,8 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 
+using cmpctircd.Modes;
+
 namespace cmpctircd.Packets {
     public class Channels {
         //private IRCd ircd;

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace cmpctircd {
+namespace cmpctircd.Modes {
     public abstract class Mode {
 
         public Channel channel { get; protected set; }

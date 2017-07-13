@@ -35,5 +35,15 @@ namespace cmpctircd {
         public bool Exists(String channel) => Channels.ContainsKey(channel);
 
         public int Size => Channels.Count();
+
+        public static bool IsValid(string channel_name) {
+            if(
+                !(channel_name.StartsWith("#") || channel_name.StartsWith("&"))
+                ||
+                (channel_name.Contains(" ") || channel_name.Contains("\a"))) {
+                return false;
+            }
+            return true;
+        }
     }
 }

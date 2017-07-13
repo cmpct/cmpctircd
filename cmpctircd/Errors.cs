@@ -97,6 +97,12 @@ namespace cmpctircd {
         }
     }
 
+    public class IrcErrChanOpPrivsNeededException : Exception {
+        public IrcErrChanOpPrivsNeededException(Client client, String channel) {
+            client.Write($":{client.IRCd.host} {IrcNumeric.ERR_CHANOPRIVSNEEDED.Printable()} {client.Nick} {channel} :You must be a channel operator");
+        }
+    }
+
     public class IrcErrNoTextToSendException : Exception {
         private Client client;
 

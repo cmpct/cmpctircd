@@ -54,6 +54,7 @@
     <Compile Include="IrcNumeric.cs" />
     <Compile Include="IrcNumericExtensions.cs" />
     <Compile Include="Modes\Mode.cs" />
+    <Compile Include="Modes\Channel\Op.cs" />
     <Compile Include="PacketManager.cs" />
     <Compile Include="Packets\Login.cs" />
     <Compile Include="Packets\Motd.cs" />

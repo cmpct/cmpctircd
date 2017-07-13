@@ -71,7 +71,9 @@ namespace cmpctircd {
             ));
 
             // TODO: op if size == 1
-
+            if(Size == 1) {
+                Modes["o"].Grant(client, client.Nick, true, true);
+            }
         }
 
 

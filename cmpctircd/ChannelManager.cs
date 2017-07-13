@@ -26,10 +26,24 @@ namespace cmpctircd {
             return channel;
         }
 
+        public void Remove(String channel_name) {
+            Channels.TryRemove(channel_name, out var _);
+        }
+
         public Channel this[String channel] => Channels[channel];
 
         public bool Exists(String channel) => Channels.ContainsKey(channel);
 
         public int Size => Channels.Count();
+
+        public static bool IsValid(string channel_name) {
+            if(
+                !(channel_name.StartsWith("#") || channel_name.StartsWith("&"))
+                ||
+                (channel_name.Contains(" ") || channel_name.Contains("\a"))) {
+                return false;
+            }
+            return true;
+        }
     }
 }

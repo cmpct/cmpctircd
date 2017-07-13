@@ -10,7 +10,6 @@ namespace cmpctircd {
     public class Channel {
         public String Name { get; set; }
         public ChannelManager Manager { get; private set;}
-
         // A dictionary of clients in the room (nick => client)
         public ConcurrentDictionary<string, Client> Clients
         {
@@ -83,6 +82,11 @@ namespace cmpctircd {
             Console.WriteLine("Removing {0} from {1}", client.Nick, Name);
             SendToRoom(client, String.Format(":{0} PART {1} :{2}", client.Mask, Name, reason), true);
             Clients.TryRemove(client.Nick, out _);
+
+            // Destroy if last user to leave room (TODO: will need modification for cloaking)
+            if(Size == 0) {
+                Manager.Remove(this.Name);
+            }
         }
 
         public void Quit(Client client, String reason) {
@@ -93,6 +97,11 @@ namespace cmpctircd {
             Console.WriteLine("Removing {0} from {1}", client.Nick, Name);
             SendToRoom(client, String.Format(":{0} QUIT {1}", client.Mask, reason), false);
             Clients.TryRemove(client.Nick, out _);
+
+            // Destroy if last user to leave room (TODO: will need modification for cloaking)
+            if(Size == 0) {
+                Manager.Remove(this.Name);
+            }
         }
 
 

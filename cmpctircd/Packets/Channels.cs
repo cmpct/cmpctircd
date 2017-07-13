@@ -74,8 +74,7 @@ namespace cmpctircd.Packets {
                 // TODO: Regex, error handling
                 // We don't need to check for commas because the split handled that.
                 // Do check for proper initializing char, and check for BEL and space.
-                if (!channel_name.StartsWith("#") || !channel_name.StartsWith("&") &&
-                    (channel_name.Contains(" ") || channel_name.Contains("\a"))) {
+                if (!ChannelManager.IsValid(channel_name)) {
                     throw new IrcErrNoSuchTargetChannelException(client, channel_name);
                 }
                 // Get the channel object, creating it if it doesn't already exist
@@ -306,9 +305,8 @@ namespace cmpctircd.Packets {
             foreach(var channel_name in splitCommaLine) {
                 // TODO: error handling, but need to figure out how to do it in JoinHandler() too
                 // See validation in JoinHandler()
-                if (!(channel_name.StartsWith("#") || channel_name.StartsWith("&")) &&
-                    (channel_name.Contains(" ") || channel_name.Contains("\a"))) {
-                    continue;
+                if (!ChannelManager.IsValid(channel_name)) {
+                    throw new IrcErrNoSuchTargetChannelException(args.Client, channel_name);
                 }
 
                 if(args.IRCd.ChannelManager.Exists(channel_name)) {

@@ -74,9 +74,8 @@ namespace cmpctircd.Packets {
             }
 
             foreach(String channel_name in splitCommaLine) {
-                // TODO: Regex, error handling
                 // We don't need to check for commas because the split handled that.
-                // Do check for proper initializing char, and check for BEL and space.
+                // TODO: Do check for proper initializing char, and check for BEL and space.
                 if (!ChannelManager.IsValid(channel_name)) {
                     throw new IrcErrNoSuchTargetChannelException(client, channel_name);
                 }
@@ -306,8 +305,6 @@ namespace cmpctircd.Packets {
             }
 
             foreach(var channel_name in splitCommaLine) {
-                // TODO: error handling, but need to figure out how to do it in JoinHandler() too
-                // See validation in JoinHandler()
                 if (!ChannelManager.IsValid(channel_name)) {
                     throw new IrcErrNoSuchTargetChannelException(args.Client, channel_name);
                 }
@@ -315,8 +312,8 @@ namespace cmpctircd.Packets {
                 if(args.IRCd.ChannelManager.Exists(channel_name)) {
                     Channel targetChannel = args.IRCd.ChannelManager[channel_name];
                     foreach(var client in targetChannel.Clients) {
-                        // TODO: modify userSymbol when MODES are implemented
-                        var userSymbol = "";
+                        var userPriv = targetChannel.Status(client.Value);
+                        var userSymbol = targetChannel.GetUserSymbol(userPriv);
                         args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_NAMREPLY.Printable()} {args.Client.Nick} = {channel_name} :{userSymbol}{client.Value.Nick}");
                     }
                     args.Client.Write($"{args.IRCd.host} {IrcNumeric.RPL_ENDOFNAMES.Printable()} {args.Client.Nick} {channel_name} :End of /NAMES list.");

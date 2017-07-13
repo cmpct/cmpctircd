@@ -55,13 +55,9 @@ namespace cmpctircd {
             // Tell everyone we've joined
             SendToRoom(client, String.Format(":{0} JOIN :{1}", client.Mask, this.Name));
             foreach(var room_client in Clients) {
-                client.Write(String.Format(":{0} {1} {2} = {3} :{4}",
-                        client.IRCd.host,
-                        IrcNumeric.RPL_NAMREPLY.Printable(),
-                        client.Nick,
-                        Name,
-                        room_client.Value.Nick
-                ));
+                var userPriv = Status(room_client.Value);
+                var userSymbol = GetUserSymbol(userPriv);
+                client.Write($":{client.IRCd.host} {IrcNumeric.RPL_NAMREPLY.Printable()} {client.Nick} = {Name} :{userSymbol}{room_client.Value.Nick}");
             }
             client.Write(String.Format(":{0} {1} {2} {3} :End of /NAMES list.",
                     client.IRCd.host,
@@ -116,6 +112,15 @@ namespace cmpctircd {
                 }
             }
             return privilege;
+        }
+
+        public string GetUserSymbol(ChannelPrivilege privilege) {
+            foreach(var mode in Modes) {
+                if(privilege.CompareTo(mode.Value.Level) == 0) {
+                    return mode.Value.Symbol;
+                }
+            }
+            return "";
         }
 
         public string[] GetModeStrings(string characters) {

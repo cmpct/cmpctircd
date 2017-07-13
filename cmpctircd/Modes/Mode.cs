@@ -6,6 +6,7 @@ namespace cmpctircd.Modes {
         public Channel channel { get; protected set; }
         public string Name { get; protected set; }
         public string Character { get; protected set; }
+        public string Symbol { get; protected set; }
         public string Description { get; protected set; }
         public bool HasParameters { get; protected set; }
         public bool ChannelWide { get; protected set; }

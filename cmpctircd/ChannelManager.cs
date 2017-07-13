@@ -20,7 +20,7 @@ namespace cmpctircd {
          * Useful methods for managing channels 
         */
         public Channel Create(String channel_name) {
-            Channel channel = new Channel();
+            Channel channel = new Channel(this, IRCd);
             channel.Name = channel_name;
             Channels.TryAdd(channel_name, channel);
             return channel;

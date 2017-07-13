@@ -4,16 +4,47 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using cmpctircd.Modes;
+
 namespace cmpctircd {
     public class Channel {
         public String Name { get; set; }
+        public ChannelManager Manager { get; private set;}
+
         // A dictionary of clients in the room (nick => client)
-        public ConcurrentDictionary<String, Client> Clients
+        public ConcurrentDictionary<string, Client> Clients
         {
             get; private set;
         } = new ConcurrentDictionary<string, Client>();
+
         public Topic Topic { get; set; } = new Topic();
 
+        public ConcurrentDictionary<string, Mode> Modes {
+            get; set;
+        } = new ConcurrentDictionary<string, Mode>();
+
+        public ConcurrentDictionary<Client, ChannelPrivilege> Privileges = new ConcurrentDictionary<Client, ChannelPrivilege>();
+
+        public Channel(ChannelManager manager, IRCd ircd) {
+            this.Manager = manager;
+
+            string[] badClasses = { "Mode" };
+            var classes = AppDomain.CurrentDomain.GetAssemblies()
+                                   .SelectMany(t => t.GetTypes())
+                                   .Where(
+                                       t => t.IsClass &&
+                                       t.Namespace == "cmpctircd.Modes" &&
+                                       !badClasses.Contains(t.Name) &&
+                                       t.GetCustomAttributes(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), true).Count() == 0
+                                    );
+            foreach(Type className in classes) {
+                Mode modeInstance = (Mode) Activator.CreateInstance(Type.GetType(className.ToString()), this);
+                string modeChar = modeInstance.Character;
+
+                Modes.TryAdd(modeChar, modeInstance);
+                Console.WriteLine($"Creating instance of {modeChar} - {modeInstance.Description}");
+            }
+        }
         public void AddClient(Client client) {
             if(Inhabits(client)) {
                 // TODO: Send ERR_USERONCHANNEL? Not clear if other ircds do this.

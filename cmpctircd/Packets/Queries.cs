@@ -52,7 +52,9 @@ namespace cmpctircd.Packets
             var inhabitedChannels = new List<String>();
             foreach(var channel in args.IRCd.ChannelManager.Channels.Values) {
                 if(channel.Inhabits(targetClient)) {
-                    inhabitedChannels.Add(channel.Name);
+                    var userPriv = channel.Status(targetClient);
+                    var userSymbol = channel.GetUserSymbol(userPriv);
+                    inhabitedChannels.Add($"{userSymbol}{channel.Name}");
                 }
             }
 

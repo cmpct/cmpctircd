@@ -19,6 +19,7 @@ namespace cmpctircd.Packets {
             ircd.PacketManager.Register("NOTICE", noticeHandler);
             ircd.PacketManager.Register("WHO", WhoHandler);
             ircd.PacketManager.Register("NAMES", NamesHandler);
+            ircd.PacketManager.Register("MODE", ModeHandler);
         }
 
         public Boolean topicHandler(HandlerArgs args) {
@@ -324,6 +325,109 @@ namespace cmpctircd.Packets {
 
             return true;
         }
+
+        public bool ModeHandler(HandlerArgs args) {
+            // This handler is for Channel requests (i.e. where the target begins with a # or &)
+            // TODO: update with channel validation logic (in ChannelManager?)
+            string[] splitLine = args.Line.Split(new string[] { ":" }, 2, StringSplitOptions.None);
+            string[] splitLineSpace = args.Line.Split(new string[] { " " }, 4, StringSplitOptions.RemoveEmptyEntries);
+            string target;
+            Channel channel;
+
+            try {
+                target = splitLineSpace[1];
+            } catch(IndexOutOfRangeException) {
+                throw new IrcErrNotEnoughParametersException(args.Client, "MODE");
+            }
+
+            // TODO: no user mode support yet
+            if(!target.StartsWith("#") && !target.StartsWith("&")) {
+                return false;
+            }
+
+            if(args.IRCd.ChannelManager.Exists(target)) {
+                channel = args.IRCd.ChannelManager[target];
+            } else {
+                throw new IrcErrNoSuchTargetChannelException(args.Client, target);
+            }
+
+            if(splitLineSpace.Count() == 2) {
+                // This is a request for MODE (e.g. MODE #cmpctircd)
+                string[] channelModes = channel.GetModeStrings("+");
+                string characters = channelModes[0];
+                string argsSet = channelModes[1];
+                if(!String.IsNullOrWhiteSpace(argsSet)) {
+                    args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_CHANNELMODEIS.Printable()} {args.Client.Nick} {channel.Name} {characters} {argsSet}");
+                } else {
+                    args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_CHANNELMODEIS.Printable()} {args.Client.Nick} {channel.Name} {characters}");
+                }
+                // TODO: creation time?
+
+            } else if(splitLineSpace.Count() > 2) {
+                // Process
+                string modes = splitLineSpace[2];
+                string[] param;
+
+                if(splitLineSpace.Count() < 4) {
+                    splitLineSpace[3] = "";
+                }
+
+                param = splitLineSpace[3].Split(new string[] { " " }, StringSplitOptions.None);
+
+                string currentModifier = "";
+                string modeChars = "";
+                string modeArgs = "";
+                string modeString = "";
+                int position = 0;
+
+                Mode modeObject;
+                foreach(var mode in modes) {
+                    var modeStr = mode.ToString();
+                    var noOperatorMode = modeStr.Replace("+", "").Replace("-", "");
+                    if(modeStr.Equals("+") || modeStr.Equals("-")) {
+                        currentModifier = modeStr;
+                        modeChars += modeStr;
+                    }
+
+                    if(channel.Modes.ContainsKey(noOperatorMode)) {
+                        channel.Modes.TryGetValue(noOperatorMode, out modeObject);
+                        if(currentModifier == "+") {
+                            // Attempt to add the mode
+                            bool success = modeObject.Grant(args.Client, param[position], false, false);
+
+                            if(success) {
+                                modeChars += modeStr;
+                                if(modeObject.HasParameters) {
+                                    modeArgs += param[position];
+                                }
+                            }
+                        } else if(currentModifier == "-") {
+                            // Attempt to revoke the mode
+                            bool success = modeObject.Revoke(args.Client, param[position], false, false);
+
+                            if(success) {
+                                modeChars += modeStr;
+                                if(modeObject.HasParameters) {
+                                    modeArgs += param[position];
+                                }
+                            }
+                        }
+
+                        if(modeObject.HasParameters) {
+                            position += 1;
+                        }
+                    }
+                }
+
+                if(!modeChars.Equals("+") && !modeChars.Equals("-")) {
+                    modeString = $"{modeChars} {modeArgs}";
+                    channel.SendToRoom(args.Client, $":{args.Client.Mask} MODE {channel.Name} {modeString}");
+                }
+            }
+
+            return true;
+        }
+
 
     }
 }

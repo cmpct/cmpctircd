@@ -8,6 +8,7 @@ namespace cmpctircd.Modes {
         public string Character { get; protected set; }
         public string Description { get; protected set; }
         public bool HasParameters { get; protected set; }
+        public bool ChannelWide { get; protected set; }
         public List<Client> Affects = new List<Client>();
 
         // Minimum level to run the command
@@ -38,6 +39,10 @@ namespace cmpctircd.Modes {
             lock(Affects) {
                 return Affects;
             }
+        }
+
+        public string GetValue() {
+            return "";
         }
 
     }

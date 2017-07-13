@@ -117,6 +117,28 @@ namespace cmpctircd {
             return privilege;
         }
 
+        public string[] GetModeStrings(string characters) {
+            string provides = "";
+            string value = "";
+            string args = "";
+
+            foreach(var mode in Modes) {
+                bool channelWide = mode.Value.ChannelWide;
+                if(channelWide) {
+                    provides = mode.Value.Character;
+                    value = mode.Value.GetValue();
+                    if(!String.IsNullOrWhiteSpace(value) && int.Parse(value) > 0) {
+                        characters += provides;
+                        if(mode.Value.HasParameters) {
+                            args += $"{value} ";
+                        }
+                    }
+                }
+            }
+            return new string[] { characters, args };
+
+        }
+
 
         /*
          * Useful internals (public methods) 

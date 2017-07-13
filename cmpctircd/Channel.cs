@@ -33,8 +33,8 @@ namespace cmpctircd {
                                    .Where(
                                        t => t.IsClass &&
                                        t.Namespace == "cmpctircd.Modes" &&
-                                       !badClasses.Contains(t.Name) &&
-                                       t.GetCustomAttributes(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), true).Count() == 0
+                                       t.BaseType.Equals(typeof(Mode)) &&
+                                       !badClasses.Contains(t.Name)
                                     );
             foreach(Type className in classes) {
                 Mode modeInstance = (Mode) Activator.CreateInstance(Type.GetType(className.ToString()), this);
@@ -70,7 +70,6 @@ namespace cmpctircd {
                     Name
             ));
 
-            // TODO: op if size == 1
             if(Size == 1) {
                 Modes["o"].Grant(client, client.Nick, true, true);
             }

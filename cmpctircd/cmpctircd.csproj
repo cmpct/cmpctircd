@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="Channel.cs" />
     <Compile Include="ChannelManager.cs" />
+    <Compile Include="ChannelPrivilege.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="ClientState.cs" />
     <Compile Include="Errors.cs" />

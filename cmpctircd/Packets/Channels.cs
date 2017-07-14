@@ -20,6 +20,53 @@ namespace cmpctircd.Packets {
             ircd.PacketManager.Register("WHO", WhoHandler);
             ircd.PacketManager.Register("NAMES", NamesHandler);
             ircd.PacketManager.Register("MODE", ModeHandler);
+            ircd.PacketManager.Register("KICK", KickHandler);
+        }
+
+        public bool KickHandler(HandlerArgs args) {
+            IRCd ircd = args.IRCd;
+            Client client = args.Client;
+            String rawLine = args.Line;
+            Client targetClient;
+            String[] rawSplit;
+            Channel channel;
+            String target;
+            String message;
+
+            rawSplit = rawLine.Split(' ');
+            
+            if(rawSplit.Count() <= 2) {
+                throw new IrcErrNotEnoughParametersException(client, "KICK");
+            }
+
+            if(rawSplit.Count() >= 4) {
+                message = rawLine.Split(':')[1];
+            } else {
+                message = client.Nick;
+            }
+
+            target  = rawSplit[2];
+            
+            if (ircd.ChannelManager.Exists(rawSplit[1])) {
+                channel = ircd.ChannelManager[rawSplit[1]];
+            } else {
+                throw new IrcErrNoSuchTargetChannelException(client, rawSplit[1]);
+            }
+
+            try {
+                targetClient = ircd.GetClientByNick(target);
+            } catch (InvalidOperationException) {
+                throw new IrcErrNoSuchTargetNickException(client, target);
+            }
+
+            ChannelPrivilege sourcePrivs = channel.Privileges.GetOrAdd(client, ChannelPrivilege.Normal);
+            if(sourcePrivs.CompareTo(ChannelPrivilege.Op) < 0) {
+                throw new IrcErrChanOpPrivsNeededException(client, channel.Name);
+            }
+
+            channel.SendToRoom(client, $":{client.Mask} KICK {channel.Name} {targetClient.Nick} :{message}", true);
+            channel.Remove(targetClient);
+            return true;
         }
 
         public Boolean topicHandler(HandlerArgs args) {

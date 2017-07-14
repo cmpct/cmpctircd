@@ -78,12 +78,7 @@ namespace cmpctircd {
             }
             Console.WriteLine("Removing {0} from {1}", client.Nick, Name);
             SendToRoom(client, String.Format(":{0} PART {1} :{2}", client.Mask, Name, reason), true);
-            Clients.TryRemove(client.Nick, out _);
-
-            // Destroy if last user to leave room (TODO: will need modification for cloaking)
-            if(Size == 0) {
-                Manager.Remove(this.Name);
-            }
+            Remove(client, true);
         }
 
         public void Quit(Client client, String reason) {
@@ -93,12 +88,7 @@ namespace cmpctircd {
 
             Console.WriteLine("Removing {0} from {1}", client.Nick, Name);
             SendToRoom(client, String.Format(":{0} QUIT {1}", client.Mask, reason), false);
-            Clients.TryRemove(client.Nick, out _);
-
-            // Destroy if last user to leave room (TODO: will need modification for cloaking)
-            if(Size == 0) {
-                Manager.Remove(this.Name);
-            }
+            Remove(client, true);
         }
 
         public ChannelPrivilege Status(Client client) {
@@ -171,11 +161,20 @@ namespace cmpctircd {
         public void Add(Client client, String nick) {
             Clients.TryAdd(nick, client);
         }
-        public void Remove(Client client) {
+        public void Remove(Client client, Boolean graceful) {
             Clients.TryRemove(client.Nick, out _);
+            if(graceful)
+                Destroy();
         }
-        public void Remove(String nick) {
+        public void Remove(String nick, Boolean graceful) {
             Clients.TryRemove(nick, out _);
+            if(graceful)
+                Destroy();
+        }
+        public void Destroy() {
+            // Destroy if last user to leave room (TODO: will need modification for cloaking)
+            if(Size == 0)
+                Manager.Remove(Name);
         }
         public int Size => Clients.Count();
     }

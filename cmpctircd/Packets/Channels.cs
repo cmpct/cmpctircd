@@ -65,7 +65,7 @@ namespace cmpctircd.Packets {
             }
 
             channel.SendToRoom(client, $":{client.Mask} KICK {channel.Name} {targetClient.Nick} :{message}", true);
-            channel.Remove(targetClient);
+            channel.Remove(targetClient, true);
             return true;
         }
 

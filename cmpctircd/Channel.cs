@@ -161,6 +161,9 @@ namespace cmpctircd {
         public void Add(Client client, String nick) {
             Clients.TryAdd(nick, client);
         }
+
+        // For both Remove() functions, consider carefully whether or not the channel object may need to be destroyed once completed
+        // e.g. nick changes will NOT require this (so graceful = false), but leaving the room WOULD (so graceful = true)
         public void Remove(Client client, Boolean graceful) {
             Clients.TryRemove(client.Nick, out _);
             if(graceful)
@@ -172,7 +175,7 @@ namespace cmpctircd {
                 Destroy();
         }
         public void Destroy() {
-            // Destroy if last user to leave room (TODO: will need modification for cloaking)
+            // Destroy if last user to leave room (TODO: may need modification for cloaking)
             if(Size == 0)
                 Manager.Remove(Name);
         }

@@ -143,7 +143,7 @@ namespace cmpctircd
                 foreach(var channel in IRCd.ChannelManager.Channels) {
                     if(!channel.Value.Inhabits(this)) continue;
                     channel.Value.SendToRoom(this, String.Format(":{0} NICK :{1}", Mask, newNick), false);
-                    channel.Value.Remove(oldNick);
+                    channel.Value.Remove(oldNick, false);
                     channel.Value.Add(this, newNick);
                 }
 
@@ -229,7 +229,7 @@ namespace cmpctircd
                 foreach (var channel in IRCd.ChannelManager.Channels) {
                     if (channel.Value.Inhabits(this)) {
                         channel.Value.Quit(this, quitReason);
-                        channel.Value.Remove(this);
+                        channel.Value.Remove(this, true);
                     }
                 }
             }

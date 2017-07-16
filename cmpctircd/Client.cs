@@ -27,6 +27,7 @@ namespace cmpctircd
         public int IdleTime { get; set; }
         public int SignonTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
         public ClientState State { get; set; }
+        public List<Channel> Invites = new List<Channel>();
 
         // Ping information
         public Boolean WaitingForPong { get; set; } = false;

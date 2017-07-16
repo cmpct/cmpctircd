@@ -129,4 +129,20 @@ namespace cmpctircd {
         }
     }
 
+    public class IrcErrUserOnChannelException : Exception {
+        private Client client;
+
+        public IrcErrUserOnChannelException(Client client, String target, String channel) {
+            client.Write($":{client.IRCd.host} {IrcNumeric.ERR_USERONCHANNEL.Printable()} {client.Nick} {target} {channel} :is already on channel");
+        }
+    }
+
+    public class IrcErrInviteOnlyChanException : Exception {
+        private Client client;
+
+        public IrcErrInviteOnlyChanException(Client client, string channel) {
+            client.Write($":{client.IRCd.host} {IrcNumeric.ERR_INVITEONLYCHAN.Printable()} {client.Nick} {channel} :Cannot join channel (Invite only)");
+        }
+    }
+
 }

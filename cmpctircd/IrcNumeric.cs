@@ -54,6 +54,7 @@ namespace cmpctircd
         RPL_NOTOPIC       = 331,
         RPL_TOPIC         = 332,
         RPL_TOPICWHOTIME  = 333,
+        RPL_INVITING      = 341,
         RPL_VERSION       = 351,
         RPL_WHOREPLY      = 352,
         RPL_NAMREPLY      = 353,

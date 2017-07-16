@@ -21,6 +21,47 @@ namespace cmpctircd.Packets {
             ircd.PacketManager.Register("NAMES", NamesHandler);
             ircd.PacketManager.Register("MODE", ModeHandler);
             ircd.PacketManager.Register("KICK", KickHandler);
+            ircd.PacketManager.Register("INVITE", InviteHandler);
+        }
+
+        private bool InviteHandler(HandlerArgs args) {
+            string[] rawSplit = args.Line.Split(' ');
+            Channel channel;
+            Client targetClient;
+
+            if (rawSplit.Count() <= 2) {
+                throw new IrcErrNotEnoughParametersException(args.Client, "INVITE");
+            }
+
+            if(args.IRCd.ChannelManager.Exists(rawSplit[2])) {
+                channel = args.IRCd.ChannelManager[rawSplit[2]];
+            } else {
+                throw new IrcErrNoSuchTargetNickException(args.Client, rawSplit[2]);
+            }
+
+            try {
+                targetClient = args.IRCd.GetClientByNick(rawSplit[1]);
+            } catch(InvalidOperationException) {
+                throw new IrcErrNoSuchTargetNickException(args.Client, rawSplit[1]);
+            }
+
+            if(!channel.Clients.ContainsKey(args.Client.Nick)) {
+                throw new IrcErrNotOnChannelException(args.Client, channel.Name);
+            }
+
+            if (channel.Clients.ContainsKey(targetClient.Nick)) {
+                throw new IrcErrUserOnChannelException(args.Client, targetClient.Nick, channel.Name);
+            }
+
+            ChannelPrivilege sourcePrivs = channel.Privileges.GetOrAdd(args.Client, ChannelPrivilege.Normal);
+            if(sourcePrivs.CompareTo(ChannelPrivilege.Op) < 0) {
+                throw new IrcErrChanOpPrivsNeededException(args.Client, channel.Name);
+            }
+
+            channel.SendToRoom(args.Client, $":{args.IRCd.host} {IrcNumeric.RPL_INVITING.Printable()} {args.Client.Nick} {targetClient.Nick} :{channel.Name}", true);
+            targetClient.Write($":{args.Client.Mask} INVITE {targetClient.Nick} :{channel.Name}");
+            targetClient.Invites.Add(channel);
+            return true;
         }
 
         public bool KickHandler(HandlerArgs args) {

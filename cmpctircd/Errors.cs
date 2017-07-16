@@ -6,6 +6,16 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace cmpctircd {
+    // General exceptions
+    public class IrcModeNotEnabledException : Exception {
+        public IrcModeNotEnabledException(String mode) {
+            // TODO: for debug mode only with logging
+            //Console.WriteLine($"{mode} does not exist!");
+        }
+    }
+
+
+    // IRC ERR_* response exceptions
     public class IrcErrNoSuchTargetNickException : Exception {
         private Client client;
 

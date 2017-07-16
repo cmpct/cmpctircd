@@ -122,12 +122,17 @@ namespace cmpctircd {
                 bool channelWide = mode.Value.ChannelWide;
                 if(channelWide) {
                     provides = mode.Value.Character;
-                    value = mode.Value.GetValue();
-                    if(!String.IsNullOrWhiteSpace(value) && int.Parse(value) > 0) {
-                        characters += provides;
-                        if(mode.Value.HasParameters) {
-                            args += $"{value} ";
+                    try {
+                        value = mode.Value.GetValue();
+                        if(!String.IsNullOrWhiteSpace(value)) {
+                            characters += provides;
+                            if(mode.Value.HasParameters) {
+                                args += $"{value} ";
+                            }
                         }
+                    } catch(IrcModeNotEnabledException) {
+                        // Skip this mode and get another
+                        continue;
                     }
                 }
             }

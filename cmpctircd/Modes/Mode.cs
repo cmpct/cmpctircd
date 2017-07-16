@@ -42,7 +42,7 @@ namespace cmpctircd.Modes {
             }
         }
 
-        public string GetValue() {
+        virtual public string GetValue() {
             return "";
         }
 

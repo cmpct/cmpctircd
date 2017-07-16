@@ -374,7 +374,7 @@ namespace cmpctircd.Packets {
             // This handler is for Channel requests (i.e. where the target begins with a # or &)
             // TODO: update with channel validation logic (in ChannelManager?)
             string[] splitLine = args.Line.Split(new string[] { ":" }, 2, StringSplitOptions.None);
-            string[] splitLineSpace = args.Line.Split(new string[] { " " }, 4, StringSplitOptions.RemoveEmptyEntries);
+            List<string> splitLineSpace = args.Line.Split(new string[] { " " }, 4, StringSplitOptions.RemoveEmptyEntries).ToList<string>();
             string target;
             Channel channel;
 
@@ -412,8 +412,8 @@ namespace cmpctircd.Packets {
                 string modes = splitLineSpace[2];
                 string[] param;
 
-                if(splitLineSpace.Count() < 4) {
-                    splitLineSpace[3] = "";
+                if(splitLineSpace.Count() == 3) {
+                    splitLineSpace.Add("");
                 }
 
                 param = splitLineSpace[3].Split(new string[] { " " }, StringSplitOptions.None);

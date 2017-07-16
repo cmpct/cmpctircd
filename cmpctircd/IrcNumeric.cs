@@ -85,6 +85,7 @@ namespace cmpctircd
         ERR_NEEDMOREPARAMS   = 461,
         ERR_ALREADYREGISTERED = 462,
         ERR_CHANNELISFULL    = 471,
+        ERR_INVITEONLYCHAN   = 473,
         ERR_BANNEDFROMCHAN   = 474,
         ERR_CHANOPRIVSNEEDED = 482,
         ERR_NOOPERHOST       = 491,

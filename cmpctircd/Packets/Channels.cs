@@ -174,10 +174,16 @@ namespace cmpctircd.Packets {
                 } else {
                     channel = ircd.ChannelManager.Create(channel_name);
                 }
-                topic = channel.Topic;
+                try {
+                    channel.Modes["i"].GetValue();
+                    if (!client.Invites.Contains(channel)) {
+                        throw new IrcErrInviteOnlyChanException(args.Client, channel.Name);
+                    }
+                } catch (IrcModeNotEnabledException) {}
                 channel.AddClient(client);
+                client.Invites.Remove(channel);
+                topic = channel.Topic;
                 topic.GetTopic(client, channel_name, true);
-
             }
 
             return true;

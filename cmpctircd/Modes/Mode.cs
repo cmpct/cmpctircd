@@ -1,5 +1,7 @@
 using System.Collections.Generic;
 
+using cmpctircd.Modes;
+
 namespace cmpctircd.Modes {
     public abstract class Mode {
 
@@ -8,6 +10,7 @@ namespace cmpctircd.Modes {
         public string Character { get; protected set; }
         public string Symbol { get; protected set; }
         public string Description { get; protected set; }
+        public ModeType Type { get; protected set; }
         public bool HasParameters { get; protected set; }
         public bool ChannelWide { get; protected set; }
         public List<Client> Affects = new List<Client>();

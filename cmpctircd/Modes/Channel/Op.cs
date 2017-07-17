@@ -5,6 +5,7 @@ namespace cmpctircd.Modes {
             Name = "op";
             Description = "Provides the +o (op) mode for moderating a channel";
             Character = "o";
+            Type = ModeType.PerUser;
             Symbol = "@";
             Level = ChannelPrivilege.Op;
             HasParameters = true;

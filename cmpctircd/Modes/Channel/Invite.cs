@@ -6,6 +6,7 @@ namespace cmpctircd.Modes {
             Description = "Provides the +i (invite) mode for invite-only channels";
             Character = "i";
             Symbol = "";
+            Type = ModeType.D;
             Level = ChannelPrivilege.Op;
             HasParameters = false;
             ChannelWide = true;

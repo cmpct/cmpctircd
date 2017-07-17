@@ -27,7 +27,7 @@ namespace cmpctircd {
         public Channel(ChannelManager manager, IRCd ircd) {
             this.Manager = manager;
 
-            string[] badClasses = { "Mode" };
+            string[] badClasses = { "Mode", "ModeType" };
             var classes = AppDomain.CurrentDomain.GetAssemblies()
                                    .SelectMany(t => t.GetTypes())
                                    .Where(
@@ -41,7 +41,8 @@ namespace cmpctircd {
                 string modeChar = modeInstance.Character;
 
                 Modes.TryAdd(modeChar, modeInstance);
-                Console.WriteLine($"Creating instance of {modeChar} - {modeInstance.Description}");
+                // TODO: debug level with logging
+                //Console.WriteLine($"Creating instance of {modeChar} - {modeInstance.Description}");
             }
         }
         public void AddClient(Client client) {

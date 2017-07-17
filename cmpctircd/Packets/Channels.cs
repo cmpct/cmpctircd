@@ -470,8 +470,18 @@ namespace cmpctircd.Packets {
                 string modeArgs = "";
                 string modeString = "";
                 int position = 0;
-
                 Mode modeObject;
+
+                if(args.IRCd.GetSupportedModes()["A"].Contains(modes)) {
+                    // Is this mode of Type A (and listable)? See ModeType
+                    // TODO: should we put this in the foreach?
+
+                    // TODO: for bans, check if this is +b...
+                    // TODO: and so on
+                    // TODO: if so, return the list of bans
+                    // TODO: https://git.cmpct.info/cmpctircd.git/blob/a98635da09650310bffe2c98b11ac8fa7cb67445:/lib/IRCd/Client/Packets.pm#l487
+                }
+
                 foreach(var mode in modes) {
                     var modeStr = mode.ToString();
                     var noOperatorMode = modeStr.Replace("+", "").Replace("-", "");

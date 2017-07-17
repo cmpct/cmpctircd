@@ -7,6 +7,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 
+using cmpctircd.Modes;
+
 namespace cmpctircd
 {
     public class Client {
@@ -77,7 +79,9 @@ namespace cmpctircd
             // TODO: I don't think MYINFO is very popular?
             //write(String.Format(":{0} {1} {2} {3} {4} x ntlo", ircd.host, IrcNumeric.RPL_MYINFO.Printable(), nick, ircd.host, ircd.version));
             Write(String.Format(":{0} {1} {2} :CASEMAPPING=rfc1459 PREFIX=(ov)@+ STATUSMSG=@+ NETWORK={3} MAXTARGETS={4} :are supported by this server", IRCd.host, IrcNumeric.RPL_ISUPPORT.Printable(), Nick, IRCd.network, IRCd.maxTargets));
-            Write(String.Format(":{0} {1} {2} :CHANTYPES=# CHANMODES=b,,l,ntm :are supported by this server", IRCd.host, IrcNumeric.RPL_ISUPPORT.Printable(), Nick));
+
+            var ModeTypes = IRCd.GetSupportedModes();
+            Write($":{IRCd.host} {IrcNumeric.RPL_ISUPPORT.Printable()} {Nick} :CHANTYPES=# CHANMODES={string.Join("",ModeTypes["A"])},{string.Join("",ModeTypes["B"])},{string.Join("", ModeTypes["C"])},{string.Join("", ModeTypes["D"])} :are supported by this server");
 
             // Send MOTD
             SendMotd();

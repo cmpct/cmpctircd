@@ -20,7 +20,8 @@ namespace cmpctircd.Modes {
             throw new IrcModeNotEnabledException(Character);
         }
         override public bool Grant(Client client, string args) => Grant(client, args, false, true);
-        override public bool Grant(Client client, string args, bool forceSet, bool announce) {
+        override public bool Grant(Client client, string args, bool forceSet, bool announce) => Grant(client, args, forceSet, announce, true);
+        override public bool Grant(Client client, string args, bool forceSet, bool announce, bool sendSelf) {
 
             if(!channel.Inhabits(client))
                 throw new IrcErrNotOnChannelException(client, channel.Name);
@@ -35,12 +36,15 @@ namespace cmpctircd.Modes {
 
             // Announce the change to the room
             Enabled = true;
-            channel.SendToRoom(client, $":{client.Mask} MODE {channel.Name} +i", announce);
+            if (announce) {
+                channel.SendToRoom(client, $":{client.Mask} MODE {channel.Name} +i", sendSelf);
+            }
             return true;
         }
         
         override public bool Revoke(Client client, string args) => Revoke(client, args, false, true);
-        override public bool Revoke(Client client, string args, bool forceSet, bool announce) {
+        override public bool Revoke(Client client, string args, bool forceSet, bool announce) => Revoke(client, args, forceSet, announce, true);
+        override public bool Revoke(Client client, string args, bool forceSet, bool announce, bool sendSelf) {
 
             if(!channel.Inhabits(client))
                 throw new IrcErrNotOnChannelException(client, channel.Name);
@@ -56,7 +60,9 @@ namespace cmpctircd.Modes {
             }
 
             Enabled = false;
-            channel.SendToRoom(client, $":{client.Mask} MODE {channel.Name} -i", announce);
+            if (announce) {
+                channel.SendToRoom(client, $":{client.Mask} MODE {channel.Name} -i", sendSelf);
+            }
             return true;
         }
 

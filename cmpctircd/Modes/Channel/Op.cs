@@ -13,7 +13,8 @@ namespace cmpctircd.Modes {
         }
 
         override public bool Grant(Client client, string args) => Grant(client, args, false, true);
-        override public bool Grant(Client client, string args, bool forceSet, bool announce) {
+        override public bool Grant(Client client, string args, bool forceSet, bool announce) => Grant(client, args, forceSet, announce, true);
+        override public bool Grant(Client client, string args, bool forceSet, bool announce, bool sendSelf) {
             string targetNick = args;
             Client targetClient;
 
@@ -33,7 +34,7 @@ namespace cmpctircd.Modes {
 
             // User already has the mode
             if(Has(targetClient))
-                return true;
+                return false;
 
             // Check user has right to set the mode
             // Get the setters's privilege if not forcing the mode change
@@ -57,13 +58,17 @@ namespace cmpctircd.Modes {
             lock(Affects) {
                 Affects.Add(targetClient);
             }
-            channel.SendToRoom(client, $":{client.Mask} MODE {channel.Name} +o {targetClient.Nick}", announce);
+
+            if (announce) {
+                channel.SendToRoom(client, $":{client.Mask} MODE {channel.Name} +o {targetClient.Nick}", sendSelf);
+            }
             return true;
         }
 
 
         override public bool Revoke(Client client, string args) => Revoke(client, args, false, true);
-        override public bool Revoke(Client client, string args, bool forceSet, bool announce) {
+        override public bool Revoke(Client client, string args, bool forceSet, bool announce) => Revoke(client, args, forceSet, announce, true);
+        override public bool Revoke(Client client, string args, bool forceSet, bool announce, bool sendSelf) {
             string targetNick = args;
             Client targetClient;
 
@@ -101,7 +106,9 @@ namespace cmpctircd.Modes {
             }
 
             channel.Privileges.TryUpdate(client, channel.Status(client), ChannelPrivilege.Op);
-            channel.SendToRoom(client, $":{client.Mask} MODE {channel.Name} -o {targetClient.Nick}", announce);
+            if (announce) {
+                channel.SendToRoom(client, $":{client.Mask} MODE {channel.Name} -o {targetClient.Nick}", sendSelf);
+            }
             return true;
         }
 

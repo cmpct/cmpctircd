@@ -410,7 +410,7 @@ namespace cmpctircd.Packets {
                         var userSymbol = targetChannel.GetUserSymbol(userPriv);
                         args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_NAMREPLY.Printable()} {args.Client.Nick} = {channel_name} :{userSymbol}{client.Value.Nick}");
                     }
-                    args.Client.Write($"{args.IRCd.host} {IrcNumeric.RPL_ENDOFNAMES.Printable()} {args.Client.Nick} {channel_name} :End of /NAMES list.");
+                    args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_ENDOFNAMES.Printable()} {args.Client.Nick} {channel_name} :End of /NAMES list.");
                 }
             }
 

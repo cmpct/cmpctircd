@@ -384,7 +384,7 @@ namespace cmpctircd.Packets {
                 // TODO: implement this once we have +i (invisible mode)
             }
 
-            args.Client.Write($"{args.IRCd.host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {args.Client.Nick} {target} :End of /WHO list.");
+            args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {args.Client.Nick} {target} :End of /WHO list.");
             return true;
         }
         public Boolean NamesHandler(HandlerArgs args) {

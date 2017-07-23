@@ -112,7 +112,7 @@ namespace cmpctircd {
 
         public string GetUserSymbol(ChannelPrivilege privilege) {
             foreach(var mode in Modes) {
-                if(privilege.CompareTo(mode.Value.Level) == 0) {
+                if(privilege.CompareTo(mode.Value.Level) == 0 && !String.IsNullOrEmpty(mode.Value.Symbol)) {
                     return mode.Value.Symbol;
                 }
             }

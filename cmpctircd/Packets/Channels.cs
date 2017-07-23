@@ -472,9 +472,9 @@ namespace cmpctircd.Packets {
                 string modeChars = "";
                 string modeArgs = "";
                 string modeString = "";
+                bool announce = false;
                 int position = 0;
                 Mode modeObject;
-
                 var modesNoOperator = modes.Replace("+", "").Replace("-", "");
                 if(args.IRCd.GetSupportedModes()["A"].Contains(modesNoOperator)) {
                     // Is this mode of Type A (and listable)? See ModeType
@@ -496,11 +496,14 @@ namespace cmpctircd.Packets {
 
                     if(channel.Modes.ContainsKey(noOperatorMode)) {
                         channel.Modes.TryGetValue(noOperatorMode, out modeObject);
+                        if (!modeObject.Stackable) {
+                            announce = true;
+                        }
                         if(currentModifier == "+") {
                             // Attempt to add the mode
-                            bool success = modeObject.Grant(args.Client, param[position], false, false);
+                            bool success = modeObject.Grant(args.Client, param[position], false, announce, announce);
 
-                            if(success) {
+                            if(success && modeObject.Stackable) {
                                 modeChars += modeStr;
                                 if(modeObject.HasParameters) {
                                     modeArgs += param[position];
@@ -508,9 +511,9 @@ namespace cmpctircd.Packets {
                             }
                         } else if(currentModifier == "-") {
                             // Attempt to revoke the mode
-                            bool success = modeObject.Revoke(args.Client, param[position], false, false);
+                            bool success = modeObject.Revoke(args.Client, param[position], false, announce, announce);
 
-                            if(success) {
+                            if(success && modeObject.Stackable) {
                                 modeChars += modeStr;
                                 if(modeObject.HasParameters) {
                                     modeArgs += param[position];

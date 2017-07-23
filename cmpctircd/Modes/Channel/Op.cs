@@ -105,7 +105,7 @@ namespace cmpctircd.Modes {
                 Affects.Remove(targetClient);
             }
 
-            channel.Privileges.TryUpdate(client, channel.Status(client), ChannelPrivilege.Op);
+            channel.Privileges.TryUpdate(targetClient, channel.Status(targetClient), ChannelPrivilege.Op);
             if (announce) {
                 channel.SendToRoom(client, $":{client.Mask} MODE {channel.Name} -o {targetClient.Nick}", sendSelf);
             }

@@ -176,7 +176,7 @@ namespace cmpctircd {
             if(stripModes) {
                 foreach(var mode in Modes) {
                     try {
-                        mode.Value.Revoke(client, "", true, false);
+                        mode.Value.Revoke(client, client.Nick, true, false);
                     }
                     catch {}
                 }

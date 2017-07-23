@@ -474,7 +474,8 @@ namespace cmpctircd.Packets {
                 int position = 0;
                 Mode modeObject;
 
-                if(args.IRCd.GetSupportedModes()["A"].Contains(modes)) {
+                var modesNoOperator = modes.Replace("+", "").Replace("-", "");
+                if(args.IRCd.GetSupportedModes()["A"].Contains(modesNoOperator)) {
                     // Is this mode of Type A (and listable)? See ModeType
                     // TODO: should we put this in the foreach?
 

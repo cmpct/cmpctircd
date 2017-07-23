@@ -204,13 +204,15 @@ namespace cmpctircd.Packets {
 
             if(rawSplit.Count() >= 2) {
                 target = rawSplit[1];
-                // Check the user exists
-                try {
-                    targetClient = ircd.GetClientByNick(target);
-                } catch(InvalidOperationException) {
-                    throw new IrcErrNoSuchTargetNickException(client, target);
+                if(!target.StartsWith("#")) {
+                    try {
+                        targetClient = ircd.GetClientByNick(target);
+                    } catch(InvalidOperationException) {
+                        throw new IrcErrNoSuchTargetNickException(client, target);
+                    }
                 }
             }
+
             switch(rawSplit.Count()) {
                 case 1:
                     throw new IrcErrNoRecipientException(client, "PRIVMSG");

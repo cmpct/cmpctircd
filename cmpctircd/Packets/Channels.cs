@@ -368,9 +368,10 @@ namespace cmpctircd.Packets {
                 }
 
                 foreach(var client in targetChannel.Clients) {
-                    // TODO: Needs updating for when we have ircop, ops
+                    // TODO: Needs updating for when we have ircop
                     // TODO: Also for when we have links (:0 is hopcount)
-                    var userSymbol = "";
+                    var userPriv = targetChannel.Status(client.Value);
+                    var userSymbol = targetChannel.GetUserSymbol(userPriv);
                     var hopCount = 0;
 
                     var away = "";

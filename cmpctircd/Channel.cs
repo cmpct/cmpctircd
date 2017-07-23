@@ -170,24 +170,28 @@ namespace cmpctircd {
 
         // For both Remove() functions, consider carefully whether or not the channel object may need to be destroyed once completed
         // e.g. nick changes will NOT require this (so graceful = false), but leaving the room WOULD (so graceful = true)
-        public void Remove(Client client, Boolean graceful) {
+        public void Remove(Client client, Boolean graceful = true, Boolean stripModes = true) {
             // Strip all modes
             // TODO: may need modification for cloaking
-            foreach(var mode in Modes) {
-                try {
-                    mode.Value.Revoke(client, "", true, false);
+            if(stripModes) {
+                foreach(var mode in Modes) {
+                    try {
+                        mode.Value.Revoke(client, "", true, false);
+                    }
+                    catch {}
                 }
-                catch {}
+                Privileges.TryRemove(client, out _);
             }
-            Privileges.TryRemove(client, out _);
 
             Clients.TryRemove(client.Nick, out _);
             if (graceful)
                 Destroy();
         }
-        public void Remove(String nick, Boolean graceful) {
-            Remove(Clients[nick], graceful);
+
+        public void Remove(String nick, Boolean graceful, Boolean stripModes) {
+            Remove(Clients[nick], graceful, stripModes);
         }
+
         public void Destroy() {
             // Destroy if last user to leave room (TODO: may need modification for cloaking)
             if(Size == 0)

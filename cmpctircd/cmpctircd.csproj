@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ban.cs" />
     <Compile Include="Channel.cs" />
     <Compile Include="ChannelManager.cs" />
     <Compile Include="ChannelPrivilege.cs" />
@@ -53,6 +54,7 @@
     <Compile Include="IRCd.cs" />
     <Compile Include="IrcNumeric.cs" />
     <Compile Include="IrcNumericExtensions.cs" />
+    <Compile Include="Modes\Channel\Ban.cs" />
     <Compile Include="Modes\Channel\Invite.cs" />
     <Compile Include="Modes\Mode.cs" />
     <Compile Include="Modes\ModeType.cs" />

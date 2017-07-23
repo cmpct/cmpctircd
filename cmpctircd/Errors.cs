@@ -145,4 +145,18 @@ namespace cmpctircd {
         }
     }
 
+    public class IrcErrBannedFromChanException : Exception {
+
+        public IrcErrBannedFromChanException(Client client, string channel) {
+            client.Write($":{client.IRCd.host} {IrcNumeric.ERR_BANNEDFROMCHAN.Printable()} {client.Nick} {channel} :Cannot join channel (You're banned)");
+        }
+    }
+
+    public class IrcErrCannotSendToChanException : Exception {
+
+        public IrcErrCannotSendToChanException(Client client, string channel) {
+            client.Write($":{client.IRCd.host} {IrcNumeric.ERR_CANNOTSENDTOCHAN.Printable()} {client.Nick} {channel} :Cannot send to channel (You're banned)");
+        }
+    }
+
 }

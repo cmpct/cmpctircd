@@ -36,7 +36,7 @@ namespace cmpctircd.Modes {
         abstract public bool Revoke(Client client, string args, bool forceSet, bool announce, bool sendSelf);
 
 
-        public bool Has(Client client) {
+        virtual public bool Has(Client client) {
             lock(Affects) {
                 return Affects.Contains(client);
             }

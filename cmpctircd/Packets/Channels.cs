@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 using cmpctircd.Modes;
+using System.Text.RegularExpressions;
 
 namespace cmpctircd.Packets {
     public class Channels {
@@ -228,6 +229,11 @@ namespace cmpctircd.Packets {
                 if(ircd.ChannelManager.Exists(target)) {
                     Channel channel = ircd.ChannelManager[target];
                     if(channel.Inhabits(client)) {
+                        // Check the bans
+                        var userRank = channel.Status(client);
+                        if (channel.Modes["b"].Has(client)) {
+                            throw new IrcErrCannotSendToChanException(client, channel.Name);
+                        }
                         channel.SendToRoom(client, String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, channel.Name, message), false);
                     }
                 } else {
@@ -484,6 +490,13 @@ namespace cmpctircd.Packets {
                     // TODO: and so on
                     // TODO: if so, return the list of bans
                     // TODO: https://git.cmpct.info/cmpctircd.git/blob/a98635da09650310bffe2c98b11ac8fa7cb67445:/lib/IRCd/Client/Packets.pm#l487
+                    if(splitLineSpace[2] == "+b" && String.IsNullOrEmpty(splitLineSpace[3])) {
+                        var banMode = (BanMode)channel.Modes["b"];
+                        foreach(Ban ban in banMode.Bans.Values) {
+                            args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_BANLIST.Printable()} {args.Client.Nick} {channel.Name} {ban.GetBan()}");
+                        }
+                        return true;
+                    }
                 }
 
                 foreach(var mode in modes) {

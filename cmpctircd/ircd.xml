@@ -1,0 +1,14 @@
+<config>
+    <ircd>
+        <host>irc.cmpct.info</host>
+        <network>cmpct</network>
+        <desc>the c# irc server</desc>
+    </ircd>
+
+    <advanced>
+        <require_pong_cookie>true</require_pong_cookie>
+        <ping_timeout>120</ping_timeout>
+        <max_targets>200</max_targets>
+    </advanced>
+
+</config>

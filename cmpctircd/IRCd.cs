@@ -18,14 +18,29 @@ namespace cmpctircd {
         public Dictionary<string, List<string>> ModeTypes { get; set; }
 
         // TODO: constants which will go into the config (not changing until then)
-        public String host = "irc.cmpct.info";
-        public String desc = "the c# ircd";
-        public String network = "cmpct";
-        public String version = "0.2.0-dev";
-        public int maxTargets = 200;
+        public Config.ConfigData Config;
+        public string host;
+        public string desc;
+        public string network;
+        public const string version = "0.2.0-dev";
+        public int maxTargets;
 
-        public Boolean RequirePong { get; set; } = true;
+        public bool RequirePong { get; set; } = true;
         public int PingTimeout { get; set; } = 120;
+
+        public IRCd(Config.ConfigData config) {
+            this.Config = config;
+
+            // Interpret the ConfigData
+            host    = config.Host;
+            desc    = config.Description;
+            network = config.Network;
+
+            PingTimeout = config.PingTimeout;
+            RequirePong = config.RequirePongCookie;
+
+            maxTargets = config.MaxTargets;
+        }
 
         public void Run() {
             Console.WriteLine("Starting cmpctircd");

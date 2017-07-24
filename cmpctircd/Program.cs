@@ -10,7 +10,10 @@ namespace cmpctircd
     {
         static void Main(string[] args)
         {
-            IRCd ircd = new cmpctircd.IRCd();
+            var config = new cmpctircd.Config();
+            var configData = config.Parse();
+
+            IRCd ircd = new cmpctircd.IRCd(configData);
             ircd.Run();
         }
     }

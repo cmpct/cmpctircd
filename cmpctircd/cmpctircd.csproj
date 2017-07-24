@@ -49,6 +49,7 @@
     <Compile Include="ChannelPrivilege.cs" />
     <Compile Include="Client.cs" />
     <Compile Include="ClientState.cs" />
+    <Compile Include="Config.cs" />
     <Compile Include="Errors.cs" />
     <Compile Include="HandlerArgs.cs" />
     <Compile Include="IRCd.cs" />

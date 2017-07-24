@@ -16,9 +16,10 @@ namespace cmpctircd {
         private TcpListener _listener = null;
         private List<Client> _clients = new List<Client>();
 
-        public SocketListener(IRCd ircd, String IP, int port) {
+        public SocketListener(IRCd ircd, IPAddress IP, int port, bool TLS) {
+            // TODO: TLS
             this._ircd = ircd;
-            _listener = new TcpListener(IPAddress.Any, port);
+            _listener = new TcpListener(IP, port);
             lock(_ircd.ClientLists) {
                 _ircd.ClientLists.Add(_clients);
             }

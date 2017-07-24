@@ -5,6 +5,10 @@
         <desc>the c# irc server</desc>
     </ircd>
 
+    <server>
+        <listener ip='127.0.0.1' port='6667' tls='false'/>
+    </server>
+
     <advanced>
         <require_pong_cookie>true</require_pong_cookie>
         <ping_timeout>120</ping_timeout>

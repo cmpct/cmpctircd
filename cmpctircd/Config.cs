@@ -14,11 +14,20 @@ namespace cmpctircd {
             public string Network;
             public string Description;
 
+            // <server>
+            public List<ListenerInfo> Listeners;
+
             // <advanced>
             public bool RequirePongCookie;
             public int PingTimeout;
             public int MaxTargets;
 
+        }
+
+        public struct ListenerInfo {
+            public IPAddress IP;
+            public int Port;
+            public bool TLS;
         }
 
         private string FileName { get; } = "ircd.xml";
@@ -37,6 +46,7 @@ namespace cmpctircd {
         public ConfigData Parse() {
             var data   = new ConfigData();
             var config = Xml.GetElementsByTagName("config").Item(0);
+            data.Listeners = new List<ListenerInfo>();
 
             foreach(XmlElement node in config) {
                 // Valid types: ircd, server, channelmodes, usermodes, cloak, sockets, log, advanced, opers
@@ -45,6 +55,19 @@ namespace cmpctircd {
                         data.Host        = node["host"].InnerText;
                         data.Network     = node["network"].InnerText;
                         data.Description = node["desc"].InnerText;
+                        break;
+
+                    case "server":
+                        foreach(XmlElement listenNode in node.GetElementsByTagName("listener")) {
+                            // <listener> properties: ip, port, tls
+                            ListenerInfo listener = new ListenerInfo();
+                            listener.IP   = IPAddress.Parse(listenNode.Attributes["ip"].InnerText);
+                            listener.Port = Int32.Parse(listenNode.Attributes["port"].InnerText);
+                            listener.TLS  = Boolean.Parse(listenNode.Attributes["tls"].InnerText);
+                            data.Listeners.Add(listener);
+
+                            Console.WriteLine($"Got a listener: {listener.IP}:{listener.Port} tls={listener.TLS}");
+                        }
                         break;
 
                     case "advanced":

@@ -11,7 +11,7 @@ using cmpctircd.Modes;
 
 namespace cmpctircd {
     public class IRCd {
-        private Dictionary<String, SocketListener> listeners;
+        private List<SocketListener> Listeners;
         public PacketManager PacketManager { get; set; }
         public ChannelManager ChannelManager { get; set; }
         public List<List<Client>> ClientLists { get; set; }
@@ -43,24 +43,31 @@ namespace cmpctircd {
 
         public void Run() {
             Console.WriteLine("Starting cmpctircd");
-            Console.WriteLine("==> Host: irc.cmpct.info");
-            Console.WriteLine("==> Listening on: 127.0.0.1:6669");
+            Console.WriteLine($"==> Host: {Host}");
+
+            Listeners = new List<SocketListener>();
             ClientLists = new List<List<Client>>();
-            SocketListener sl = new SocketListener(this, "127.0.0.1", 6669);
+
+            foreach(var listener in Config.Listeners) {
+                // TODO: tls
+                SocketListener sl = new SocketListener(this, listener.IP, listener.Port, listener.TLS);
+                Console.WriteLine($"==> Listening on: {listener.IP}:{listener.Port}");
+                Listeners.Add(sl);
+            }
+
             PacketManager = new PacketManager(this);
             ChannelManager = new ChannelManager(this);
 
-            sl.Bind();
+            Listeners.ForEach(listener => listener.Bind());
             PacketManager.Load();
 
             // TODO: need to listen to everybody
             while (true) {
                 try {
-                    Console.WriteLine("Listening to one more");
                     // HACK: You can't use await in async
-                    sl.ListenToClients().Wait();
+                    Listeners.ForEach(listener => listener.ListenToClients().Wait());
                 } catch {
-                    sl.Stop();
+                    Listeners.ForEach(listener => listener.Stop());
                 }
             }
         }

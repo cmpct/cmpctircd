@@ -63,10 +63,10 @@ namespace cmpctircd {
             foreach(var room_client in Clients) {
                 var userPriv = Status(room_client.Value);
                 var userSymbol = GetUserSymbol(userPriv);
-                client.Write($":{client.IRCd.host} {IrcNumeric.RPL_NAMREPLY.Printable()} {client.Nick} = {Name} :{userSymbol}{room_client.Value.Nick}");
+                client.Write($":{client.IRCd.Host} {IrcNumeric.RPL_NAMREPLY.Printable()} {client.Nick} = {Name} :{userSymbol}{room_client.Value.Nick}");
             }
             client.Write(String.Format(":{0} {1} {2} {3} :End of /NAMES list.",
-                    client.IRCd.host,
+                    client.IRCd.Host,
                     IrcNumeric.RPL_ENDOFNAMES.Printable(),
                     client.Nick,
                     Name
@@ -148,7 +148,7 @@ namespace cmpctircd {
 
 
         /*
-         * Useful internals (public methods) 
+         * Useful internals (public methods)
         */
         public void SendToRoom(Client client, String message) {
             // Default: assume send to everyone including the client

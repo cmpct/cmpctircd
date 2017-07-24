@@ -21,7 +21,7 @@ namespace cmpctircd {
 
         public IrcErrNoSuchTargetNickException(Client client, String target) {
             this.client = client;
-            client.Write(String.Format(":{0} {1} {2} {3} :No such nick/channel", client.IRCd.host, IrcNumeric.ERR_NOSUCHNICK.Printable(), client.Nick, target));
+            client.Write(String.Format(":{0} {1} {2} {3} :No such nick/channel", client.IRCd.Host, IrcNumeric.ERR_NOSUCHNICK.Printable(), client.Nick, target));
         }
     }
 
@@ -30,7 +30,7 @@ namespace cmpctircd {
 
         public IrcErrNoSuchTargetChannelException(Client client, String target) {
             this.client = client;
-            client.Write(String.Format(":{0} {1} {2} {3} :No such nick/channel", client.IRCd.host, IrcNumeric.ERR_NOSUCHCHANNEL.Printable(), client.Nick, target));
+            client.Write(String.Format(":{0} {1} {2} {3} :No such nick/channel", client.IRCd.Host, IrcNumeric.ERR_NOSUCHCHANNEL.Printable(), client.Nick, target));
         }
     }
 
@@ -39,7 +39,7 @@ namespace cmpctircd {
 
         public IrcErrNoRecipientException(Client client, String command) {
             this.client = client;
-            client.Write(String.Format(":{0} {1} {2} :No recipient given ({3})", client.IRCd.host, IrcNumeric.ERR_NORECIPIENT.Printable(), client.Nick, command));
+            client.Write(String.Format(":{0} {1} {2} :No recipient given ({3})", client.IRCd.Host, IrcNumeric.ERR_NORECIPIENT.Printable(), client.Nick, command));
         }
     }
 
@@ -52,7 +52,7 @@ namespace cmpctircd {
             if(String.IsNullOrEmpty(currentNick)) {
                 currentNick = "NICK";
             }
-            client.Write(String.Format(":{0} {1} {2} {3} :Not enough parameters", client.IRCd.host, IrcNumeric.ERR_NEEDMOREPARAMS.Printable(), currentNick, command));
+            client.Write(String.Format(":{0} {1} {2} {3} :Not enough parameters", client.IRCd.Host, IrcNumeric.ERR_NEEDMOREPARAMS.Printable(), currentNick, command));
         }
     }
 
@@ -61,7 +61,7 @@ namespace cmpctircd {
 
         public IrcErrNotRegisteredException(Client client) {
             this.client = client;
-            client.Write(String.Format(":{0} {1} * :You have not registered", client.IRCd.host, IrcNumeric.ERR_NOTREGISTERED.Printable()));
+            client.Write(String.Format(":{0} {1} * :You have not registered", client.IRCd.Host, IrcNumeric.ERR_NOTREGISTERED.Printable()));
         }
     }
 
@@ -70,7 +70,7 @@ namespace cmpctircd {
 
         public IrcErrAlreadyRegisteredException(Client client) {
             this.client = client;
-            client.Write(String.Format(":{0} {1} * :You may not reregister", client.IRCd.host, IrcNumeric.ERR_ALREADYREGISTERED.Printable()));
+            client.Write(String.Format(":{0} {1} * :You may not reregister", client.IRCd.Host, IrcNumeric.ERR_ALREADYREGISTERED.Printable()));
         }
     }
 
@@ -85,7 +85,7 @@ namespace cmpctircd {
             if(String.IsNullOrEmpty(currentNick)) {
                 currentNick = "NICK";
             }
-            client.Write(String.Format(":{0} {1} {2} {3} :Erroneous nickname: Illegal characters", client.IRCd.host, IrcNumeric.ERR_ERRONEUSNICKNAME.Printable(), currentNick, badNick));
+            client.Write(String.Format(":{0} {1} {2} {3} :Erroneous nickname: Illegal characters", client.IRCd.Host, IrcNumeric.ERR_ERRONEUSNICKNAME.Printable(), currentNick, badNick));
         }
     }
 
@@ -94,7 +94,7 @@ namespace cmpctircd {
 
         public IrcErrNicknameInUseException(Client client, String nick) {
             this.client = client;
-            client.Write(String.Format(":{0} {1} * {2} :Nickname is already in use", client.IRCd.host, IrcNumeric.ERR_NICKNAMEINUSE.Printable(), nick));
+            client.Write(String.Format(":{0} {1} * {2} :Nickname is already in use", client.IRCd.Host, IrcNumeric.ERR_NICKNAMEINUSE.Printable(), nick));
         }
     }
 
@@ -103,13 +103,13 @@ namespace cmpctircd {
 
         public IrcErrNotOnChannelException(Client client, String channel) {
             this.client = client;
-            client.Write(String.Format(":{0} {1} {2} {3} :You're not on that channel", client.IRCd.host, IrcNumeric.ERR_NOTONCHANNEL.Printable(), client.Nick, channel));
+            client.Write(String.Format(":{0} {1} {2} {3} :You're not on that channel", client.IRCd.Host, IrcNumeric.ERR_NOTONCHANNEL.Printable(), client.Nick, channel));
         }
     }
 
     public class IrcErrChanOpPrivsNeededException : Exception {
         public IrcErrChanOpPrivsNeededException(Client client, String channel) {
-            client.Write($":{client.IRCd.host} {IrcNumeric.ERR_CHANOPRIVSNEEDED.Printable()} {client.Nick} {channel} :You must be a channel operator");
+            client.Write($":{client.IRCd.Host} {IrcNumeric.ERR_CHANOPRIVSNEEDED.Printable()} {client.Nick} {channel} :You must be a channel operator");
         }
     }
 
@@ -117,7 +117,7 @@ namespace cmpctircd {
         private Client client;
 
         public IrcErrNoTextToSendException(Client client) {
-            client.Write(String.Format(":{0} {1} {2} :No text to send", client.IRCd.host, IrcNumeric.ERR_NOTEXTTOSEND.Printable(), client.Nick));
+            client.Write(String.Format(":{0} {1} {2} :No text to send", client.IRCd.Host, IrcNumeric.ERR_NOTEXTTOSEND.Printable(), client.Nick));
         }
     }
 
@@ -125,7 +125,7 @@ namespace cmpctircd {
         private Client client;
 
         public IrcErrUnknownCommandException(Client client, String packet) {
-            client.Write($":{client.IRCd.host} {IrcNumeric.ERR_UNKNOWNCOMMAND.Printable()} {client.Nick} {packet} :Unknown command");
+            client.Write($":{client.IRCd.Host} {IrcNumeric.ERR_UNKNOWNCOMMAND.Printable()} {client.Nick} {packet} :Unknown command");
         }
     }
 
@@ -133,7 +133,7 @@ namespace cmpctircd {
         private Client client;
 
         public IrcErrUserOnChannelException(Client client, String target, String channel) {
-            client.Write($":{client.IRCd.host} {IrcNumeric.ERR_USERONCHANNEL.Printable()} {client.Nick} {target} {channel} :is already on channel");
+            client.Write($":{client.IRCd.Host} {IrcNumeric.ERR_USERONCHANNEL.Printable()} {client.Nick} {target} {channel} :is already on channel");
         }
     }
 
@@ -141,21 +141,21 @@ namespace cmpctircd {
         private Client client;
 
         public IrcErrInviteOnlyChanException(Client client, string channel) {
-            client.Write($":{client.IRCd.host} {IrcNumeric.ERR_INVITEONLYCHAN.Printable()} {client.Nick} {channel} :Cannot join channel (Invite only)");
+            client.Write($":{client.IRCd.Host} {IrcNumeric.ERR_INVITEONLYCHAN.Printable()} {client.Nick} {channel} :Cannot join channel (Invite only)");
         }
     }
 
     public class IrcErrBannedFromChanException : Exception {
 
         public IrcErrBannedFromChanException(Client client, string channel) {
-            client.Write($":{client.IRCd.host} {IrcNumeric.ERR_BANNEDFROMCHAN.Printable()} {client.Nick} {channel} :Cannot join channel (You're banned)");
+            client.Write($":{client.IRCd.Host} {IrcNumeric.ERR_BANNEDFROMCHAN.Printable()} {client.Nick} {channel} :Cannot join channel (You're banned)");
         }
     }
 
     public class IrcErrCannotSendToChanException : Exception {
 
         public IrcErrCannotSendToChanException(Client client, string channel) {
-            client.Write($":{client.IRCd.host} {IrcNumeric.ERR_CANNOTSENDTOCHAN.Printable()} {client.Nick} {channel} :Cannot send to channel (You're banned)");
+            client.Write($":{client.IRCd.Host} {IrcNumeric.ERR_CANNOTSENDTOCHAN.Printable()} {client.Nick} {channel} :Cannot send to channel (You're banned)");
         }
     }
 

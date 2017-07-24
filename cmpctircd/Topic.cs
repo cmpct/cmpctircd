@@ -15,11 +15,11 @@ namespace cmpctircd {
         // TODO: Revise function definition (could be properties?)
         public void GetTopic(Client client, string target, bool onJoin = false) {
             if (String.IsNullOrWhiteSpace(TopicText) && !onJoin) {
-                client.Write(String.Format(":{0} {1} {2} {3} :No topic is set.", client.IRCd.host, IrcNumeric.RPL_NOTOPIC.Printable(), client.Nick, target));
+                client.Write(String.Format(":{0} {1} {2} {3} :No topic is set.", client.IRCd.Host, IrcNumeric.RPL_NOTOPIC.Printable(), client.Nick, target));
             }
             else if (!String.IsNullOrWhiteSpace(TopicText)) {
-                client.Write(String.Format(":{0} {1} {2} {3} :{4}", client.IRCd.host, IrcNumeric.RPL_TOPIC.Printable(), client.Nick, target, TopicText));
-                client.Write(String.Format(":{0} {1} {2} {3} {4} {5}", client.IRCd.host, IrcNumeric.RPL_TOPICWHOTIME.Printable(), client.Nick, target, User.Mask, Date));
+                client.Write(String.Format(":{0} {1} {2} {3} :{4}", client.IRCd.Host, IrcNumeric.RPL_TOPIC.Printable(), client.Nick, target, TopicText));
+                client.Write(String.Format(":{0} {1} {2} {3} {4} {5}", client.IRCd.Host, IrcNumeric.RPL_TOPICWHOTIME.Printable(), client.Nick, target, User.Mask, Date));
             }
         }
 

@@ -42,7 +42,7 @@ namespace cmpctircd.Packets
                 throw new IrcErrNoSuchTargetNickException(args.Client, target);
             }
 
-            args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_WHOISUSER.Printable()} {args.Client.Nick} {targetClient.Nick} {targetClient.Ident} {targetClient.Host} * :{targetClient.RealName}");
+            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISUSER.Printable()} {args.Client.Nick} {targetClient.Nick} {targetClient.Ident} {targetClient.Host} * :{targetClient.RealName}");
 
             // Generate a list of all the channels inhabited by the target
             // XXX: no LINQ for now because of strange bug where LINQ in Packet/dynamic classes causes an exception
@@ -61,24 +61,24 @@ namespace cmpctircd.Packets
             if(targetClient == args.Client) {
                 // Only allow the target client's sensitive connection info if WHOISing themselves
                 // TODO: modify to allow ircops to see this too (when we have ircops)
-                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_WHOISHOST.Printable()} {args.Client.Nick} {targetClient.Nick} :is connecting from {targetClient.Ident}@{targetClient.Host} {targetClient.Host}");
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISHOST.Printable()} {args.Client.Nick} {targetClient.Nick} :is connecting from {targetClient.Ident}@{targetClient.Host} {targetClient.Host}");
             }
 
             if(inhabitedChannels.Count() > 0) {
                 // Only show if the target client resides in at least one channel
                 // TODO: needs modification for DNS (the last 'Host' should become 'IP', but there's no distinction between these yet)
-                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_WHOISCHANNELS.Printable()} {args.Client.Nick} {targetClient.Nick} :{string.Join(" ", inhabitedChannels)}");
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISCHANNELS.Printable()} {args.Client.Nick} {targetClient.Nick} :{string.Join(" ", inhabitedChannels)}");
             }
 
-            args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_WHOISSERVER.Printable()} {args.Client.Nick} {targetClient.Nick} {args.IRCd.host} :{args.IRCd.desc}");
+            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISSERVER.Printable()} {args.Client.Nick} {targetClient.Nick} {args.IRCd.Host} :{args.IRCd.Desc}");
 
             if(!String.IsNullOrWhiteSpace(targetClient.AwayMessage)) {
                 // Only show if the user is away
-                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_AWAY.Printable()} {args.Client.Nick} {targetClient.Nick} :{targetClient.AwayMessage}");
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_AWAY.Printable()} {args.Client.Nick} {targetClient.Nick} :{targetClient.AwayMessage}");
             }
 
-            args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_WHOISIDLE.Printable()} {args.Client.Nick} {targetClient.Nick} {idleTime} {targetClient.SignonTime} :seconds idle, signon time");
-            args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_ENDOFWHOIS.Printable()} {args.Client.Nick} {targetClient.Nick} :End of /WHOIS list");
+            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISIDLE.Printable()} {args.Client.Nick} {targetClient.Nick} {idleTime} {targetClient.SignonTime} :seconds idle, signon time");
+            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFWHOIS.Printable()} {args.Client.Nick} {targetClient.Nick} :End of /WHOIS list");
             return true;
         }
         public Boolean AwayHandler(HandlerArgs args) {
@@ -94,9 +94,9 @@ namespace cmpctircd.Packets
 
             args.Client.AwayMessage = message;
             if(args.Client.AwayMessage != "") {
-                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_NOWAWAY.Printable()} {args.Client.Nick} :You have been marked as being away");
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_NOWAWAY.Printable()} {args.Client.Nick} :You have been marked as being away");
             } else {
-                args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_UNAWAY.Printable()} {args.Client.Nick} :You are no longer marked as being away");
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_UNAWAY.Printable()} {args.Client.Nick} :You are no longer marked as being away");
             }
 
             return true;

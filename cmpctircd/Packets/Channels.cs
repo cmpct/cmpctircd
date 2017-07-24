@@ -59,7 +59,7 @@ namespace cmpctircd.Packets {
                 throw new IrcErrChanOpPrivsNeededException(args.Client, channel.Name);
             }
 
-            channel.SendToRoom(args.Client, $":{args.IRCd.host} {IrcNumeric.RPL_INVITING.Printable()} {args.Client.Nick} {targetClient.Nick} :{channel.Name}", true);
+            channel.SendToRoom(args.Client, $":{args.IRCd.Host} {IrcNumeric.RPL_INVITING.Printable()} {args.Client.Nick} {targetClient.Nick} :{channel.Name}", true);
             targetClient.Write($":{args.Client.Mask} INVITE {targetClient.Nick} :{channel.Name}");
             targetClient.Invites.Add(channel);
             return true;
@@ -76,7 +76,7 @@ namespace cmpctircd.Packets {
             String message;
 
             rawSplit = rawLine.Split(' ');
-            
+
             if(rawSplit.Count() <= 2) {
                 throw new IrcErrNotEnoughParametersException(client, "KICK");
             }
@@ -88,7 +88,7 @@ namespace cmpctircd.Packets {
             }
 
             target  = rawSplit[2];
-            
+
             if (ircd.ChannelManager.Exists(rawSplit[1])) {
                 channel = ircd.ChannelManager[rawSplit[1]];
             } else {
@@ -242,7 +242,7 @@ namespace cmpctircd.Packets {
             } else if(targetClient != null) {
                 if(!String.IsNullOrWhiteSpace(targetClient.AwayMessage)) {
                     // If the target client (recipient) is away, warn the person (source) sending the message to them.
-                    args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_AWAY.Printable()} {args.Client.Nick} {target} :{targetClient.AwayMessage}");
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_AWAY.Printable()} {args.Client.Nick} {target} :{targetClient.AwayMessage}");
                 }
                 targetClient.Write(String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, target, message));
             }
@@ -386,14 +386,14 @@ namespace cmpctircd.Packets {
                     } else {
                         away = "G"; // "Gone"
                     }
-                    args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {target} {client.Value.Ident} {client.Value.Host} {args.IRCd.host} {client.Value.Nick} {away}{userSymbol} :{hopCount} {client.Value.RealName}");
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {target} {client.Value.Ident} {client.Value.Host} {args.IRCd.Host} {client.Value.Nick} {away}{userSymbol} :{hopCount} {client.Value.RealName}");
                 }
             } else {
                 // The target is a user
                 // TODO: implement this once we have +i (invisible mode)
             }
 
-            args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {args.Client.Nick} {target} :End of /WHO list.");
+            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {args.Client.Nick} {target} :End of /WHO list.");
             return true;
         }
         public Boolean NamesHandler(HandlerArgs args) {
@@ -417,9 +417,9 @@ namespace cmpctircd.Packets {
                     foreach(var client in targetChannel.Clients) {
                         var userPriv = targetChannel.Status(client.Value);
                         var userSymbol = targetChannel.GetUserSymbol(userPriv);
-                        args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_NAMREPLY.Printable()} {args.Client.Nick} = {channel_name} :{userSymbol}{client.Value.Nick}");
+                        args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_NAMREPLY.Printable()} {args.Client.Nick} = {channel_name} :{userSymbol}{client.Value.Nick}");
                     }
-                    args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_ENDOFNAMES.Printable()} {args.Client.Nick} {channel_name} :End of /NAMES list.");
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFNAMES.Printable()} {args.Client.Nick} {channel_name} :End of /NAMES list.");
                 }
             }
 
@@ -457,9 +457,9 @@ namespace cmpctircd.Packets {
                 string characters = channelModes[0];
                 string argsSet = channelModes[1];
                 if(!String.IsNullOrWhiteSpace(argsSet)) {
-                    args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_CHANNELMODEIS.Printable()} {args.Client.Nick} {channel.Name} {characters} {argsSet}");
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_CHANNELMODEIS.Printable()} {args.Client.Nick} {channel.Name} {characters} {argsSet}");
                 } else {
-                    args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_CHANNELMODEIS.Printable()} {args.Client.Nick} {channel.Name} {characters}");
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_CHANNELMODEIS.Printable()} {args.Client.Nick} {channel.Name} {characters}");
                 }
                 // TODO: creation time?
 
@@ -493,7 +493,7 @@ namespace cmpctircd.Packets {
                     if(splitLineSpace[2] == "+b" && String.IsNullOrEmpty(splitLineSpace[3])) {
                         var banMode = (BanMode)channel.Modes["b"];
                         foreach(Ban ban in banMode.Bans.Values) {
-                            args.Client.Write($":{args.IRCd.host} {IrcNumeric.RPL_BANLIST.Printable()} {args.Client.Nick} {channel.Name} {ban.GetBan()}");
+                            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_BANLIST.Printable()} {args.Client.Nick} {channel.Name} {ban.GetBan()}");
                         }
                         return true;
                     }

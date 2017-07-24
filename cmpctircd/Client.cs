@@ -36,7 +36,7 @@ namespace cmpctircd
         public int LastPong { get; set; } = 0;
         public String PingCookie { get; set; } = "";
 
-        public void SendVersion() => Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.version));
+        public void SendVersion() => Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.Host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.Version));
 
         public readonly static object nickLock = new object();
 
@@ -72,16 +72,16 @@ namespace cmpctircd
             // Henceforth, we assume user can become Authenticated!
             State = ClientState.Auth;
 
-            Write(String.Format(":{0} {1} {2} :Welcome to the {3} IRC Network {4}", IRCd.host, IrcNumeric.RPL_WELCOME.Printable(), Nick, IRCd.network, Mask));
-            Write(String.Format(":{0} {1} {2} :Your host is {3}, running version cmpctircd-{4}", IRCd.host, IrcNumeric.RPL_YOURHOST.Printable(), Nick, IRCd.host, IRCd.version));
-            Write(String.Format(":{0} {1} {2} :This server was created {3}", IRCd.host, IrcNumeric.RPL_CREATED.Printable(), Nick, IRCd.host, 0));
+            Write(String.Format(":{0} {1} {2} :Welcome to the {3} IRC Network {4}", IRCd.Host, IrcNumeric.RPL_WELCOME.Printable(), Nick, IRCd.Network, Mask));
+            Write(String.Format(":{0} {1} {2} :Your host is {3}, running version cmpctircd-{4}", IRCd.Host, IrcNumeric.RPL_YOURHOST.Printable(), Nick, IRCd.Host, IRCd.Version));
+            Write(String.Format(":{0} {1} {2} :This server was created {3}", IRCd.Host, IrcNumeric.RPL_CREATED.Printable(), Nick, IRCd.Host, 0));
             // TODO: This was commented out in the Perl version, probably not something to use for now.
             // TODO: I don't think MYINFO is very popular?
-            //write(String.Format(":{0} {1} {2} {3} {4} x ntlo", ircd.host, IrcNumeric.RPL_MYINFO.Printable(), nick, ircd.host, ircd.version));
-            Write(String.Format(":{0} {1} {2} :CASEMAPPING=rfc1459 PREFIX=(ov)@+ STATUSMSG=@+ NETWORK={3} MAXTARGETS={4} :are supported by this server", IRCd.host, IrcNumeric.RPL_ISUPPORT.Printable(), Nick, IRCd.network, IRCd.maxTargets));
+            //write(String.Format(":{0} {1} {2} {3} {4} x ntlo", ircd.Host, IrcNumeric.RPL_MYINFO.Printable(), nick, ircd.Host, ircd.version));
+            Write(String.Format(":{0} {1} {2} :CASEMAPPING=rfc1459 PREFIX=(ov)@+ STATUSMSG=@+ NETWORK={3} MAXTARGETS={4} :are supported by this server", IRCd.Host, IrcNumeric.RPL_ISUPPORT.Printable(), Nick, IRCd.Network, IRCd.MaxTargets));
 
             var ModeTypes = IRCd.GetSupportedModes();
-            Write($":{IRCd.host} {IrcNumeric.RPL_ISUPPORT.Printable()} {Nick} :CHANTYPES=# CHANMODES={string.Join("",ModeTypes["A"])},{string.Join("",ModeTypes["B"])},{string.Join("", ModeTypes["C"])},{string.Join("", ModeTypes["D"])} :are supported by this server");
+            Write($":{IRCd.Host} {IrcNumeric.RPL_ISUPPORT.Printable()} {Nick} :CHANTYPES=# CHANMODES={string.Join("",ModeTypes["A"])},{string.Join("",ModeTypes["B"])},{string.Join("", ModeTypes["C"])},{string.Join("", ModeTypes["D"])} :are supported by this server");
 
             // Send MOTD
             SendMotd();
@@ -90,15 +90,15 @@ namespace cmpctircd
         public void SendMotd() {
             try {
                 string[] motd = System.IO.File.ReadAllLines("ircd.motd");
-                Write(String.Format(":{0} {1} {2} : - {3} Message of the Day -", IRCd.host, IrcNumeric.RPL_MOTDSTART.Printable(), Nick, IRCd.host));
+                Write(String.Format(":{0} {1} {2} : - {3} Message of the Day -", IRCd.Host, IrcNumeric.RPL_MOTDSTART.Printable(), Nick, IRCd.Host));
                 for(int i = 0; i < motd.Length; i++) {
                     if((i == motd.Length) && String.IsNullOrEmpty(motd[i])) {
                         // If end of the file and a new line, don't print.
                         break;
                     }
-                    Write(String.Format(":{0} {1} {2} : - {3}", IRCd.host, IrcNumeric.RPL_MOTD.Printable(), Nick, motd[i]));
+                    Write(String.Format(":{0} {1} {2} : - {3}", IRCd.Host, IrcNumeric.RPL_MOTD.Printable(), Nick, motd[i]));
                 }
-                Write(String.Format(":{0} {1} {2} :End of /MOTD command.", IRCd.host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
+                Write(String.Format(":{0} {1} {2} :End of /MOTD command.", IRCd.Host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
             } catch(System.IO.FileNotFoundException) {
                 Console.WriteLine("ircd.motd doesn't exist!");
             }
@@ -108,15 +108,15 @@ namespace cmpctircd
         public void SendRules() {
             try {
                 string[] rules = System.IO.File.ReadAllLines("ircd.rules");
-                Write(String.Format(":{0} {1} {2} :- {3} server rules -", IRCd.host, IrcNumeric.RPL_MOTDSTART.Printable(), Nick, IRCd.host));
+                Write(String.Format(":{0} {1} {2} :- {3} server rules -", IRCd.Host, IrcNumeric.RPL_MOTDSTART.Printable(), Nick, IRCd.Host));
                 for(int i = 0; i < rules.Length; i++) {
                     if((i == rules.Length) && String.IsNullOrEmpty(rules[i])) {
                         // If end of the file and a new line, don't print.
                         break;
                     }
-                    Write(String.Format(":{0} {1} {2} : - {3}", IRCd.host, IrcNumeric.RPL_MOTD.Printable(), Nick, rules[i]));
+                    Write(String.Format(":{0} {1} {2} : - {3}", IRCd.Host, IrcNumeric.RPL_MOTD.Printable(), Nick, rules[i]));
                 }
-                Write(String.Format(":{0} {1} {2} :End of RULES command.", IRCd.host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
+                Write(String.Format(":{0} {1} {2} :End of RULES command.", IRCd.Host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
             } catch(System.IO.FileNotFoundException) {
                 Console.WriteLine("ircd.rules doesn't exist!");
             }

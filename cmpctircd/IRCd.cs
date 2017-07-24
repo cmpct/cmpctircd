@@ -19,11 +19,11 @@ namespace cmpctircd {
 
         // TODO: constants which will go into the config (not changing until then)
         public Config.ConfigData Config;
-        public string host;
-        public string desc;
-        public string network;
-        public const string version = "0.2.0-dev";
-        public int maxTargets;
+        public string Host;
+        public string Desc;
+        public string Network;
+        public const string Version = "0.2.0-dev";
+        public int MaxTargets;
 
         public bool RequirePong { get; set; } = true;
         public int PingTimeout { get; set; } = 120;
@@ -32,14 +32,14 @@ namespace cmpctircd {
             this.Config = config;
 
             // Interpret the ConfigData
-            host    = config.Host;
-            desc    = config.Description;
-            network = config.Network;
+            Host    = config.Host;
+            Desc    = config.Description;
+            Network = config.Network;
 
             PingTimeout = config.PingTimeout;
             RequirePong = config.RequirePongCookie;
 
-            maxTargets = config.MaxTargets;
+            MaxTargets = config.MaxTargets;
         }
 
         public void Run() {

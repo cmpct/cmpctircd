@@ -5,7 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 
 using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Collections;
 using System.Text.RegularExpressions;
 
@@ -16,9 +19,11 @@ namespace cmpctircd {
         private TcpListener _listener = null;
         private List<Client> _clients = new List<Client>();
 
+        public bool TLS { get; set; } = false;
+
         public SocketListener(IRCd ircd, IPAddress IP, int port, bool TLS) {
-            // TODO: TLS
             this._ircd = ircd;
+            this.TLS = TLS;
             _listener = new TcpListener(IP, port);
             lock(_ircd.ClientLists) {
                 _ircd.ClientLists.Add(_clients);
@@ -57,11 +62,38 @@ namespace cmpctircd {
             lock (_clients)
                 _clients.Add(client);
             
+            // Handshake with TLS if they're from a TLS port
+            SslStream sslStream = null;
+            if(TLS) {
+                try {
+                    sslStream = new SslStream(client.TcpClient.GetStream(), true);
+                    sslStream.ReadTimeout = 5000;
+                    sslStream.WriteTimeout = 5000;
+                    client.ClientTlsStream = sslStream;
+
+                    // NOTE: Must use carefully constructed cert in PKCS12 format (.pfx)
+                    // NOTE: https://security.stackexchange.com/a/29428
+                    // NOTE: You will get a NotSupportedException otherwise
+                    // NOTE: Create a TLS certificate using openssl (or $TOOL), then:
+                    // NOTE:    openssl pkcs12 -export -in tls_cert.pem -inkey tls_key.pem -out server.pfx
+                    X509Certificate serverCertificate = new X509Certificate2(_ircd.Config.TLS_PfxLocation, _ircd.Config.TLS_PfxPassword);
+                    sslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls, true);
+                } catch(Exception e) {
+                    Console.WriteLine(e.ToString());
+                }
+            }
+
             client.BeginTasks();
 
             while (true) {
                 try {
-                    int bytesRead = await client.ClientStream.ReadAsync(client.Buffer, 0, client.Buffer.Length);
+                    int bytesRead;
+                    if(TLS) {
+                        bytesRead = await sslStream.ReadAsync(client.Buffer, 0, client.Buffer.Length);
+                    } else {
+                        bytesRead = await client.ClientStream.ReadAsync(client.Buffer, 0, client.Buffer.Length);
+                    }
+
                     if (bytesRead > 0) {
                         // Would a TcpClient have ReadLine for us?
                         string data = Encoding.UTF8.GetString(client.Buffer);

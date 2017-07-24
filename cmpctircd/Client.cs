@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Net.Sockets;
+using System.Net.Security;
 
 using cmpctircd.Modes;
 
@@ -17,6 +18,7 @@ namespace cmpctircd
         public IRCd IRCd { get; set; }
         public TcpClient TcpClient { get; set; }
         public NetworkStream ClientStream { get; private set; }
+        public SslStream ClientTlsStream { get; set; }
         public SocketListener Listener { get; set; }
         public byte[] Buffer { get; set; }
 
@@ -219,7 +221,11 @@ namespace cmpctircd
         public void Write(String packet) {
             byte[] packetBytes = Encoding.UTF8.GetBytes(packet + "\r\n");
             try {
-                ClientStream.Write(packetBytes, 0, packetBytes.Length);
+                if(ClientTlsStream != null) {
+                    ClientTlsStream.Write(packetBytes, 0, packetBytes.Length);
+                } else {
+                    ClientStream.Write(packetBytes, 0, packetBytes.Length);
+                }
             } catch(System.IO.IOException) {
                 Disconnect("Connection reset by host", true, false);
             }

@@ -17,6 +17,10 @@ namespace cmpctircd {
             // <server>
             public List<ListenerInfo> Listeners;
 
+            // <tls>
+            public string TLS_PfxLocation;
+            public string TLS_PfxPassword;
+
             // <advanced>
             public bool RequirePongCookie;
             public int PingTimeout;
@@ -71,6 +75,11 @@ namespace cmpctircd {
 
                             Console.WriteLine($"Got a listener: {listener.IP}:{listener.Port} tls={listener.TLS}");
                         }
+                        break;
+
+                    case "tls":
+                        data.TLS_PfxLocation = node.Attributes["pfx_file"].InnerText;
+                        data.TLS_PfxPassword = node.Attributes["pfx_pass"].InnerText;
                         break;
 
                     case "advanced":

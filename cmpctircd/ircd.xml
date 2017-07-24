@@ -7,7 +7,16 @@
 
     <server>
         <listener ip='127.0.0.1' port='6667' tls='false'/>
+        <!--
+            <listener ip='127.0.0.1' port='6697' tls='true'/>
+        -->
     </server>
+
+    <!-- We need the TLS certificate to be stored in PFX format -->
+    <!-- If you see a NotSupportedException, then this is a reminder to convert your certificate and key! -->
+    <!-- https://security.stackexchange.com/a/29428 -->
+    <!-- Simply convert using the following command: openssl pkcs12 -export -in ssl.cert -inkey private.key -out server.pfx -->
+    <tls pfx_file='server.pfx' pfx_pass=''/>
 
     <advanced>
         <require_pong_cookie>true</require_pong_cookie>

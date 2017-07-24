@@ -17,7 +17,6 @@ namespace cmpctircd {
         public List<List<Client>> ClientLists { get; set; }
         public Dictionary<string, List<string>> ModeTypes { get; set; }
 
-        // TODO: constants which will go into the config (not changing until then)
         public Config.ConfigData Config;
         public string Host;
         public string Desc;

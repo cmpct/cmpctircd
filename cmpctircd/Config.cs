@@ -35,12 +35,8 @@ namespace cmpctircd {
 
 
         public Config() {
-            XmlReaderSettings readerSettings = new XmlReaderSettings();
-            readerSettings.IgnoreComments = true;
-            XmlReader reader = XmlReader.Create(FileName, readerSettings);
-
             try {
-                Xml.Load(reader);
+                Xml.Load(FileName);
             } catch(System.IO.IOException e) {
                 Console.WriteLine($"Unable to open the configuration file: {FileName}");
                 throw e;

@@ -61,14 +61,15 @@ namespace cmpctircd {
             Listeners.ForEach(listener => listener.Bind());
             PacketManager.Load();
 
-            // TODO: need to listen to everybody
+            try {
+                // HACK: You can't use await in async
+                Listeners.ForEach(listener => listener.ListenToClients());
+            } catch {
+                Listeners.ForEach(listener => listener.Stop());
+            }
+
             while (true) {
-                try {
-                    // HACK: You can't use await in async
-                    Listeners.ForEach(listener => listener.ListenToClients().Wait());
-                } catch {
-                    Listeners.ForEach(listener => listener.Stop());
-                }
+                System.Threading.Thread.Sleep(10);
             }
         }
 

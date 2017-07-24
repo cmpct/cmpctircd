@@ -46,8 +46,10 @@ namespace cmpctircd {
             }
 
             // TODO: Loop (should be done by caller instead)
-            TcpClient tc = await _listener.AcceptTcpClientAsync();
-            HandleClient(tc); // this should split off execution
+            while(true) {
+                TcpClient tc = await _listener.AcceptTcpClientAsync();
+                HandleClient(tc); // this should split off execution
+            }
         }
 
         async Task HandleClient(TcpClient tc) {

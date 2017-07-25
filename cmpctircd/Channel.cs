@@ -50,8 +50,6 @@ namespace cmpctircd {
                 // TODO: Send ERR_USERONCHANNEL? Not clear if other ircds do this.
                 throw new InvalidOperationException("User is already in the room!");
             }
-            // Check the bans
-            var userRank = Status(client);
             if(Modes["b"].Has(client)) {
                 throw new IrcErrBannedFromChanException(client, Name);
             }

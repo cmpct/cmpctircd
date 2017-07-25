@@ -15,7 +15,8 @@ namespace cmpctircd {
         public PacketManager PacketManager { get; set; }
         public ChannelManager ChannelManager { get; set; }
         public List<List<Client>> ClientLists { get; set; }
-        public Dictionary<string, List<string>> ModeTypes { get; set; }
+        private Dictionary<string, List<string>> ModeTypes { get; set; }
+        private Dictionary<string, string> ModeDict { get; set; }
 
         public Config.ConfigData Config;
         public string Host;
@@ -93,7 +94,34 @@ namespace cmpctircd {
             throw new InvalidOperationException("No such user exists");
         }
 
-        public Dictionary<string, List<string>> GetSupportedModes() {
+        public Dictionary<string, string> GetSupportedModes(bool requireSymbols) {
+            if(ModeDict != null && ModeDict.Count() > 0) {
+                // Caching because this is still a relatively expensive operation to perform on each connection
+                // (GetSupportedModesByType() is likely far more expensive given it uses reflection)
+                // This is called by SendWelcome() to provide RPL_ISUPPORT
+                return ModeDict;
+            }
+            ModeDict = new Dictionary<string, string>();
+
+            var chan = new Channel(ChannelManager, this);
+            foreach(var modeList in ModeTypes) {
+                foreach(var mode in modeList.Value) {
+                    var modeObject = chan.Modes[mode];
+
+                    if(requireSymbols && String.IsNullOrEmpty(modeObject.Symbol)) continue;
+                    ModeDict.Add(modeObject.Character, modeObject.Symbol);
+                }
+            }
+
+            var modeCharacters  = String.Join("", ModeDict.Select(p => p.Key));
+            var modeSymbols     = String.Join("", ModeDict.Select(p => p.Value));
+            ModeDict.Add("Characters", modeCharacters);
+            ModeDict.Add("Symbols", modeSymbols);
+
+            return ModeDict;
+        }
+
+        public Dictionary<string, List<string>> GetSupportedModesByType() {
             if(ModeTypes != null && ModeTypes.Count() > 0) {
                 // Caching to only generate this list once - reflection is expensive
                 return ModeTypes;
@@ -106,6 +134,7 @@ namespace cmpctircd {
             List<string> typeB = new List<string>();
             List<string> typeC = new List<string>();
             List<string> typeD = new List<string>();
+            List<string> typeNone = new List<string>();
 
             string[] badClasses = { "Mode", "ModeType" };
             var classes = AppDomain.CurrentDomain.GetAssemblies()
@@ -135,6 +164,10 @@ namespace cmpctircd {
                     case ModeType.D:
                         typeD.Add(modeChar);
                         break;
+
+                    default:
+                        typeNone.Add(modeChar);
+                        break;
                 }
             }
 
@@ -142,9 +175,9 @@ namespace cmpctircd {
             ModeTypes.Add("B", typeB);
             ModeTypes.Add("C", typeC);
             ModeTypes.Add("D", typeD);
+            ModeTypes.Add("None", typeNone);
             return ModeTypes;
         }
-
 
     }
 }

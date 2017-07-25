@@ -80,9 +80,9 @@ namespace cmpctircd
             // TODO: This was commented out in the Perl version, probably not something to use for now.
             // TODO: I don't think MYINFO is very popular?
             //write(String.Format(":{0} {1} {2} {3} {4} x ntlo", ircd.Host, IrcNumeric.RPL_MYINFO.Printable(), nick, ircd.Host, ircd.version));
-            Write(String.Format(":{0} {1} {2} :CASEMAPPING=rfc1459 PREFIX=(ov)@+ STATUSMSG=@+ NETWORK={3} MAXTARGETS={4} :are supported by this server", IRCd.Host, IrcNumeric.RPL_ISUPPORT.Printable(), Nick, IRCd.Network, IRCd.MaxTargets));
-
-            var ModeTypes = IRCd.GetSupportedModes();
+            var ModeTypes = IRCd.GetSupportedModesByType();
+            var modes     = IRCd.GetSupportedModes(true);
+            Write($":{IRCd.Host} {IrcNumeric.RPL_ISUPPORT.Printable()} {Nick} :CASEMAPPING=rfc1459 PREFIX=({modes["Characters"]}){modes["Symbols"]} STATUSMSG={modes["Symbols"]} NETWORK={IRCd.Network} MAXTARGETS={IRCd.MaxTargets} :are supported by this server");
             Write($":{IRCd.Host} {IrcNumeric.RPL_ISUPPORT.Printable()} {Nick} :CHANTYPES=# CHANMODES={string.Join("",ModeTypes["A"])},{string.Join("",ModeTypes["B"])},{string.Join("", ModeTypes["C"])},{string.Join("", ModeTypes["D"])} :are supported by this server");
 
             // Send MOTD

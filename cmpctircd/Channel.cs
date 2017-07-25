@@ -103,7 +103,7 @@ namespace cmpctircd {
             // Iterate through all of the modes, finding the highest rank the user holds
             foreach(var mode in Modes) {
                 Mode modeObject = mode.Value;
-                if(modeObject.Has(client) && modeObject.Level > privilege) {
+                if(modeObject.Has(client) && modeObject.Level > privilege && !String.IsNullOrEmpty(modeObject.Symbol)) {
                     privilege = modeObject.Level;
                 }
             }

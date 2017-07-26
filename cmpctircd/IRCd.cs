@@ -24,7 +24,7 @@ namespace cmpctircd {
         public string Network;
         public const string Version = "0.2.0-dev";
         public int MaxTargets;
-
+        public int MaxSeen { get; set; } = 0;
         public bool RequirePong { get; set; } = true;
         public int PingTimeout { get; set; } = 120;
 

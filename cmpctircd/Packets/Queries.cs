@@ -15,6 +15,7 @@ namespace cmpctircd.Packets
             ircd.PacketManager.Register("VERSION", versionHandler);
             ircd.PacketManager.Register("WHOIS", WhoisHandler);
             ircd.PacketManager.Register("AWAY", AwayHandler);
+            ircd.PacketManager.Register("LUSERS", LusersHandler);
         }
 
         public Boolean versionHandler(HandlerArgs args)
@@ -99,6 +100,13 @@ namespace cmpctircd.Packets
                 args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_UNAWAY.Printable()} {args.Client.Nick} :You are no longer marked as being away");
             }
 
+            return true;
+        }
+
+        public Boolean LusersHandler(HandlerArgs args) {
+            // TODO: Lusers takes a server parameter
+            // add this when we have linking
+            args.Client.SendLusers();
             return true;
         }
     }

@@ -33,6 +33,13 @@ namespace cmpctircd
 
         RPL_UMODEIS       = 221,
         RPL_RULES         = 232,
+        RPL_LUSERCLIENT   = 251,
+        RPL_LUSEROP       = 252,
+        RPL_LUSERUNKNOWN  = 253,
+        RPL_LUSERCHANNELS = 254,
+        RPL_LUSERME       = 255,
+        RPL_LOCALUSERS    = 265,
+        RPL_GLOBALUSERS   = 266,
         RPL_AWAY          = 301,
         RPL_USERHOST      = 302,
         RPL_UNAWAY        = 305,

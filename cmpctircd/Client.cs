@@ -84,11 +84,38 @@ namespace cmpctircd
             var modes     = IRCd.GetSupportedModes(true);
             Write($":{IRCd.Host} {IrcNumeric.RPL_ISUPPORT.Printable()} {Nick} :CASEMAPPING=rfc1459 PREFIX=({modes["Characters"]}){modes["Symbols"]} STATUSMSG={modes["Symbols"]} NETWORK={IRCd.Network} MAXTARGETS={IRCd.MaxTargets} :are supported by this server");
             Write($":{IRCd.Host} {IrcNumeric.RPL_ISUPPORT.Printable()} {Nick} :CHANTYPES=# CHANMODES={string.Join("",ModeTypes["A"])},{string.Join("",ModeTypes["B"])},{string.Join("", ModeTypes["C"])},{string.Join("", ModeTypes["D"])} :are supported by this server");
-
+            SendLusers();
             // Send MOTD
             SendMotd();
         }
-
+        public void SendLusers() {
+            int invisible = 0; // TODO: Add this when we have +i umode
+            int servers = 1; // TODO: Adjust this when we have linking
+            int linkedServers = 0;
+            int ircops = 0; // TODO: Add this when we have ircops
+            int users = 0;
+            int channels = IRCd.ChannelManager.Size;
+            foreach (var clientList in IRCd.ClientLists) {
+                users += clientList.Count();
+            }
+            if (users > IRCd.MaxSeen) {
+                IRCd.MaxSeen = users;
+            }
+            // RPL_LUSERCLIENT - Users, Invisible(?), Servers(?)
+            Write($":{IRCd.Host} {IrcNumeric.RPL_LUSERCLIENT.Printable()} {Nick} :There are {users} users and {invisible} invisible on {servers} servers");
+            // RPL_LUSEROP - IRC Operator count
+            Write($":{IRCd.Host} {IrcNumeric.RPL_LUSEROP.Printable()} {Nick} {ircops} :operator(s) online");
+            // RPL_LUSERCHANNELS - Number of channels formed
+            Write($":{IRCd.Host} {IrcNumeric.RPL_LUSERCHANNELS.Printable()} {Nick} {channels} :channels formed");
+            // RPL_LUSERME - This is all clients (including bots)
+            // TODO: Adjust the users variable to not account for +B umode when implemented
+            Write($":{IRCd.Host} {IrcNumeric.RPL_LUSERME.Printable()} {Nick} :I have {users} clients and {linkedServers} servers");
+            // RPL_LOCALUSERS - Local clients and max local clients
+            Write($":{IRCd.Host} {IrcNumeric.RPL_LOCALUSERS.Printable()} {Nick} :Current Local Users: {users} Max: {IRCd.MaxSeen}");
+            // RPL_GLOBALUSERS - Global clients and max global clients
+            // TODO: Adjust this with linking
+            Write($":{IRCd.Host} {IrcNumeric.RPL_GLOBALUSERS.Printable()} {Nick} :Current Global Users: {users} Max: {IRCd.MaxSeen}");
+        }
         public void SendMotd() {
             try {
                 string[] motd = System.IO.File.ReadAllLines("ircd.motd");

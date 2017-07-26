@@ -225,10 +225,16 @@ namespace cmpctircd.Packets {
 
             if (target.StartsWith("#")) {
                 // PRIVMSG a channel
-                // TODO: We don't have +n yet so just check if they're in the room...
+                bool NoExternal = false;
                 if(ircd.ChannelManager.Exists(target)) {
                     Channel channel = ircd.ChannelManager[target];
-                    if(channel.Inhabits(client)) {
+                    try {
+                        channel.Modes["n"].GetValue();
+                        NoExternal = true;
+                    } catch (IrcModeNotEnabledException) {}
+                    if(!channel.Inhabits(client) && NoExternal) {
+                        throw new IrcErrNotOnChannelException(client, channel.Name);
+                    } else {
                         // Check the bans
                         var userRank = channel.Status(client);
                         if (channel.Modes["b"].Has(client) && userRank.CompareTo(ChannelPrivilege.Op) < 0) {
@@ -303,7 +309,15 @@ namespace cmpctircd.Packets {
                 message = rawSplit[2];
                 fmtMessage = String.Format(":{0} NOTICE {1} {2}", client.Mask, target, message);
                 if (target.StartsWith("#")) {
+                    bool NoExternal = false;
                     Channel channel = ircd.ChannelManager[target];
+                    try {
+                        channel.Modes["n"].GetValue();
+                        NoExternal = true;
+                    } catch (IrcModeNotEnabledException) {}
+                    if(!channel.Inhabits(client) && NoExternal) {
+                        throw new IrcErrNotOnChannelException(client, channel.Name);
+                    }
                     channel.SendToRoom(client, fmtMessage, false);
                     return true;
                 } else {

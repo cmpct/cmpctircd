@@ -58,6 +58,7 @@
     <Compile Include="Modes\Channel\Ban.cs" />
     <Compile Include="Modes\Channel\Invite.cs" />
     <Compile Include="Modes\Channel\Topic.cs" />
+    <Compile Include="Modes\Channel\NoExternal.cs" />
     <Compile Include="Modes\Mode.cs" />
     <Compile Include="Modes\ModeType.cs" />
     <Compile Include="Modes\Channel\Op.cs" />

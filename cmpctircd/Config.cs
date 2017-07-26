@@ -25,6 +25,8 @@ namespace cmpctircd {
             public bool RequirePongCookie;
             public int PingTimeout;
             public int MaxTargets;
+            // mode => param
+            public Dictionary<string, string> AutoModes;
 
         }
 
@@ -54,6 +56,7 @@ namespace cmpctircd {
             var data   = new ConfigData();
             var config = Xml.GetElementsByTagName("config").Item(0);
             data.Listeners = new List<ListenerInfo>();
+            data.AutoModes = new Dictionary<string, string>();
 
             foreach(XmlElement node in config) {
                 // Valid types: ircd, server, channelmodes, usermodes, cloak, sockets, log, advanced, opers
@@ -89,6 +92,12 @@ namespace cmpctircd {
                         data.MaxTargets        = Int32.Parse(node["max_targets"].InnerText);
                         Console.WriteLine($"Configured with advanced options: RequirePongCookie={data.RequirePongCookie}, PingTimeout={data.PingTimeout}, MaxTargets={data.MaxTargets}");
                         break;
+
+                    case "cmodes":
+                    foreach (XmlElement listenNode in node.GetElementsByTagName("mode")) {
+                        data.AutoModes.Add(listenNode.Attributes["name"].InnerText, listenNode.Attributes["param"].InnerText);
+                    }
+                    break;
 
                     default:
                         Console.WriteLine($"Unrecognised tag name: {node.Name.ToLower()}");

@@ -27,6 +27,7 @@ namespace cmpctircd {
         public int MaxSeen { get; set; } = 0;
         public bool RequirePong { get; set; } = true;
         public int PingTimeout { get; set; } = 120;
+        public Dictionary<string, string> AutoModes;
 
         public IRCd(Config.ConfigData config) {
             this.Config = config;
@@ -40,6 +41,7 @@ namespace cmpctircd {
             RequirePong = config.RequirePongCookie;
 
             MaxTargets = config.MaxTargets;
+            AutoModes = config.AutoModes;
         }
 
         public void Run() {

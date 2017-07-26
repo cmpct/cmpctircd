@@ -72,6 +72,9 @@ namespace cmpctircd {
 
             if(Size == 1) {
                 Modes["o"].Grant(client, client.Nick, true, true);
+                foreach(var mode in client.IRCd.AutoModes) {
+                    Modes[mode.Key].Grant(client, "", true, false);
+                }
             }
         }
 

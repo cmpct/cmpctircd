@@ -24,4 +24,9 @@
         <max_targets>200</max_targets>
     </advanced>
 
+    <cmodes>
+        <mode name='n' param=''/>
+        <mode name='t' param=''/>
+    </cmodes>
+
 </config>

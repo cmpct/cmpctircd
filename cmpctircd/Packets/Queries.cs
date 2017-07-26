@@ -114,7 +114,7 @@ namespace cmpctircd.Packets
         public Boolean PingHandler(HandlerArgs args) {
             // TODO: Modification for multiple servers
             string cookie = args.Line.Split(' ')[1];
-            args.Client.Write($"{args.IRCd.Host} PONG {args.IRCd.Host} :{cookie}");
+            args.Client.Write($":{args.IRCd.Host} PONG {args.IRCd.Host} :{cookie}");
             return true;
         }
     }

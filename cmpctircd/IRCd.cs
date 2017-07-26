@@ -29,6 +29,8 @@ namespace cmpctircd {
         public int PingTimeout { get; set; } = 120;
         public Dictionary<string, string> AutoModes;
 
+        public DateTime CreateTime { get; private set; }
+
         public IRCd(Config.ConfigData config) {
             this.Config = config;
 
@@ -68,6 +70,9 @@ namespace cmpctircd {
 
             Listeners.ForEach(listener => listener.Bind());
             PacketManager.Load();
+
+            // Set create time
+            CreateTime = DateTime.UtcNow;
 
             try {
                 // HACK: You can't use await in async

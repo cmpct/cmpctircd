@@ -76,7 +76,7 @@ namespace cmpctircd
 
             Write(String.Format(":{0} {1} {2} :Welcome to the {3} IRC Network {4}", IRCd.Host, IrcNumeric.RPL_WELCOME.Printable(), Nick, IRCd.Network, Mask));
             Write(String.Format(":{0} {1} {2} :Your host is {3}, running version cmpctircd-{4}", IRCd.Host, IrcNumeric.RPL_YOURHOST.Printable(), Nick, IRCd.Host, IRCd.Version));
-            Write(String.Format(":{0} {1} {2} :This server was created {3}", IRCd.Host, IrcNumeric.RPL_CREATED.Printable(), Nick, IRCd.Host, 0));
+            Write(String.Format(":{0} {1} {2} :This server was created {3}", IRCd.Host, IrcNumeric.RPL_CREATED.Printable(), Nick, IRCd.CreateTime.ToString("h:mm:ss MMM d yyyy")));
             // TODO: This was commented out in the Perl version, probably not something to use for now.
             // TODO: I don't think MYINFO is very popular?
             //write(String.Format(":{0} {1} {2} {3} {4} x ntlo", ircd.Host, IrcNumeric.RPL_MYINFO.Printable(), nick, ircd.Host, ircd.version));

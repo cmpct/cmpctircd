@@ -33,6 +33,9 @@ namespace cmpctircd.Modes {
                     throw new IrcErrChanOpPrivsNeededException(client, channel.Name);
                 }
             }
+            if (Enabled) {
+                return false;
+            }
 
             // Announce the change to the room
             Enabled = true;
@@ -57,6 +60,10 @@ namespace cmpctircd.Modes {
                     // Insufficient setter privileges
                     throw new IrcErrChanOpPrivsNeededException(client, channel.Name);
                 }
+            }
+
+            if (!Enabled) {
+                return false;
             }
 
             Enabled = false;

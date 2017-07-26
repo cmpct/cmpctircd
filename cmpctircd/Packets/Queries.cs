@@ -16,6 +16,7 @@ namespace cmpctircd.Packets
             ircd.PacketManager.Register("WHOIS", WhoisHandler);
             ircd.PacketManager.Register("AWAY", AwayHandler);
             ircd.PacketManager.Register("LUSERS", LusersHandler);
+            ircd.PacketManager.Register("PING", PingHandler);
         }
 
         public Boolean versionHandler(HandlerArgs args)
@@ -107,6 +108,13 @@ namespace cmpctircd.Packets
             // TODO: Lusers takes a server parameter
             // add this when we have linking
             args.Client.SendLusers();
+            return true;
+        }
+
+        public Boolean PingHandler(HandlerArgs args) {
+            // TODO: Modification for multiple servers
+            string cookie = args.Line.Split(' ')[1];
+            args.Client.Write($"{args.IRCd.Host} PONG {args.IRCd.Host} :{cookie}");
             return true;
         }
     }

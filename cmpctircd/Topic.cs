@@ -27,6 +27,13 @@ namespace cmpctircd {
             TopicText = rawLine.Split(':')[1];
             Channel = client.IRCd.ChannelManager[target];
             if (Channel.Inhabits(client)) {
+                try {
+                    Channel.Modes["t"].GetValue();
+                    var userRank = Channel.Status(client);
+                    if (userRank.CompareTo(ChannelPrivilege.Op) < 0) {
+                        throw new IrcErrChanOpPrivsNeededException(client, Channel.Name);
+                    }
+                } catch (IrcModeNotEnabledException) {}
                 // TO DO: Change how we get the unix timestamp
                 Date = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 User = client;

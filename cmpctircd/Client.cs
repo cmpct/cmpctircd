@@ -279,6 +279,10 @@ namespace cmpctircd
             }
 
             Listener.Remove(this);
+            if(ClientTlsStream != null) {
+                ClientTlsStream.Close();
+            }
+            TcpClient.Close();
         }
 
     }

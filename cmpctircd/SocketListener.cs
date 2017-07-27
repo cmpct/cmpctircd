@@ -67,8 +67,6 @@ namespace cmpctircd {
             if(TLS) {
                 try {
                     sslStream = new SslStream(client.TcpClient.GetStream(), true);
-                    sslStream.ReadTimeout = 5000;
-                    sslStream.WriteTimeout = 5000;
                     client.ClientTlsStream = sslStream;
 
                     // NOTE: Must use carefully constructed cert in PKCS12 format (.pfx)
@@ -80,6 +78,7 @@ namespace cmpctircd {
                     sslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls, true);
                 } catch(Exception e) {
                     Console.WriteLine(e.ToString());
+                    client.Disconnect(false);
                 }
             }
 
@@ -89,7 +88,7 @@ namespace cmpctircd {
                 try {
                     int bytesRead;
                     if(TLS) {
-                        bytesRead = await sslStream.ReadAsync(client.Buffer, 0, client.Buffer.Length);
+                        bytesRead = await client.ClientTlsStream.ReadAsync(client.Buffer, 0, client.Buffer.Length);
                     } else {
                         bytesRead = await client.ClientStream.ReadAsync(client.Buffer, 0, client.Buffer.Length);
                     }

@@ -500,15 +500,13 @@ namespace cmpctircd.Packets {
                     // Is this mode of Type A (and listable)? See ModeType
                     // TODO: should we put this in the foreach?
 
-                    // TODO: for bans, check if this is +b...
-                    // TODO: and so on
-                    // TODO: if so, return the list of bans
-                    // TODO: https://git.cmpct.info/cmpctircd.git/blob/a98635da09650310bffe2c98b11ac8fa7cb67445:/lib/IRCd/Client/Packets.pm#l487
+                    // TODO: Some ircds make the ban list op only?
                     if(splitLineSpace[2] == "+b" && String.IsNullOrEmpty(splitLineSpace[3])) {
                         var banMode = (BanMode)channel.Modes["b"];
                         foreach(Ban ban in banMode.Bans.Values) {
                             args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_BANLIST.Printable()} {args.Client.Nick} {channel.Name} {ban.GetBan()}");
                         }
+                        args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFBANLIST.Printable()} {args.Client.Nick} {channel.Name} :End of channel ban list");
                         return true;
                     }
                 }

@@ -1,0 +1,5 @@
+language: csharp
+solution: cmpctircd.sln
+mono:
+  - latest
+  - beta

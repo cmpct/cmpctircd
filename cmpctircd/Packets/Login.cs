@@ -70,6 +70,13 @@ namespace cmpctircd.Packets {
             String[] splitLine = rawLine.Split(new char[] { ':' }, 2);
             String cookie = splitLine[1];
 
+            // We've assumed the message is: PONG :cookie (or PONG server :cookie)
+            // But some clients seem to send PONG cookie, so look for that if we've not found a cookie
+            if(String.IsNullOrEmpty(cookie)) {
+                splitLine = rawLine.Split(new char[] { ' '}, 2);
+                cookie    = splitLine[1];
+            }
+
             if(client.PingCookie == cookie) {
                 client.WaitingForPong = false;
                 client.LastPong = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;

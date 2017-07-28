@@ -553,11 +553,11 @@ namespace cmpctircd.Packets {
                 }
 
                 if(!modeChars.Equals("+") && !modeChars.Equals("-")) {
+                    modeString = $"{modeChars} {modeArgs}";
                     if(!modeString.Contains("+") && !modeString.Contains("-")) {
                         // Return if the mode string doesn't contain an operator
                         return true;
                     }
-                    modeString = $"{modeChars} {modeArgs}";
                     channel.SendToRoom(args.Client, $":{args.Client.Mask} MODE {channel.Name} {modeString}");
                 }
             }

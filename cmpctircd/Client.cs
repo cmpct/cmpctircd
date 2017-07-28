@@ -62,6 +62,7 @@ namespace cmpctircd
             Listener = sl;
 
             IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            DNSHost = IP.ToString();
 
             // Initialise modes
             string[] badClasses = { "ChannelMode", "ChannelModeType" };

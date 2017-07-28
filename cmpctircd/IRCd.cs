@@ -29,6 +29,7 @@ namespace cmpctircd {
         public int PingTimeout { get; set; } = 120;
         public string CloakKey { get; set;}
         public Dictionary<string, string> AutoModes;
+        public Dictionary<string, string> AutoUModes;
 
         public DateTime CreateTime { get; private set; }
 
@@ -46,6 +47,7 @@ namespace cmpctircd {
             MaxTargets = config.MaxTargets;
             CloakKey = config.CloakKey;
             AutoModes = config.AutoModes;
+            AutoUModes = config.AutoUModes;
         }
 
         public void Run() {

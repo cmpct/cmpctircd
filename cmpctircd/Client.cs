@@ -118,7 +118,15 @@ namespace cmpctircd
             SendLusers();
             // Send MOTD
             SendMotd();
+            SetModes();
         }
+
+        public void SetModes() {
+            foreach(var mode in IRCd.AutoUModes) {
+                Modes[mode.Key].Grant("", true, true);
+            }
+        }
+
         public void SendLusers() {
             int invisible = 0; // TODO: Add this when we have +i umode
             int servers = 1; // TODO: Adjust this when we have linking

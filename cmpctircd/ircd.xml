@@ -31,4 +31,8 @@
         <mode name='t' param=''/>
     </cmodes>
 
+    <umodes>
+        <mode name='x' param=''/>
+    </umodes>
+
 </config>

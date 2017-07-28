@@ -28,6 +28,7 @@ namespace cmpctircd {
             public string CloakKey;
             // mode => param
             public Dictionary<string, string> AutoModes;
+            public Dictionary<string, string> AutoUModes;
 
         }
 
@@ -58,6 +59,7 @@ namespace cmpctircd {
             var config = Xml.GetElementsByTagName("config").Item(0);
             data.Listeners = new List<ListenerInfo>();
             data.AutoModes = new Dictionary<string, string>();
+            data.AutoUModes = new Dictionary<string, string>();
 
             foreach(XmlElement node in config) {
                 // Valid types: ircd, server, channelmodes, usermodes, cloak, sockets, log, advanced, opers
@@ -96,9 +98,15 @@ namespace cmpctircd {
                         break;
 
                     case "cmodes":
-                    foreach (XmlElement listenNode in node.GetElementsByTagName("mode")) {
-                        data.AutoModes.Add(listenNode.Attributes["name"].InnerText, listenNode.Attributes["param"].InnerText);
-                    }
+                        foreach (XmlElement listenNode in node.GetElementsByTagName("mode")) {
+                            data.AutoModes.Add(listenNode.Attributes["name"].InnerText, listenNode.Attributes["param"].InnerText);
+                        }
+                    break;
+
+                    case "umodes":
+                        foreach (XmlElement listenNode in node.GetElementsByTagName("mode")) {
+                            data.AutoUModes.Add(listenNode.Attributes["name"].InnerText, listenNode.Attributes["param"].InnerText);
+                        }
                     break;
 
                     default:

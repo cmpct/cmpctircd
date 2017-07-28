@@ -130,11 +130,11 @@ namespace cmpctircd.Packets
                 throw new IrcErrNotEnoughParametersException(args.Client, "MODE");
             }
 
-            Client targetClient = args.IRCd.GetClientByNick(target);
-
             if (target.StartsWith("#") || target.StartsWith("&")) {
                 return false;
             }
+
+            Client targetClient = args.IRCd.GetClientByNick(target);
 
             if (splitLineSpace.Count == 2) {
                 // This is a MODE request of the form: MODE <nick>

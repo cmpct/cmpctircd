@@ -44,7 +44,7 @@ namespace cmpctircd.Packets
                 throw new IrcErrNoSuchTargetNickException(args.Client, target);
             }
 
-            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISUSER.Printable()} {args.Client.Nick} {targetClient.Nick} {targetClient.Ident} {targetClient.Host} * :{targetClient.RealName}");
+            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISUSER.Printable()} {args.Client.Nick} {targetClient.Nick} {targetClient.Ident} {targetClient.GetHost()} * :{targetClient.RealName}");
 
             // Generate a list of all the channels inhabited by the target
             // XXX: no LINQ for now because of strange bug where LINQ in Packet/dynamic classes causes an exception
@@ -63,7 +63,7 @@ namespace cmpctircd.Packets
             if(targetClient == args.Client) {
                 // Only allow the target client's sensitive connection info if WHOISing themselves
                 // TODO: modify to allow ircops to see this too (when we have ircops)
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISHOST.Printable()} {args.Client.Nick} {targetClient.Nick} :is connecting from {targetClient.Ident}@{targetClient.Host} {targetClient.Host}");
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISHOST.Printable()} {args.Client.Nick} {targetClient.Nick} :is connecting from {targetClient.Ident}@{targetClient.GetHost(false)} {targetClient.GetHost(false)}");
             }
 
             if(inhabitedChannels.Count() > 0) {

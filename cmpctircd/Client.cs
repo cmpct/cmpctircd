@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -28,15 +29,23 @@ namespace cmpctircd
         public String Ident { get; set; }
         public String RealName { get; set; }
         public String AwayMessage { get; set; }
+        public List<Channel> Invites = new List<Channel>();
+
+        // Connection information
+        public string Cloak { get; set; }
+        public String DNSHost { get; set; }
         public int IdleTime { get; set; }
         public int SignonTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
         public ClientState State { get; set; }
-        public List<Channel> Invites = new List<Channel>();
 
         // Ping information
         public Boolean WaitingForPong { get; set; } = false;
         public int LastPong { get; set; } = 0;
         public String PingCookie { get; set; } = "";
+
+        public ConcurrentDictionary<string, UserMode> Modes {
+            get; set;
+        } = new ConcurrentDictionary<string, UserMode>();
 
         public void SendVersion() => Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.Host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.Version));
 
@@ -52,6 +61,26 @@ namespace cmpctircd
             Listener = sl;
 
             IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+
+            // Initialise modes
+            string[] badClasses = { "ChannelMode", "ChannelModeType" };
+            var classes = AppDomain.CurrentDomain.GetAssemblies()
+                                   .SelectMany(t => t.GetTypes())
+                                   .Where(
+                                       t => t.IsClass &&
+                                       t.Namespace == "cmpctircd.Modes" &&
+                                       t.BaseType.Equals(typeof(UserMode)) &&
+                                       !badClasses.Contains(t.Name)
+                                    );
+            foreach(Type className in classes) {
+                UserMode modeInstance = (UserMode) Activator.CreateInstance(Type.GetType(className.ToString()), this);
+                string modeChar = modeInstance.Character;
+
+                Modes.TryAdd(modeChar, modeInstance);
+                // TODO: debug level with logging
+                Console.WriteLine($"Creating instance of {modeChar} - {modeInstance.Description}");
+            }
+
         }
 
         ~Client() {
@@ -227,9 +256,8 @@ namespace cmpctircd
 
         public static String CreatePingCookie() => System.IO.Path.GetRandomFileName().Substring(0, 7);
 
-        // Returns the user's host (raw IP)
-        // TODO: DNS?
-        public String Host => ((System.Net.IPEndPoint)TcpClient.Client.RemoteEndPoint).Address.ToString();
+        // Returns the user's raw IP
+        public String IP => ((System.Net.IPEndPoint)TcpClient.Client.RemoteEndPoint).Address.ToString();
 
         // Returns the user's mask
         // TODO: cloaking
@@ -240,9 +268,20 @@ namespace cmpctircd
                 String nick = this.Nick;
                 String user = this.Ident;
                 String real_name = this.RealName;
-                String host = this.Host;
+                String host = this.GetHost();
                 return String.Format("{0}!{1}@{2}", nick, user, host);
             }
+        }
+
+        public string GetHost(bool cloak = true) {
+            // We prefer a cloak
+            if (cloak && !String.IsNullOrEmpty(Cloak))
+                return Cloak;
+
+            if (!String.IsNullOrEmpty(DNSHost))
+                return DNSHost;
+
+            return IP;
         }
 
         public void Write(String packet) {

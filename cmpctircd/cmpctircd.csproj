@@ -62,6 +62,7 @@
     <Compile Include="Modes\ChannelMode.cs" />
     <Compile Include="Modes\ChannelModeType.cs" />
     <Compile Include="Modes\Channel\Op.cs" />
+    <Compile Include="Modes\UserMode.cs" />
     <Compile Include="PacketManager.cs" />
     <Compile Include="Packets\Login.cs" />
     <Compile Include="Packets\Motd.cs" />

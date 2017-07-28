@@ -400,7 +400,7 @@ namespace cmpctircd.Packets {
                     } else {
                         away = "G"; // "Gone"
                     }
-                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {target} {client.Value.Ident} {client.Value.Host} {args.IRCd.Host} {client.Value.Nick} {away}{userSymbol} :{hopCount} {client.Value.RealName}");
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {target} {client.Value.Ident} {client.Value.GetHost()} {args.IRCd.Host} {client.Value.Nick} {away}{userSymbol} :{hopCount} {client.Value.RealName}");
                 }
             } else {
                 // The target is a user

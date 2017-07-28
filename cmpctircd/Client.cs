@@ -80,7 +80,7 @@ namespace cmpctircd
 
                 Modes.TryAdd(modeChar, modeInstance);
                 // TODO: debug level with logging
-                Console.WriteLine($"Creating instance of {modeChar} - {modeInstance.Description}");
+                //Console.WriteLine($"Creating instance of {modeChar} - {modeInstance.Description}");
             }
 
         }

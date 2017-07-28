@@ -322,10 +322,8 @@ namespace cmpctircd
             }
         }
 
-        public void Disconnect(Boolean graceful) => Disconnect("", graceful, true);
-        public void Disconnect(String quitReason, Boolean graceful) => Disconnect(quitReason, graceful, true);
-
-        public void Disconnect(String quitReason, Boolean graceful, Boolean sendToSelf) {
+        public void Disconnect(bool graceful) => Disconnect("", graceful, graceful);
+        public void Disconnect(string quitReason = "", bool graceful = true, bool sendToSelf = true) {
             if (graceful) {
                 // Inform all of the channels we're a member of that we are leaving
                 foreach (var channel in IRCd.ChannelManager.Channels) {

@@ -23,6 +23,7 @@ namespace cmpctircd {
         } = new ConcurrentDictionary<string, Mode>();
 
         public ConcurrentDictionary<Client, ChannelPrivilege> Privileges = new ConcurrentDictionary<Client, ChannelPrivilege>();
+        public int CreationTime { get; set; }
 
         public Channel(ChannelManager manager, IRCd ircd) {
             this.Manager = manager;
@@ -44,6 +45,10 @@ namespace cmpctircd {
                 // TODO: debug level with logging
                 //Console.WriteLine($"Creating instance of {modeChar} - {modeInstance.Description}");
             }
+
+
+            DateTime date = DateTime.UtcNow;
+            CreationTime = (Int32)(date.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
         }
         public void AddClient(Client client) {
             if(Inhabits(client)) {
@@ -76,6 +81,8 @@ namespace cmpctircd {
                     client.Nick,
                     Name
             ));
+
+            client.Write($":{client.IRCd.Host} {IrcNumeric.RPL_CREATIONTIME.Printable()} {client.Nick} {Name} {CreationTime}");
         }
 
 

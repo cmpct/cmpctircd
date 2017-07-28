@@ -27,13 +27,8 @@ namespace cmpctircd.Modes {
         }
 
 
-        abstract public bool Grant(Client client, string args);
-        abstract public bool Grant(Client client, string args, bool forceSet, bool announce);
-        abstract public bool Grant(Client client, string args, bool forceSet, bool announce, bool sendSelf);
-
-        abstract public bool Revoke(Client client, string args);
-        abstract public bool Revoke(Client client, string args, bool forceSet, bool announce);
-        abstract public bool Revoke(Client client, string args, bool forceSet, bool announce, bool sendSelf);
+        abstract public bool Grant(Client client, string args, bool forceSet = false, bool announce = false, bool sendSelf = true);
+        abstract public bool Revoke(Client client, string args, bool forceSet = false, bool announce = false, bool sendSelf = true);
 
 
         virtual public bool Has(Client client) {

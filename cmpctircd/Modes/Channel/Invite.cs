@@ -19,11 +19,9 @@ namespace cmpctircd.Modes {
             }
             throw new IrcModeNotEnabledException(Character);
         }
-        override public bool Grant(Client client, string args) => Grant(client, args, false, true);
-        override public bool Grant(Client client, string args, bool forceSet, bool announce) => Grant(client, args, forceSet, announce, true);
-        override public bool Grant(Client client, string args, bool forceSet, bool announce, bool sendSelf) {
 
-            if(!channel.Inhabits(client))
+        override public bool Grant(Client client, string args, bool forceSet = false, bool announce = false, bool sendSelf = true) {
+            if (!channel.Inhabits(client))
                 throw new IrcErrNotOnChannelException(client, channel.Name);
 
             if(!forceSet) {
@@ -44,12 +42,10 @@ namespace cmpctircd.Modes {
             }
             return true;
         }
-        
-        override public bool Revoke(Client client, string args) => Revoke(client, args, false, true);
-        override public bool Revoke(Client client, string args, bool forceSet, bool announce) => Revoke(client, args, forceSet, announce, true);
-        override public bool Revoke(Client client, string args, bool forceSet, bool announce, bool sendSelf) {
 
-            if(!channel.Inhabits(client))
+        override public bool Revoke(Client client, string args, bool forceSet = false, bool announce = false, bool sendSelf = true) {
+
+            if (!channel.Inhabits(client))
                 throw new IrcErrNotOnChannelException(client, channel.Name);
 
             // Check user has right to set the mode

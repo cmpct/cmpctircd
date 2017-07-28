@@ -56,6 +56,13 @@ namespace cmpctircd {
             if(!Clients.TryAdd(client.Nick, client)) { return; }
             Console.WriteLine("Added {0} to {1}", client.Nick, Name);
 
+            if(Size == 1) {
+                Modes["o"].Grant(client, client.Nick, true, true);
+                foreach(var mode in client.IRCd.AutoModes) {
+                    Modes[mode.Key].Grant(client, "", true, false);
+                }
+            }
+
             // Tell everyone we've joined
             SendToRoom(client, String.Format(":{0} JOIN :{1}", client.Mask, this.Name));
             foreach(var room_client in Clients) {
@@ -69,13 +76,6 @@ namespace cmpctircd {
                     client.Nick,
                     Name
             ));
-
-            if(Size == 1) {
-                Modes["o"].Grant(client, client.Nick, true, true);
-                foreach(var mode in client.IRCd.AutoModes) {
-                    Modes[mode.Key].Grant(client, "", true, false);
-                }
-            }
         }
 
 

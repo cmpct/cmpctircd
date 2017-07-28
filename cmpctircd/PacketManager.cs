@@ -8,7 +8,7 @@ namespace cmpctircd {
     public class PacketManager {
         private IRCd ircd;
         // XXX: Instead of Array, this could be a bundle which we send with each packet - args baked in, ircd, etc?
-        public Dictionary<String, Func<HandlerArgs, Boolean>> handlers = new Dictionary<string, Func<HandlerArgs, Boolean>>();
+        public Dictionary<String, List<Func<HandlerArgs, Boolean>>> handlers = new Dictionary<string, List<Func<HandlerArgs, Boolean>>>();
 
         public PacketManager(IRCd ircd) {
             this.ircd = ircd;
@@ -16,7 +16,15 @@ namespace cmpctircd {
 
         public bool Register(String packet, Func<HandlerArgs, Boolean> handler) {
             Console.WriteLine("Registering packet: " + packet);
-            handlers.Add(packet.ToUpper(), handler);
+            if (handlers.ContainsKey(packet.ToUpper())) {
+                // Already a handler for this packet so add it to the list
+                handlers[packet].Add(handler);
+            } else {
+                // No handlers for this packet yet, so create the List
+                var list = new List<Func<HandlerArgs, bool>>();
+                list.Add(handler);
+                handlers.Add(packet.ToUpper(), list);
+            }
             return true;
         }
 
@@ -50,8 +58,11 @@ namespace cmpctircd {
                     client.IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 }
 
-                if(handlers.TryGetValue(packet.ToUpper(), out var handler)) {
-                    handler.Invoke(args);
+                if(handlers.ContainsKey(packet.ToUpper())) {
+                    foreach(var record in handlers[packet.ToUpper()]) {
+                        // Invoke all of the handlers for the command
+                        record.Invoke(args);
+                    }
                 } else {
                     Console.WriteLine("No handler for " + packet.ToUpper());
                     throw new IrcErrUnknownCommandException(client, packet.ToUpper());

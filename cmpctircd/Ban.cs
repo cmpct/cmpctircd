@@ -27,7 +27,7 @@ namespace cmpctircd {
                 && Regex.IsMatch(Client.Ident, @_user.Replace("*", ".*"))
                 && Regex.IsMatch(Client.Cloak, @_host.Replace("*", ".*"))
                 && Regex.IsMatch(Client.DNSHost, @_host.Replace("*", ".*"))
-                && Regex.IsMatch(Client.IP, @_host.Replace("*", ".*"));
+                && Regex.IsMatch(Client.IP.ToString(), @_host.Replace("*", ".*"));
         }
 
         public string GetBan() {

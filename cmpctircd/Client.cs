@@ -10,6 +10,7 @@ using System.Net.Sockets;
 using System.Net.Security;
 
 using cmpctircd.Modes;
+using System.Net;
 
 namespace cmpctircd
 {
@@ -257,7 +258,7 @@ namespace cmpctircd
         public static String CreatePingCookie() => System.IO.Path.GetRandomFileName().Substring(0, 7);
 
         // Returns the user's raw IP
-        public String IP => ((System.Net.IPEndPoint)TcpClient.Client.RemoteEndPoint).Address.ToString();
+        public IPAddress IP => ((System.Net.IPEndPoint)TcpClient.Client.RemoteEndPoint).Address;
 
         // Returns the user's mask
         // TODO: cloaking
@@ -281,7 +282,7 @@ namespace cmpctircd
             if (!String.IsNullOrEmpty(DNSHost))
                 return DNSHost;
 
-            return IP;
+            return IP.ToString();
         }
 
         public void Write(String packet) {

@@ -285,6 +285,30 @@ namespace cmpctircd
             return IP.ToString();
         }
 
+        public string[] GetModeStrings(string characters) {
+            string provides = "";
+            string value = "";
+            string args = "";
+
+            foreach (var mode in Modes) {
+                provides = mode.Value.Character;
+                try {
+                    value = mode.Value.GetValue();
+                    if (!String.IsNullOrWhiteSpace(value)) {
+                        characters += provides;
+                        if (mode.Value.HasParameters) {
+                            args += $"{value} ";
+                        }
+                    }
+                } catch (IrcModeNotEnabledException) {
+                    // Skip this mode and get another
+                    continue;
+                }
+            }
+            return new string[] { characters, args };
+
+        }
+
         public void Write(String packet) {
             byte[] packetBytes = Encoding.UTF8.GetBytes(packet + "\r\n");
             try {

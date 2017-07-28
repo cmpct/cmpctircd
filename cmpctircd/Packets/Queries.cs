@@ -17,6 +17,7 @@ namespace cmpctircd.Packets
             ircd.PacketManager.Register("AWAY", AwayHandler);
             ircd.PacketManager.Register("LUSERS", LusersHandler);
             ircd.PacketManager.Register("PING", PingHandler);
+            ircd.PacketManager.Register("MODE", ModeHandler);
         }
 
         public Boolean versionHandler(HandlerArgs args)
@@ -115,6 +116,102 @@ namespace cmpctircd.Packets
             // TODO: Modification for multiple servers
             string cookie = args.Line.Split(' ')[1];
             args.Client.Write($":{args.IRCd.Host} PONG {args.IRCd.Host} :{cookie}");
+            return true;
+        }
+
+        public bool ModeHandler(HandlerArgs args) {
+            string[] splitLine = args.Line.Split(new string[] { ":" }, 2, StringSplitOptions.None);
+            List<string> splitLineSpace = args.Line.Split(new string[] { " " }, 4, StringSplitOptions.RemoveEmptyEntries).ToList<string>();
+            string target;
+
+            try {
+                target = splitLineSpace[1];
+            } catch (IndexOutOfRangeException) {
+                throw new IrcErrNotEnoughParametersException(args.Client, "MODE");
+            }
+
+            Client targetClient = args.IRCd.GetClientByNick(target);
+
+            if (target.StartsWith("#") || target.StartsWith("&")) {
+                return false;
+            }
+
+            if (splitLineSpace.Count == 2) {
+                // This is a MODE request of the form: MODE <nick>
+                if (targetClient != args.Client) {
+                    // Can only request own modes
+                    return false;
+                }
+
+                var userModes = targetClient.GetModeStrings("+");
+                args.Client.Write($":{args.IRCd} {IrcNumeric.RPL_UMODEIS.Printable()} {targetClient.Nick} {userModes[0]} {userModes[1]}");
+            } else if(splitLineSpace.Count() > 2) {
+                // Process
+                string modes = splitLineSpace[2];
+                string[] param;
+
+                if (splitLineSpace.Count() == 3) {
+                    splitLineSpace.Add("");
+                }
+
+                param = splitLineSpace[3].Split(new string[] { " " }, StringSplitOptions.None);
+
+                string currentModifier = "";
+                string modeChars = "";
+                string modeArgs = "";
+                string modeString = "";
+                bool announce = false;
+                int position = 0;
+                var modesNoOperator = modes.Replace("+", "").Replace("-", "");
+
+                foreach (var mode in modes) {
+                    var modeStr = mode.ToString();
+                    var noOperatorMode = modeStr.Replace("+", "").Replace("-", "");
+                    if (modeStr.Equals("+") || modeStr.Equals("-")) {
+                        currentModifier = modeStr;
+                        modeChars += modeStr;
+                    }
+
+                    if (targetClient.Modes.ContainsKey(noOperatorMode)) {
+                        targetClient.Modes.TryGetValue(noOperatorMode, out var modeObject);
+
+                        if (!modeObject.Stackable) {
+                            announce = true;
+                        }
+                        if (currentModifier == "+") {
+                            // Attempt to add the mode
+                            bool success = modeObject.Grant(param[position], false, announce, announce);
+
+                            if (success && modeObject.Stackable) {
+                                modeChars += modeStr;
+                                if (modeObject.HasParameters) {
+                                    modeArgs += param[position];
+                                }
+                            }
+                        } else if (currentModifier == "-") {
+                            // Attempt to revoke the mode
+                            bool success = modeObject.Revoke(param[position], false, announce, announce);
+
+                            if (success && modeObject.Stackable) {
+                                modeChars += modeStr;
+                                if (modeObject.HasParameters) {
+                                    modeArgs += param[position];
+                                }
+                            }
+                        }
+                    }
+                }
+
+
+                if (!modeChars.Equals("+") && !modeChars.Equals("-")) {
+                    if (!modeString.Contains("+") && !modeString.Contains("-")) {
+                        // Return if the mode string doesn't contain an operator
+                        return true;
+                    }
+                    modeString = $"{modeChars} {modeArgs}";
+                    targetClient.Write($":{args.Client.Mask} MODE {modeString}");
+                }
+            }
             return true;
         }
     }

@@ -45,7 +45,6 @@ namespace cmpctircd
             }
 
             cloak_s = trunc_ip + cloak_s;
-            Console.WriteLine(trunc_ip + cloak_s);
             return cloak_s;
         }
 
@@ -87,7 +86,6 @@ namespace cmpctircd
             }
 
             cloak_s = trunc_ip + cloak_s;
-            Console.WriteLine(trunc_ip + cloak_s);
             return cloak_s;
         }
 
@@ -126,7 +124,6 @@ namespace cmpctircd
             }
 
             cloak_s = trunc_host + cloak_s;
-            Console.WriteLine(trunc_host + cloak_s);
             return cloak_s;
         }
 

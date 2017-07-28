@@ -383,7 +383,7 @@ namespace cmpctircd.Packets {
                 // The target is a channel
                 try {
                     targetChannel = args.IRCd.ChannelManager.Channels[target];
-                } catch(InvalidOperationException) {
+                } catch(KeyNotFoundException) {
                     throw new IrcErrNoSuchTargetNickException(args.Client, target);
                 }
 

@@ -27,6 +27,7 @@ namespace cmpctircd {
         public int MaxSeen { get; set; } = 0;
         public bool RequirePong { get; set; } = true;
         public int PingTimeout { get; set; } = 120;
+        public string CloakKey { get; set;}
         public Dictionary<string, string> AutoModes;
 
         public DateTime CreateTime { get; private set; }
@@ -43,6 +44,7 @@ namespace cmpctircd {
             RequirePong = config.RequirePongCookie;
 
             MaxTargets = config.MaxTargets;
+            CloakKey = config.CloakKey;
             AutoModes = config.AutoModes;
         }
 

@@ -86,13 +86,13 @@ namespace cmpctircd {
         }
 
 
-        public void Part(Client client, String reason) {
+        public void Part(Client client, String reason, bool strip = true) {
             if(!Inhabits(client)) {
                 throw new InvalidOperationException("User isn't in the room!");
             }
             Console.WriteLine("Removing {0} from {1}", client.Nick, Name);
             SendToRoom(client, String.Format(":{0} PART {1} :{2}", client.Mask, Name, reason), true);
-            Remove(client, true);
+            Remove(client, strip, strip);
         }
 
         public void Quit(Client client, String reason) {

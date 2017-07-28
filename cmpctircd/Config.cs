@@ -25,6 +25,7 @@ namespace cmpctircd {
             public bool RequirePongCookie;
             public int PingTimeout;
             public int MaxTargets;
+            public string CloakKey;
             // mode => param
             public Dictionary<string, string> AutoModes;
 
@@ -90,7 +91,8 @@ namespace cmpctircd {
                         data.RequirePongCookie = Boolean.Parse(node["require_pong_cookie"].InnerText);
                         data.PingTimeout       = Int32.Parse(node["ping_timeout"].InnerText);
                         data.MaxTargets        = Int32.Parse(node["max_targets"].InnerText);
-                        Console.WriteLine($"Configured with advanced options: RequirePongCookie={data.RequirePongCookie}, PingTimeout={data.PingTimeout}, MaxTargets={data.MaxTargets}");
+                        data.CloakKey          = node["cloak_key"].InnerText;
+                        Console.WriteLine($"Configured with advanced options: RequirePongCookie={data.RequirePongCookie}, PingTimeout={data.PingTimeout}, MaxTargets={data.MaxTargets}, CloakKey={data.CloakKey}");
                         break;
 
                     case "cmodes":

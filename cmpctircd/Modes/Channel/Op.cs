@@ -31,7 +31,7 @@ namespace cmpctircd.Modes {
                 throw new IrcErrNotOnChannelException(targetClient, channel.Name);
 
             // User already has the mode
-            if(Has(targetClient))
+            if(Has(targetClient) && !forceSet)
                 return false;
 
             // Check user has right to set the mode
@@ -83,7 +83,7 @@ namespace cmpctircd.Modes {
                 throw new IrcErrNotOnChannelException(targetClient, channel.Name);
 
             // User doesn't already have the mode
-            if(!Has(targetClient))
+            if(!Has(targetClient) && !forceSet)
                 return false;
 
             // Check user has right to set the mode

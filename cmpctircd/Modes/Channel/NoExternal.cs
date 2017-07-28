@@ -32,7 +32,7 @@ namespace cmpctircd.Modes {
                 }
             }
 
-            if (Enabled) {
+            if (Enabled && !forceSet) {
                 return false;
             }
 
@@ -59,7 +59,7 @@ namespace cmpctircd.Modes {
                 }
             }
 
-            if (!Enabled) {
+            if (!Enabled && !forceSet) {
                 return false;
             }
 

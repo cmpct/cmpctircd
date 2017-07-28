@@ -22,6 +22,8 @@
         <require_pong_cookie>true</require_pong_cookie>
         <ping_timeout>120</ping_timeout>
         <max_targets>200</max_targets>
+        <!-- Change this to your own random string, please! -->
+        <cloak_key>Nael8aig</cloak_key>
     </advanced>
 
     <cmodes>

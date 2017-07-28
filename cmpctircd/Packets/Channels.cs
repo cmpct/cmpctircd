@@ -162,7 +162,10 @@ namespace cmpctircd.Packets {
                 throw new IrcErrNotEnoughParametersException(client, "JOIN");
             }
 
-            foreach(String channel_name in splitCommaLine) {
+            for(int i = 0; i < splitCommaLine.Count(); i++) {
+                string channel_name = splitCommaLine[i];
+                // Some bots will try to send ':' with the channel, remove this
+                channel_name = channel_name.StartsWith(":") ? channel_name.Substring(1) : channel_name;
                 // We don't need to check for commas because the split handled that.
                 // TODO: Do check for proper initializing char, and check for BEL and space.
                 if (!ChannelManager.IsValid(channel_name)) {
@@ -351,7 +354,8 @@ namespace cmpctircd.Packets {
             } catch(IndexOutOfRangeException) {
                 reason = "Leaving";
             }
-
+            // Some bots will try to send ':' with the channel, remove this
+            channel = channel.StartsWith(":") ? channel.Substring(1) : channel;
             // Does the channel exist?
             if(!ircd.ChannelManager.Exists(channel)) {
                 throw new IrcErrNoSuchTargetChannelException(client, channel);

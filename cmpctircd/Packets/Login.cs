@@ -46,7 +46,8 @@ namespace cmpctircd.Packets {
             Client client = args.Client;
             String rawLine = args.Line;
             String newNick = rawLine.Split(' ')[1];
-
+            // Some bots will try to send ':' with the channel, remove this
+            newNick = newNick.StartsWith(":") ? newNick.Substring(1) : newNick;
             Console.WriteLine("Changing nick to {0}", newNick);
             client.SetNick(newNick);
             return true;

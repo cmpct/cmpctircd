@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 namespace cmpctircd.Modes {
-    public class BanMode : Mode {
+    public class BanMode : ChannelMode {
 
         public BanMode(Channel channel) : base(channel) {
             Name = "ban";
             Description = "Provides the +b (ban) mode for banning users from channels";
             Character = "b";
             Symbol = "";
-            Type = ModeType.A;
+            Type = ChannelModeType.A;
             Level = ChannelPrivilege.Op;
             HasParameters = true;
             ChannelWide = false;

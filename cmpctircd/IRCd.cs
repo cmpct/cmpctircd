@@ -149,26 +149,26 @@ namespace cmpctircd {
                                    .Where(
                                        t => t.IsClass &&
                                        t.Namespace == "cmpctircd.Modes" &&
-                                       t.BaseType.Equals(typeof(Mode)) &&
+                                       t.BaseType.Equals(typeof(ChannelMode)) &&
                                        !badClasses.Contains(t.Name)
             );
 
             foreach(Type className in classes) {
-                Mode modeInstance = (Mode) Activator.CreateInstance(Type.GetType(className.ToString()), new Channel(ChannelManager, this));
-                ModeType type = modeInstance.Type;
+                ChannelMode modeInstance = (ChannelMode) Activator.CreateInstance(Type.GetType(className.ToString()), new Channel(ChannelManager, this));
+                ChannelModeType type = modeInstance.Type;
                 string modeChar = modeInstance.Character;
 
                 switch(type) {
-                    case ModeType.A:
+                    case ChannelModeType.A:
                         typeA.Add(modeChar);
                         break;
-                    case ModeType.B:
+                    case ChannelModeType.B:
                         typeB.Add(modeChar);
                         break;
-                    case ModeType.C:
+                    case ChannelModeType.C:
                         typeC.Add(modeChar);
                         break;
-                    case ModeType.D:
+                    case ChannelModeType.D:
                         typeD.Add(modeChar);
                         break;
 

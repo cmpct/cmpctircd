@@ -1,11 +1,11 @@
 namespace cmpctircd.Modes {
-    public class OpMode : Mode {
+    public class OpMode : ChannelMode {
 
         public OpMode(Channel channel) : base(channel) {
             Name = "op";
             Description = "Provides the +o (op) mode for moderating a channel";
             Character = "o";
-            Type = ModeType.PerUser;
+            Type = ChannelModeType.PerUser;
             Symbol = "@";
             Level = ChannelPrivilege.Op;
             HasParameters = true;

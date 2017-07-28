@@ -1,12 +1,12 @@
 namespace cmpctircd.Modes {
-    public class InviteMode : Mode {
+    public class InviteMode : ChannelMode {
 
         public InviteMode(Channel channel) : base(channel) {
             Name = "invite";
             Description = "Provides the +i (invite) mode for invite-only channels";
             Character = "i";
             Symbol = "";
-            Type = ModeType.D;
+            Type = ChannelModeType.D;
             Level = ChannelPrivilege.Op;
             HasParameters = false;
             ChannelWide = true;

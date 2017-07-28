@@ -59,8 +59,8 @@
     <Compile Include="Modes\Channel\Invite.cs" />
     <Compile Include="Modes\Channel\Topic.cs" />
     <Compile Include="Modes\Channel\NoExternal.cs" />
-    <Compile Include="Modes\Mode.cs" />
-    <Compile Include="Modes\ModeType.cs" />
+    <Compile Include="Modes\ChannelMode.cs" />
+    <Compile Include="Modes\ChannelModeType.cs" />
     <Compile Include="Modes\Channel\Op.cs" />
     <Compile Include="PacketManager.cs" />
     <Compile Include="Packets\Login.cs" />

@@ -1,12 +1,12 @@
 namespace cmpctircd.Modes {
-    public class TopicMode : Mode {
+    public class TopicMode : ChannelMode {
 
         public TopicMode(Channel channel) : base(channel) {
             Name = "topic";
             Description = "Provides +t/-t for locking or unlocking topic set";
             Character = "t";
             Symbol = "";
-            Type = ModeType.D;
+            Type = ChannelModeType.D;
             Level = ChannelPrivilege.Op;
             HasParameters = false;
             ChannelWide = true;

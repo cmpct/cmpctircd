@@ -494,7 +494,7 @@ namespace cmpctircd.Packets {
                 string modeString = "";
                 bool announce = false;
                 int position = 0;
-                Mode modeObject;
+                ChannelMode modeObject;
                 var modesNoOperator = modes.Replace("+", "").Replace("-", "");
                 if(args.IRCd.GetSupportedModesByType()["A"].Contains(modesNoOperator)) {
                     // Is this mode of Type A (and listable)? See ModeType

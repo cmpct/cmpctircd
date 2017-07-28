@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using cmpctircd.Modes;
 
 namespace cmpctircd.Modes {
-    public abstract class Mode {
+    public abstract class ChannelMode {
 
         public Channel channel { get; protected set; }
         public string Name { get; protected set; }
         public string Character { get; protected set; }
         public string Symbol { get; protected set; }
         public string Description { get; protected set; }
-        public ModeType Type { get; protected set; }
+        public ChannelModeType Type { get; protected set; }
         public bool HasParameters { get; protected set; }
         public bool ChannelWide { get; protected set; }
         public bool Stackable = true;
@@ -22,7 +22,7 @@ namespace cmpctircd.Modes {
         } = ChannelPrivilege.Normal;
 
 
-        public Mode(Channel channel) {
+        public ChannelMode(Channel channel) {
             this.channel = channel;
         }
 

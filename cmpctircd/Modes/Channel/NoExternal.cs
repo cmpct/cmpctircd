@@ -1,12 +1,12 @@
 namespace cmpctircd.Modes {
-    public class NoExternalMode : Mode {
+    public class NoExternalMode : ChannelMode {
 
         public NoExternalMode(Channel channel) : base(channel) {
             Name = "noexternal";
             Description = "Provides the +n (no external messages) mode.";
             Character = "n";
             Symbol = "";
-            Type = ModeType.D;
+            Type = ChannelModeType.D;
             Level = ChannelPrivilege.Op;
             HasParameters = false;
             ChannelWide = true;

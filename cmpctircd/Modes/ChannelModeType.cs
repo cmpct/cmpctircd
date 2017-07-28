@@ -1,6 +1,6 @@
 using System;
 namespace cmpctircd.Modes {
-    public enum ModeType {
+    public enum ChannelModeType {
         
         // This enum is used for RPL_ISUPPORT - necessary for (some) irc clients to recognise mode changes
         // http://www.irc.org/tech_docs/005.html

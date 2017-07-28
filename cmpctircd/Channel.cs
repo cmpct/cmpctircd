@@ -18,9 +18,9 @@ namespace cmpctircd {
 
         public Topic Topic { get; set; } = new Topic();
 
-        public ConcurrentDictionary<string, Mode> Modes {
+        public ConcurrentDictionary<string, ChannelMode> Modes {
             get; set;
-        } = new ConcurrentDictionary<string, Mode>();
+        } = new ConcurrentDictionary<string, ChannelMode>();
 
         public ConcurrentDictionary<Client, ChannelPrivilege> Privileges = new ConcurrentDictionary<Client, ChannelPrivilege>();
         public int CreationTime { get; set; }
@@ -28,17 +28,17 @@ namespace cmpctircd {
         public Channel(ChannelManager manager, IRCd ircd) {
             this.Manager = manager;
 
-            string[] badClasses = { "Mode", "ModeType" };
+            string[] badClasses = { "ChannelMode", "ChannelModeType" };
             var classes = AppDomain.CurrentDomain.GetAssemblies()
                                    .SelectMany(t => t.GetTypes())
                                    .Where(
                                        t => t.IsClass &&
                                        t.Namespace == "cmpctircd.Modes" &&
-                                       t.BaseType.Equals(typeof(Mode)) &&
+                                       t.BaseType.Equals(typeof(ChannelMode)) &&
                                        !badClasses.Contains(t.Name)
                                     );
             foreach(Type className in classes) {
-                Mode modeInstance = (Mode) Activator.CreateInstance(Type.GetType(className.ToString()), this);
+                ChannelMode modeInstance = (ChannelMode) Activator.CreateInstance(Type.GetType(className.ToString()), this);
                 string modeChar = modeInstance.Character;
 
                 Modes.TryAdd(modeChar, modeInstance);
@@ -110,7 +110,7 @@ namespace cmpctircd {
 
             // Iterate through all of the modes, finding the highest rank the user holds
             foreach(var mode in Modes) {
-                Mode modeObject = mode.Value;
+                ChannelMode modeObject = mode.Value;
                 if(modeObject.Has(client) && modeObject.Level > privilege && !String.IsNullOrEmpty(modeObject.Symbol)) {
                     privilege = modeObject.Level;
                 }

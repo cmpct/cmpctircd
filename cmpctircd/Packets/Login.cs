@@ -58,7 +58,12 @@ namespace cmpctircd.Packets {
             Client client = args.Client;
             String rawLine = args.Line;
             String[] splitLine = rawLine.Split(new char[] { ':' }, 2);
-            String reason = splitLine[1];
+            string reason;
+            try {
+                reason = splitLine[1];
+            } catch(IndexOutOfRangeException) {
+                reason = "Leaving";
+            }
 
             client.Disconnect(reason, true);
             return true;

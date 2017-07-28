@@ -501,7 +501,7 @@ namespace cmpctircd.Packets {
                     // TODO: should we put this in the foreach?
 
                     // TODO: Some ircds make the ban list op only?
-                    if(splitLineSpace[2] == "+b" && String.IsNullOrEmpty(splitLineSpace[3])) {
+                    if(modesNoOperator == "b" && String.IsNullOrEmpty(splitLineSpace[3])) {
                         var banMode = (BanMode)channel.Modes["b"];
                         foreach(Ban ban in banMode.Bans.Values) {
                             args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_BANLIST.Printable()} {args.Client.Nick} {channel.Name} {ban.GetBan()}");

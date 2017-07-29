@@ -213,7 +213,12 @@ namespace cmpctircd
                 // Does a user with this nick already exist?
                 try {
                     IRCd.GetClientByNick(newNick);
-                    throw new IrcErrNicknameInUseException(this, newNick);
+
+                    // Allow a nick change if old nick is the same as the new new (ignoring casing)
+                    // e.g. Sam -> sam
+                    if(newNick.ToUpper() != oldNick.ToUpper()) {
+                        throw new IrcErrNicknameInUseException(this, newNick);
+                    }
                 } catch(InvalidOperationException) {}
 
                 foreach(var channel in IRCd.ChannelManager.Channels) {

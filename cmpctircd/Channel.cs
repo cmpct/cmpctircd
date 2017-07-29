@@ -41,6 +41,10 @@ namespace cmpctircd {
                 ChannelMode modeInstance = (ChannelMode) Activator.CreateInstance(Type.GetType(className.ToString()), this);
                 string modeChar = modeInstance.Character;
 
+                if(Modes.Values.Any(m => m.Character == modeChar)) {
+                    Console.WriteLine($"{modeInstance.Name} has the same character ({modeChar}) as another mode! Skipping.");
+                    continue;
+                }
                 Modes.TryAdd(modeChar, modeInstance);
                 // TODO: debug level with logging
                 //Console.WriteLine($"Creating instance of {modeChar} - {modeInstance.Description}");

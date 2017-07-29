@@ -60,6 +60,7 @@
     <Compile Include="Modes\Channel\Invite.cs" />
     <Compile Include="Modes\Channel\Topic.cs" />
     <Compile Include="Modes\Channel\NoExternal.cs" />
+    <Compile Include="Modes\Channel\AllTls.cs" />
     <Compile Include="Modes\Channel\TLS.cs" />
     <Compile Include="Modes\ChannelMode.cs" />
     <Compile Include="Modes\ChannelModeType.cs" />

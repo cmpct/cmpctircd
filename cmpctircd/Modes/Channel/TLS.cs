@@ -41,6 +41,11 @@ namespace cmpctircd.Modes {
             if (announce) {
                 channel.SendToRoom(client, $":{client.Mask} MODE {channel.Name} +z", sendSelf);
             }
+
+            // Attempt to set +Z (only works if applicable)
+            if(channel.Modes.ContainsKey("Z")) {
+                channel.Modes["Z"].Grant(client, client.Nick, false, true, true);
+            }
             return true;
         }
 
@@ -67,6 +72,9 @@ namespace cmpctircd.Modes {
             if (announce) {
                 channel.SendToRoom(client, $":{client.Mask} MODE {channel.Name} -z", sendSelf);
             }
+
+            // Attempt to unset +Z
+            channel.Modes["Z"].Revoke(client, client.Nick, false, true, true);
             return true;
         }
 

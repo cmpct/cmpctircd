@@ -83,6 +83,11 @@ namespace cmpctircd {
             ));
 
             client.Write($":{client.IRCd.Host} {IrcNumeric.RPL_CREATIONTIME.Printable()} {client.Nick} {Name} {CreationTime}");
+
+            if(Modes.ContainsKey("Z")) {
+                // Attempt to set +Z (only works if applicable)
+                Modes["Z"].Grant(client, client.Nick, false, true, true);
+            }
         }
 
 
@@ -189,7 +194,8 @@ namespace cmpctircd {
             if(stripModes) {
                 foreach(var mode in Modes) {
                     try {
-                        mode.Value.Revoke(client, client.Nick, true, false);
+                        if(mode.Value.Has(client))
+                            mode.Value.Revoke(client, client.Nick, true, false);
                     }
                     catch {}
                 }
@@ -197,6 +203,13 @@ namespace cmpctircd {
             }
 
             Clients.TryRemove(client.Nick, out _);
+
+            if(Modes.ContainsKey("Z")) {
+                // Attempt to set +Z (only works if applicable)
+                // If we were the last person without TLS to leave, +Z can be set.
+                Modes["Z"].Grant(client, client.Nick, false, true, true);
+            }
+
             if (graceful)
                 Destroy();
         }

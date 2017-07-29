@@ -250,7 +250,7 @@ namespace cmpctircd.Packets {
                         // Check the bans
                         var userRank = channel.Status(client);
                         if (channel.Modes["b"].Has(client) && userRank.CompareTo(ChannelPrivilege.Op) < 0) {
-                            throw new IrcErrCannotSendToChanException(client, channel.Name);
+                            throw new IrcErrCannotSendToChanException(client, channel.Name, "Cannot send to channel (You're banned)");
                         }
                         channel.SendToRoom(client, String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, channel.Name, message), false);
                     }

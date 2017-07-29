@@ -154,8 +154,8 @@ namespace cmpctircd {
 
     public class IrcErrCannotSendToChanException : Exception {
 
-        public IrcErrCannotSendToChanException(Client client, string channel) {
-            client.Write($":{client.IRCd.Host} {IrcNumeric.ERR_CANNOTSENDTOCHAN.Printable()} {client.Nick} {channel} :Cannot send to channel (You're banned)");
+        public IrcErrCannotSendToChanException(Client client, string channel, string message) {
+            client.Write($":{client.IRCd.Host} {IrcNumeric.ERR_CANNOTSENDTOCHAN.Printable()} {client.Nick} {channel} :{message}");
         }
     }
 

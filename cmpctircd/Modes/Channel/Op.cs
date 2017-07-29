@@ -8,6 +8,7 @@ namespace cmpctircd.Modes {
             Type = ChannelModeType.PerUser;
             Symbol = "@";
             MinimumUseLevel = ChannelPrivilege.Op;
+            ProvidedLevel = ChannelPrivilege.Op;
             HasParameters = true;
             ChannelWide = false;
         }
@@ -47,7 +48,7 @@ namespace cmpctircd.Modes {
             // Set the subject's privilege to the new status
             // But first check if they already have such a privilege...
             ChannelPrivilege targetPrivs = channel.Privileges.GetOrAdd(targetClient, ChannelPrivilege.Normal);
-            if(targetPrivs.CompareTo(MinimumUseLevel) < 0) {
+            if(targetPrivs.CompareTo(ProvidedLevel) < 0) {
                 // Set the user to op because they were previously less privileged
                 channel.Privileges.TryUpdate(targetClient, ChannelPrivilege.Op, targetPrivs);
             }

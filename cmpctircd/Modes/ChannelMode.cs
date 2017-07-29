@@ -13,7 +13,7 @@ namespace cmpctircd.Modes {
         public ChannelModeType Type { get; protected set; }
         public bool HasParameters { get; protected set; }
         public bool ChannelWide { get; protected set; }
-        public bool Stackable = true;
+        public bool Stackable { get; protected set; } = true;
         public List<Client> Affects = new List<Client>();
 
         // Minimum level to use the command

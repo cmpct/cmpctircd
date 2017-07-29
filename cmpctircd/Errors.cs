@@ -159,4 +159,12 @@ namespace cmpctircd {
         }
     }
 
+    public class IrcErrSecureOnlyChanException : Exception {
+
+        public IrcErrSecureOnlyChanException(Client client, string channel) {
+            client.Write($":{client.IRCd.Host} {IrcNumeric.ERR_SECUREONLYCHAN.Printable()} {client.Nick} {channel} :Cannot join channel (SSL is required)");
+        }
+    }
+
+
 }

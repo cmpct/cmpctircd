@@ -178,12 +178,21 @@ namespace cmpctircd.Packets {
                 } else {
                     channel = ircd.ChannelManager.Create(channel_name);
                 }
+
                 try {
                     channel.Modes["i"].GetValue();
                     if (!client.Invites.Contains(channel)) {
                         throw new IrcErrInviteOnlyChanException(args.Client, channel.Name);
                     }
                 } catch (IrcModeNotEnabledException) {}
+
+                try {
+                    channel.Modes["z"].GetValue();
+                    if (!client.Modes["z"].Enabled) {
+                        throw new IrcErrSecureOnlyChanException(args.Client, channel.Name);
+                    }
+                } catch(IrcModeNotEnabledException) {}
+
                 channel.AddClient(client);
                 client.Invites.Remove(channel);
                 topic = channel.Topic;

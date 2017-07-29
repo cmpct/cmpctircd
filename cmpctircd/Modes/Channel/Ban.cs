@@ -11,7 +11,7 @@ namespace cmpctircd.Modes {
             Character = "b";
             Symbol = "";
             Type = ChannelModeType.A;
-            Level = ChannelPrivilege.Op;
+            MinimumUseLevel = ChannelPrivilege.Op;
             HasParameters = true;
             ChannelWide = false;
             Stackable = false;
@@ -29,7 +29,7 @@ namespace cmpctircd.Modes {
 
             if(!forceSet) {
                 ChannelPrivilege sourcePrivs = channel.Privileges.GetOrAdd(client, ChannelPrivilege.Normal);
-                if(sourcePrivs.CompareTo(Level) < 0) {
+                if(sourcePrivs.CompareTo(MinimumUseLevel) < 0) {
                     // Insufficient setter privileges
                     throw new IrcErrChanOpPrivsNeededException(client, channel.Name);
                 }
@@ -60,7 +60,7 @@ namespace cmpctircd.Modes {
             // Get the setters's privilege if not forcing the mode change
             if(!forceSet) {
                 ChannelPrivilege sourcePrivs = channel.Privileges.GetOrAdd(client, ChannelPrivilege.Normal);
-                if(sourcePrivs.CompareTo(Level) < 0) {
+                if(sourcePrivs.CompareTo(MinimumUseLevel) < 0) {
                     // Insufficient setter privileges
                     throw new IrcErrChanOpPrivsNeededException(client, channel.Name);
                 }

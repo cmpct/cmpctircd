@@ -116,8 +116,8 @@ namespace cmpctircd {
             // Iterate through all of the modes, finding the highest rank the user holds
             foreach(var mode in Modes) {
                 ChannelMode modeObject = mode.Value;
-                if(modeObject.Has(client) && modeObject.Level > privilege && !String.IsNullOrEmpty(modeObject.Symbol)) {
-                    privilege = modeObject.Level;
+                if(modeObject.Has(client) && modeObject.ProvidedLevel > privilege && !String.IsNullOrEmpty(modeObject.Symbol)) {
+                    privilege = modeObject.ProvidedLevel;
                 }
             }
             return privilege;
@@ -125,7 +125,7 @@ namespace cmpctircd {
 
         public string GetUserSymbol(ChannelPrivilege privilege) {
             foreach(var mode in Modes) {
-                if(privilege.CompareTo(mode.Value.Level) == 0 && !String.IsNullOrEmpty(mode.Value.Symbol)) {
+                if(privilege.CompareTo(mode.Value.ProvidedLevel) == 0 && !String.IsNullOrEmpty(mode.Value.Symbol)) {
                     return mode.Value.Symbol;
                 }
             }

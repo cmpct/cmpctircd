@@ -16,11 +16,15 @@ namespace cmpctircd.Modes {
         public bool Stackable = true;
         public List<Client> Affects = new List<Client>();
 
-        // Minimum level to run the command
-        public ChannelPrivilege Level {
+        // Minimum level to use the command
+        public ChannelPrivilege MinimumUseLevel {
             get; protected set;
         } = ChannelPrivilege.Normal;
 
+        // Level given to those who have the mode set
+        public ChannelPrivilege ProvidedLevel {
+            get; protected set;
+        } = ChannelPrivilege.Normal;
 
         public ChannelMode(Channel channel) {
             this.channel = channel;

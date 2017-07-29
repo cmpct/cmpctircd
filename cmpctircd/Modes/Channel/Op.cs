@@ -7,7 +7,7 @@ namespace cmpctircd.Modes {
             Character = "o";
             Type = ChannelModeType.PerUser;
             Symbol = "@";
-            Level = ChannelPrivilege.Op;
+            MinimumUseLevel = ChannelPrivilege.Op;
             HasParameters = true;
             ChannelWide = false;
         }
@@ -38,7 +38,7 @@ namespace cmpctircd.Modes {
             // Get the setters's privilege if not forcing the mode change
             if(!forceSet) {
                 ChannelPrivilege sourcePrivs = channel.Privileges.GetOrAdd(client, ChannelPrivilege.Normal);
-                if(sourcePrivs.CompareTo(Level) < 0) {
+                if(sourcePrivs.CompareTo(MinimumUseLevel) < 0) {
                     // Insufficient setter privileges
                     throw new IrcErrChanOpPrivsNeededException(client, channel.Name);
                 }
@@ -47,7 +47,7 @@ namespace cmpctircd.Modes {
             // Set the subject's privilege to the new status
             // But first check if they already have such a privilege...
             ChannelPrivilege targetPrivs = channel.Privileges.GetOrAdd(targetClient, ChannelPrivilege.Normal);
-            if(targetPrivs.CompareTo(Level) < 0) {
+            if(targetPrivs.CompareTo(MinimumUseLevel) < 0) {
                 // Set the user to op because they were previously less privileged
                 channel.Privileges.TryUpdate(targetClient, ChannelPrivilege.Op, targetPrivs);
             }
@@ -90,7 +90,7 @@ namespace cmpctircd.Modes {
             // Get the setters's privilege if not forcing the mode change
             if(!forceSet) {
                 ChannelPrivilege sourcePrivs = channel.Privileges.GetOrAdd(client, ChannelPrivilege.Normal);
-                if(sourcePrivs.CompareTo(Level) < 0) {
+                if(sourcePrivs.CompareTo(MinimumUseLevel) < 0) {
                     // Insufficient setter privileges
                     throw new IrcErrChanOpPrivsNeededException(client, channel.Name);
                 }

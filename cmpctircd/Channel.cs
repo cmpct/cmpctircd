@@ -42,7 +42,7 @@ namespace cmpctircd {
                 string modeChar = modeInstance.Character;
 
                 if(Modes.Values.Any(m => m.Character == modeChar)) {
-                    Console.WriteLine($"{modeInstance.Name} has the same character ({modeChar}) as another mode! Skipping.");
+                    Console.WriteLine($"{modeInstance.Name} has the same character ({modeChar}) as another channel mode! Skipping.");
                     continue;
                 }
                 Modes.TryAdd(modeChar, modeInstance);

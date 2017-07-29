@@ -238,6 +238,7 @@ namespace cmpctircd.Packets {
             if (target.StartsWith("#")) {
                 // PRIVMSG a channel
                 bool NoExternal = false;
+                bool moderated = false;
                 if(ircd.ChannelManager.Exists(target)) {
                     Channel channel = ircd.ChannelManager[target];
                     try {
@@ -251,6 +252,22 @@ namespace cmpctircd.Packets {
                         var userRank = channel.Status(client);
                         if (channel.Modes["b"].Has(client) && userRank.CompareTo(ChannelPrivilege.Op) < 0) {
                             throw new IrcErrCannotSendToChanException(client, channel.Name, "Cannot send to channel (You're banned)");
+                        }
+                        // Don't send PRIVMSG if it's a moderated channel and the client isn't at least voice
+                        try {
+                            channel.Modes["m"].GetValue();
+                            moderated = true;
+                        } catch (IrcModeNotEnabledException) {}
+
+                        if (moderated) {
+                            if (!channel.Inhabits(client)) {
+                                return false;
+                            } else if (channel.Inhabits(client)) {
+                                // If the user isn't voiced, send ERR_CANNOTSENDTOCHAN
+                                if (userRank.CompareTo(ChannelPrivilege.Voice) < 0) {
+                                    throw new IrcErrCannotSendToChanException(client, channel.Name, "You need voice (+v)");
+                                }
+                            }
                         }
                         channel.SendToRoom(client, String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, channel.Name, message), false);
                     }
@@ -322,6 +339,7 @@ namespace cmpctircd.Packets {
                 fmtMessage = String.Format(":{0} NOTICE {1} {2}", client.Mask, target, message);
                 if (target.StartsWith("#")) {
                     bool NoExternal = false;
+                    bool moderated = false;
                     Channel channel = ircd.ChannelManager[target];
                     try {
                         channel.Modes["n"].GetValue();
@@ -329,6 +347,23 @@ namespace cmpctircd.Packets {
                     } catch (IrcModeNotEnabledException) {}
                     if(!channel.Inhabits(client) && NoExternal) {
                         throw new IrcErrNotOnChannelException(client, channel.Name);
+                    }
+                    // Don't send NOTICE or reply if it's a moderated channel
+                    try {
+                        channel.Modes["m"].GetValue();
+                        moderated = true;
+                    } catch (IrcModeNotEnabledException) {}
+
+                    if (moderated) {
+                        if (!channel.Inhabits(client)) {
+                            return false;
+                        } else if (channel.Inhabits(client)) {
+                            var userRank = channel.Status(client);
+                            // If the user isn't voiced, do nothing
+                            if (userRank.CompareTo(ChannelPrivilege.Voice) < 0) {
+                                return false;
+                            }
+                        }
                     }
                     channel.SendToRoom(client, fmtMessage, false);
                     return true;

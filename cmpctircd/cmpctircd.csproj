@@ -66,6 +66,7 @@
     <Compile Include="Modes\ChannelModeType.cs" />
     <Compile Include="Modes\Channel\Op.cs" />
     <Compile Include="Modes\Channel\Voice.cs" />
+    <Compile Include="Modes\Channel\Moderated.cs" />
     <Compile Include="Modes\UserMode.cs" />
     <Compile Include="Modes\User\Cloak.cs" />
     <Compile Include="Modes\User\TLS.cs" />

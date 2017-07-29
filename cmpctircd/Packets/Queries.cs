@@ -75,6 +75,10 @@ namespace cmpctircd.Packets
 
             args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISSERVER.Printable()} {args.Client.Nick} {targetClient.Nick} {args.IRCd.Host} :{args.IRCd.Desc}");
 
+            if (targetClient.Modes["z"].Enabled) {
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISSECURE.Printable()} {args.Client.Nick} {targetClient.Nick} :is using a secure connection");
+            }
+
             if(!String.IsNullOrWhiteSpace(targetClient.AwayMessage)) {
                 // Only show if the user is away
                 args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_AWAY.Printable()} {args.Client.Nick} {targetClient.Nick} :{targetClient.AwayMessage}");

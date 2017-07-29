@@ -65,6 +65,7 @@
     <Compile Include="Modes\Channel\Op.cs" />
     <Compile Include="Modes\UserMode.cs" />
     <Compile Include="Modes\User\Cloak.cs" />
+    <Compile Include="Modes\User\TLS.cs" />
     <Compile Include="PacketManager.cs" />
     <Compile Include="Packets\Login.cs" />
     <Compile Include="Packets\Motd.cs" />

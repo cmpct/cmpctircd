@@ -122,6 +122,9 @@ namespace cmpctircd
         }
 
         public void SetModes() {
+            if (ClientTlsStream != null) {
+                Modes["z"].Grant("", true, true);
+            }
             foreach(var mode in IRCd.AutoUModes) {
                 Modes[mode.Key].Grant("", true, true);
             }

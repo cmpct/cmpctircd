@@ -20,14 +20,13 @@ namespace cmpctircd.Packets {
             Client client = args.Client;
             String rawLine = args.Line;
 
-            String[] splitLine = rawLine.Split(' ');
-            String[] splitColonLine = rawLine.Split(new char[] { ':' }, 2);
+            String[] splitLine = rawLine.Split(new char[] { ' ' }, 5);
             String username;
             String real_name;
 
             try {
                 username = splitLine[1];
-                real_name = splitColonLine[1];
+                real_name = splitLine[4].StartsWith(":") ? splitLine[4].Substring(1) : splitLine[4];
             } catch(IndexOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(client, "");
             }

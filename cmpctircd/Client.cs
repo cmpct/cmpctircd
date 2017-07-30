@@ -130,7 +130,7 @@ namespace cmpctircd
                 Modes["z"].Grant("", true, true);
             }
             foreach(var mode in IRCd.AutoUModes) {
-                Modes[mode.Key].Grant("", true, true);
+                Modes[mode.Key].Grant(mode.Value, true, true);
             }
         }
 

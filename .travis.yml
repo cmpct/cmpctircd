@@ -3,7 +3,7 @@ solution: cmpctircd.sln
 mono:
   - latest
   - beta
-notifications:
-  irc:
-    - "ircs://irc.cmpct.info:6697/#cmpctircd"
-    - "ircs://irc.cmpct.info:6697/#cmpctircd-commits"
+#notifications:
+#  irc:
+#    - "ircs://irc.cmpct.info:6697/#cmpctircd"
+#    - "ircs://irc.cmpct.info:6697/#cmpctircd-commits"

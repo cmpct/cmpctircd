@@ -337,13 +337,15 @@ namespace cmpctircd
                 } else {
                     ClientStream.Write(packetBytes, 0, packetBytes.Length);
                 }
-            } catch(System.IO.IOException) {
+            } catch(Exception e) when (e is System.IO.IOException || e is System.ObjectDisposedException) {
                 Disconnect("Connection reset by host", true, false);
             }
         }
 
         public void Disconnect(bool graceful) => Disconnect("", graceful, graceful);
         public void Disconnect(string quitReason = "", bool graceful = true, bool sendToSelf = true) {
+            if(State.Equals(ClientState.Disconnected)) return;
+
             if (graceful) {
                 // Inform all of the channels we're a member of that we are leaving
                 foreach (var channel in IRCd.ChannelManager.Channels) {
@@ -360,6 +362,7 @@ namespace cmpctircd
                 Write($":{Mask} QUIT :{quitReason}");
             }
 
+            State = ClientState.Disconnected;
             Listener.Remove(this);
             if(ClientTlsStream != null) {
                 ClientTlsStream.Close();

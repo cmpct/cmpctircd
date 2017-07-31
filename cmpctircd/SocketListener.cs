@@ -108,11 +108,11 @@ namespace cmpctircd {
                     } else {
                         Console.WriteLine("No data, killing client");
                         // Close the connection
-                        client.Disconnect(false);
+                        client.Disconnect(true);
                         break;
                     }
                 } catch(ObjectDisposedException) {
-                    client.Disconnect(false);
+                    client.Disconnect(true);
                     break;
                 };
             }

@@ -190,7 +190,7 @@ namespace cmpctircd.Packets
                             if (success && modeObject.Stackable) {
                                 modeChars += modeStr;
                                 if (modeObject.HasParameters) {
-                                    modeArgs += param[position];
+                                    modeArgs += param[position] + " ";
                                 }
                             }
                         } else if (currentModifier == "-") {
@@ -200,7 +200,7 @@ namespace cmpctircd.Packets
                             if (success && modeObject.Stackable) {
                                 modeChars += modeStr;
                                 if (modeObject.HasParameters) {
-                                    modeArgs += param[position];
+                                    modeArgs += param[position] + " ";
                                 }
                             }
                         }

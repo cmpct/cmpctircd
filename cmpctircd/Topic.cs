@@ -8,7 +8,7 @@ namespace cmpctircd {
     public class Topic {
         // Hold our topic metadata: The topic itself, user who set it, date & time set, channel set on
         public string TopicText { get; set; }
-        public Client User { get; set; }
+        public string Setter { get; set; }
         public Channel Channel { get; set; }
         public Int32 Date { get; set; }
 
@@ -19,7 +19,7 @@ namespace cmpctircd {
             }
             else if (!String.IsNullOrWhiteSpace(TopicText)) {
                 client.Write(String.Format(":{0} {1} {2} {3} :{4}", client.IRCd.Host, IrcNumeric.RPL_TOPIC.Printable(), client.Nick, target, TopicText));
-                client.Write(String.Format(":{0} {1} {2} {3} {4} {5}", client.IRCd.Host, IrcNumeric.RPL_TOPICWHOTIME.Printable(), client.Nick, target, User.Mask, Date));
+                client.Write(String.Format(":{0} {1} {2} {3} {4} {5}", client.IRCd.Host, IrcNumeric.RPL_TOPICWHOTIME.Printable(), client.Nick, target, Setter, Date));
             }
         }
 
@@ -36,7 +36,7 @@ namespace cmpctircd {
                 } catch (IrcModeNotEnabledException) {}
                 // TO DO: Change how we get the unix timestamp
                 Date = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-                User = client;
+                Setter = client.Nick;
                 Channel.SendToRoom(client, String.Format(":{0} TOPIC {1} :{2}", client.Mask, Channel.Name, TopicText), true);
             }
         }

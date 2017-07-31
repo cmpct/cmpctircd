@@ -108,11 +108,11 @@ namespace cmpctircd {
                     } else {
                         Console.WriteLine("No data, killing client");
                         // Close the connection
-                        client.Disconnect(true);
+                        client.Disconnect("Connection reset by host", true, false);
                         break;
                     }
                 } catch(ObjectDisposedException) {
-                    client.Disconnect(true);
+                    client.Disconnect("Connection reset by host", true, false);
                     break;
                 };
             }

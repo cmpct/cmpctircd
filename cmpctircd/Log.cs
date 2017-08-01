@@ -41,11 +41,11 @@ namespace cmpctircd {
             }
         }
 
-        enum LogType {
-            Error,
-            Warn,
-            Info,
-            Debug
+        public enum LogType {
+            Error = 4,
+            Warn = 3,
+            Info = 2,
+            Debug = 1
         }
 
         public enum LoggerType {
@@ -63,6 +63,11 @@ namespace cmpctircd {
 
             // Output the message to all of the applicable loggers
             foreach(var logger in _Loggers) {
+                if(type.CompareTo(logger.Level) < 0) {
+                    // Skip this logger if the level of this message is less than its minimum
+                    continue;
+                }
+
                 switch(logger.Type) {
                     case LoggerType.File:
                         if(logger.Settings.ContainsKey("path") && _FileHandles.ContainsKey(logger.Settings["path"])) {

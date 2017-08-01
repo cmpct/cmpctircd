@@ -19,9 +19,10 @@
     <tls pfx_file='server.pfx' pfx_pass=''/>
 
     <log>
-        <!-- Possible types: Stdout -->
-        <logger type="Stdout"/>
-        <logger type="File" path="ircd.log"/>
+        <!-- 'type' is for where the output should be directed: Stdout, File -->
+        <!-- 'level' is minimum level of message to be output: Debug, Info, Warn, Error -->
+        <logger type="Stdout" level="Info"/>
+        <logger type="File" level="Warn" path="ircd.log"/>
     </log>
 
     <advanced>

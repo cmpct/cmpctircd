@@ -15,7 +15,7 @@ namespace cmpctircd {
         }
 
         public bool Register(String packet, Func<HandlerArgs, Boolean> handler) {
-            Console.WriteLine("Registering packet: " + packet);
+            ircd.Log.Debug("Registering packet: " + packet);
             if (handlers.ContainsKey(packet.ToUpper())) {
                 // Already a handler for this packet so add it to the list
                 handlers[packet].Add(handler);
@@ -64,12 +64,12 @@ namespace cmpctircd {
                         record.Invoke(args);
                     }
                 } else {
-                    Console.WriteLine("No handler for " + packet.ToUpper());
+                    ircd.Log.Debug("No handler for " + packet.ToUpper());
                     throw new IrcErrUnknownCommandException(client, packet.ToUpper());
                 }
-                Console.WriteLine("Handler for " + packet.ToUpper() + " executed");
+                ircd.Log.Debug("Handler for " + packet.ToUpper() + " executed");
             } catch (Exception e) {
-                Console.WriteLine("Exception: " + e.ToString());
+                ircd.Log.Debug("Exception: " + e.ToString());
             }
             return true;
         }

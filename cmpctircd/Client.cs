@@ -79,12 +79,11 @@ namespace cmpctircd
                 string modeChar = modeInstance.Character;
 
                 if(Modes.Values.Any(m => m.Character == modeChar)) {
-                    Console.WriteLine($"{modeInstance.Name} has the same character ({modeChar}) as another user mode! Skipping.");
+                    IRCd.Log.Error($"{modeInstance.Name} has the same character ({modeChar}) as another user mode! Skipping.");
                     continue;
                 }
                 Modes.TryAdd(modeChar, modeInstance);
-                // TODO: debug level with logging
-                //Console.WriteLine($"Creating instance of {modeChar} - {modeInstance.Description}");
+                ircd.Log.Debug($"Creating instance of {modeChar} - {modeInstance.Description}");
             }
 
         }
@@ -175,7 +174,7 @@ namespace cmpctircd
                 }
                 Write(String.Format(":{0} {1} {2} :End of /MOTD command.", IRCd.Host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
             } catch(System.IO.FileNotFoundException) {
-                Console.WriteLine("ircd.motd doesn't exist!");
+                IRCd.Log.Error("ircd.motd doesn't exist!");
             }
         }
 
@@ -193,7 +192,7 @@ namespace cmpctircd
                 }
                 Write(String.Format(":{0} {1} {2} :End of RULES command.", IRCd.Host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
             } catch(System.IO.FileNotFoundException) {
-                Console.WriteLine("ircd.rules doesn't exist!");
+                IRCd.Log.Error("ircd.rules doesn't exist!");
             }
         }
 

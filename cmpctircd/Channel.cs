@@ -42,12 +42,12 @@ namespace cmpctircd {
                 string modeChar = modeInstance.Character;
 
                 if(Modes.Values.Any(m => m.Character == modeChar)) {
-                    Console.WriteLine($"{modeInstance.Name} has the same character ({modeChar}) as another channel mode! Skipping.");
+                    ircd.Log.Error($"{modeInstance.Name} has the same character ({modeChar}) as another channel mode! Skipping.");
                     continue;
                 }
                 Modes.TryAdd(modeChar, modeInstance);
                 // TODO: debug level with logging
-                //Console.WriteLine($"Creating instance of {modeChar} - {modeInstance.Description}");
+                ircd.Log.Debug($"Creating instance of {modeChar} - {modeInstance.Description}");
             }
 
 
@@ -63,7 +63,7 @@ namespace cmpctircd {
                 throw new IrcErrBannedFromChanException(client, Name);
             }
             if(!Clients.TryAdd(client.Nick, client)) { return; }
-            Console.WriteLine("Added {0} to {1}", client.Nick, Name);
+            client.IRCd.Log.Debug($"Added {client.Nick} to {Name}");
 
             // Tell everyone we've joined
             SendToRoom(client, String.Format(":{0} JOIN :{1}", client.Mask, this.Name));
@@ -99,7 +99,7 @@ namespace cmpctircd {
             if(!Inhabits(client)) {
                 throw new InvalidOperationException("User isn't in the room!");
             }
-            Console.WriteLine("Removing {0} from {1}", client.Nick, Name);
+            client.IRCd.Log.Debug($"Removing {client.Nick} from {Name}");
             SendToRoom(client, String.Format(":{0} PART {1} :{2}", client.Mask, Name, reason), true);
             Remove(client, strip, strip);
         }
@@ -109,7 +109,7 @@ namespace cmpctircd {
                 throw new InvalidOperationException("User isn't in the room!");
             }
 
-            Console.WriteLine("Removing {0} from {1}", client.Nick, Name);
+            client.IRCd.Log.Debug($"Removing {client.Nick} from {Name}");
             SendToRoom(client, String.Format(":{0} QUIT {1}", client.Mask, reason), false);
             Remove(client, true);
         }

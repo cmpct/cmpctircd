@@ -59,21 +59,20 @@ namespace cmpctircd {
             ChannelManager = new ChannelManager(this);
             Log = new Log(this, Loggers);
 
-            Console.WriteLine($"==> Starting cmpctircd-{Version}");
+            Log.Info($"==> Starting cmpctircd-{Version}");
             if(Version.Contains("-dev")) {
-                Console.WriteLine();
-                Console.WriteLine("===> You are running a development version of cmpctircd.NET.");
-                Console.WriteLine("===> If you are having problems, consider reverting to a stable version.");
-                Console.WriteLine("===> Please report any bugs or feedback to the developers via the bugtracker at https://bugs.cmpct.info/");
+                Log.Info("===> You are running a development version of cmpctircd.NET.");
+                Log.Info("===> If you are having problems, consider reverting to a stable version.");
+                Log.Info("===> Please report any bugs or feedback to the developers via the bugtracker at https://bugs.cmpct.info/");
             }
-            Console.WriteLine($"==> Host: {Host}");
+            Log.Info($"==> Host: {Host}");
 
             Listeners = new List<SocketListener>();
             ClientLists = new List<List<Client>>();
 
             foreach(var listener in Config.Listeners) {
                 SocketListener sl = new SocketListener(this, listener.IP, listener.Port, listener.TLS);
-                Console.WriteLine($"==> Listening on: {listener.IP}:{listener.Port}");
+                Log.Info($"==> Listening on: {listener.IP}:{listener.Port}");
                 Listeners.Add(sl);
             }
 

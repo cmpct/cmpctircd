@@ -77,7 +77,7 @@ namespace cmpctircd {
                     X509Certificate serverCertificate = new X509Certificate2(_ircd.Config.TLS_PfxLocation, _ircd.Config.TLS_PfxPassword);
                     sslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls, true);
                 } catch(Exception e) {
-                    Console.WriteLine(e.ToString());
+                    _ircd.Log.Debug(e.ToString());
                     client.Disconnect(false);
                 }
             }
@@ -106,7 +106,7 @@ namespace cmpctircd {
                         }
                         client.Buffer = new Byte[1024];
                     } else {
-                        Console.WriteLine("No data, killing client");
+                        _ircd.Log.Debug("No data, killing client");
                         // Close the connection
                         client.Disconnect("Connection reset by host", true, false);
                         break;

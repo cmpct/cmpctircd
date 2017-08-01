@@ -47,7 +47,7 @@ namespace cmpctircd.Packets {
             String newNick = rawLine.Split(' ')[1];
             // Some bots will try to send ':' with the channel, remove this
             newNick = newNick.StartsWith(":") ? newNick.Substring(1) : newNick;
-            Console.WriteLine("Changing nick to {0}", newNick);
+            ircd.Log.Debug($"Changing nick to {newNick}");
             client.SetNick(newNick);
             return true;
         }

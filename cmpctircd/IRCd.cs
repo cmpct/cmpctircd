@@ -18,6 +18,7 @@ namespace cmpctircd {
         private Dictionary<string, List<string>> ModeTypes { get; set; }
         private Dictionary<string, string> ModeDict { get; set; }
 
+        public Log Log;
         public Config.ConfigData Config;
         public string Host;
         public string Desc;
@@ -54,7 +55,9 @@ namespace cmpctircd {
         }
 
         public void Run() {
-            Log Log = new Log(this, Loggers);
+            PacketManager = new PacketManager(this);
+            ChannelManager = new ChannelManager(this);
+            Log = new Log(this, Loggers);
 
             Console.WriteLine($"==> Starting cmpctircd-{Version}");
             if(Version.Contains("-dev")) {
@@ -73,9 +76,6 @@ namespace cmpctircd {
                 Console.WriteLine($"==> Listening on: {listener.IP}:{listener.Port}");
                 Listeners.Add(sl);
             }
-
-            PacketManager = new PacketManager(this);
-            ChannelManager = new ChannelManager(this);
 
             Listeners.ForEach(listener => listener.Bind());
             PacketManager.Load();

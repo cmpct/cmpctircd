@@ -19,10 +19,13 @@
     <tls pfx_file='server.pfx' pfx_pass=''/>
 
     <log>
-        <!-- 'type' is for where the output should be directed: Stdout, File -->
+        <!-- 'type' is for where the output should be directed: Stdout, File, IRC -->
         <!-- 'level' is minimum level of message to be output: Debug, Info, Warn, Error -->
         <logger type="Stdout" level="Info"/>
         <logger type="File" level="Warn" path="ircd.log"/>
+        <!--
+           <logger type="IRC"  level="Debug" channel="#debug"/>
+        -->
     </log>
 
     <advanced>

@@ -8,18 +8,33 @@ namespace cmpctircd {
         private IRCd _IRCd;
         private List<Config.LoggerInfo> _Loggers;
 
+        private Dictionary<string, Channel> _ChannelHandles;
         private Dictionary<string, StreamWriter> _FileHandles;
 
         public Log(IRCd ircd, List<Config.LoggerInfo> loggers) {
             _IRCd = ircd;
             _Loggers = loggers;
             _FileHandles = new Dictionary<string, StreamWriter>();
+            _ChannelHandles = new Dictionary<string, Channel>();
 
             // Setup the loggers if applicable?
             foreach(var logger in _Loggers) {
                 Debug($"Initialised logger: Type={logger.Type.ToString()} Args={string.Join(";", logger.Settings)}");
 
                 switch(logger.Type) {
+                    case LoggerType.IRC:
+                        string channelName = logger.Settings["channel"];
+                        Channel channel;
+                        try {
+                            // Use the channel if it already exists (very unlikely)
+                            channel = ircd.ChannelManager.Channels[channelName];
+                        } catch(KeyNotFoundException) {
+                            channel = ircd.ChannelManager.Create(channelName);
+                        }
+
+                        _ChannelHandles.Add(channelName, channel);
+                    break;
+
                     case LoggerType.File:
                         var path            = logger.Settings["path"];
                         StreamWriter writer = new StreamWriter(logger.Settings["path"], true);
@@ -49,6 +64,7 @@ namespace cmpctircd {
         }
 
         public enum LoggerType {
+            IRC,
             File,
             Stdout
         }
@@ -69,6 +85,13 @@ namespace cmpctircd {
                 }
 
                 switch(logger.Type) {
+                    case LoggerType.IRC:
+                        var channelName = logger.Settings["channel"];
+                        if(logger.Settings.ContainsKey("channel") && _ChannelHandles.ContainsKey(channelName)) {
+                            _ChannelHandles[channelName].SendToRoom(null, $":{_IRCd.Host} PRIVMSG {channelName} :{line}");
+                        }
+                        break;
+
                     case LoggerType.File:
                         if(logger.Settings.ContainsKey("path") && _FileHandles.ContainsKey(logger.Settings["path"])) {
                             _FileHandles[logger.Settings["path"]].WriteLine(line);

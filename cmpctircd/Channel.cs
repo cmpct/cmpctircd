@@ -173,8 +173,10 @@ namespace cmpctircd {
         }
         public void SendToRoom(Client client, String message, Boolean sendSelf) {
             Parallel.ForEach(Clients, (iClient) => {
-                if (!sendSelf && iClient.Value.Equals(client)) {
-                    return;
+                if(client != null) {
+                    if (!sendSelf && iClient.Value.Equals(client)) {
+                        return;
+                    }
                 }
                 iClient.Value.Write(message);
             });

@@ -30,6 +30,7 @@ namespace cmpctircd {
         public string CloakKey { get; set;}
         public Dictionary<string, string> AutoModes;
         public Dictionary<string, string> AutoUModes;
+        public List<Config.LoggerInfo> Loggers;
 
         public DateTime CreateTime { get; private set; }
 
@@ -44,6 +45,8 @@ namespace cmpctircd {
             PingTimeout = config.PingTimeout;
             RequirePong = config.RequirePongCookie;
 
+            Loggers = config.Loggers;
+
             MaxTargets = config.MaxTargets;
             CloakKey = config.CloakKey;
             AutoModes = config.AutoModes;
@@ -51,6 +54,8 @@ namespace cmpctircd {
         }
 
         public void Run() {
+            Log Log = new Log(this, Loggers);
+
             Console.WriteLine($"==> Starting cmpctircd-{Version}");
             if(Version.Contains("-dev")) {
                 Console.WriteLine();

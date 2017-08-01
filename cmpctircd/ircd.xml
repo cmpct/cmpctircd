@@ -18,6 +18,11 @@
     <!-- Simply convert using the following command: openssl pkcs12 -export -in ssl.cert -inkey private.key -out server.pfx -->
     <tls pfx_file='server.pfx' pfx_pass=''/>
 
+    <log>
+        <!-- Possible types: Stdout -->
+        <logger type="Stdout"/>
+    </log>
+
     <advanced>
         <require_pong_cookie>true</require_pong_cookie>
         <ping_timeout>120</ping_timeout>

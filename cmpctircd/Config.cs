@@ -4,6 +4,8 @@ using System.Net;
 using System.Xml;
 using System.Collections.Generic;
 
+using cmpctircd;
+
 namespace cmpctircd {
 
     public class Config {
@@ -21,6 +23,9 @@ namespace cmpctircd {
             public string TLS_PfxLocation;
             public string TLS_PfxPassword;
 
+            // <log>
+            public List<LoggerInfo> Loggers;
+
             // <advanced>
             public bool RequirePongCookie;
             public int PingTimeout;
@@ -36,6 +41,11 @@ namespace cmpctircd {
             public IPAddress IP;
             public int Port;
             public bool TLS;
+        }
+
+        public struct LoggerInfo {
+            public cmpctircd.Log.LoggerType Type;
+            public Dictionary<string, string> Settings;
         }
 
         private string FileName { get; } = "ircd.xml";
@@ -60,6 +70,7 @@ namespace cmpctircd {
             data.Listeners = new List<ListenerInfo>();
             data.AutoModes = new Dictionary<string, string>();
             data.AutoUModes = new Dictionary<string, string>();
+            data.Loggers  = new List<LoggerInfo>();
 
             foreach(XmlElement node in config) {
                 // Valid types: ircd, server, channelmodes, usermodes, cloak, sockets, log, advanced, opers
@@ -87,6 +98,29 @@ namespace cmpctircd {
                         data.TLS_PfxLocation = node.Attributes["pfx_file"].InnerText;
                         data.TLS_PfxPassword = node.Attributes["pfx_pass"].InnerText;
                         break;
+
+                    case "log":
+                        foreach(XmlElement logLine in node.GetElementsByTagName("logger")) {
+                            LoggerInfo logger = new LoggerInfo();
+                            foreach(XmlAttribute attribute in logLine.Attributes) {
+                                // Check each of the attributes
+                                switch(attribute.Name) {
+                                    case "type":
+                                        // Parse out the type
+                                        logger.Type = (Log.LoggerType) Enum.Parse(typeof(Log.LoggerType), logLine.Attributes["type"].InnerText);
+                                        break;
+
+                                    default:
+                                        // For anything else, add it to a dictionary of: <name_of_attribute, value_of_attribute>
+                                        logger.Settings.Add(attribute.Name, attribute.InnerText);
+                                        break;
+                                }
+                            }
+
+                            data.Loggers.Add(logger);
+                        }
+                        break;
+
 
                     case "advanced":
                         // <advanced> properties: require_pong_cookie, ping_timeout, max_targets

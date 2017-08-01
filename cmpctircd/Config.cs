@@ -102,6 +102,8 @@ namespace cmpctircd {
                     case "log":
                         foreach(XmlElement logLine in node.GetElementsByTagName("logger")) {
                             LoggerInfo logger = new LoggerInfo();
+                            logger.Settings = new Dictionary<string, string>();
+
                             foreach(XmlAttribute attribute in logLine.Attributes) {
                                 // Check each of the attributes
                                 switch(attribute.Name) {

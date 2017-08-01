@@ -21,6 +21,7 @@
     <log>
         <!-- Possible types: Stdout -->
         <logger type="Stdout"/>
+        <logger type="File" path="ircd.log"/>
     </log>
 
     <advanced>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace cmpctircd {
     public class Log {
@@ -81,11 +82,11 @@ namespace cmpctircd {
             }
 
             // Output the message to all of the applicable loggers
-            foreach(BaseLogger logger in _Loggers) {
-                if(skip != null && skip.Contains(logger)) continue;
+            Parallel.ForEach(_Loggers, (logger, state) => {
+                if(skip != null && skip.Contains(logger)) return;
                 if(type.CompareTo(logger.Level) < 0) {
                     // Skip this logger if the level of this message is less than its minimum
-                    continue;
+                    return;
                 }
 
                 try {
@@ -98,9 +99,8 @@ namespace cmpctircd {
                     skip.Add(logger);
 
                     Write(LogType.Debug, $"Unable to write to logger: {logger.Type}; {e.GetType()}", skip);
-                    continue;
                 }
-            }
+            });
         }
 
     }

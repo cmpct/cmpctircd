@@ -19,10 +19,10 @@ namespace cmpctircd {
             writer.Close();
         }
 
-        override public void WriteLine(string msg, Log.LogType type, bool prepared = true) {
+        override public async void WriteLine(string msg, Log.LogType type, bool prepared = true) {
             if(!prepared) msg = Prepare(msg, type);
 
-            writer.WriteLine(msg);
+            await writer.WriteLineAsync(msg);
         }
 
 

@@ -48,17 +48,14 @@ namespace cmpctircd {
                 switch(cLogger.Type) {
                     case LoggerType.IRC:
                         log = new IRC(_IRCd, cLogger.Level);
-                        log.Create(cLogger.Settings);
                     break;
 
                     case LoggerType.File:
                         log = new File(_IRCd, cLogger.Level);
-                        log.Create(cLogger.Settings);
                         break;
 
                     case LoggerType.Stdout:
                         log = new Stdout(_IRCd, cLogger.Level);
-                        log.Create(cLogger.Settings);
                         break;
 
                     default:
@@ -66,6 +63,7 @@ namespace cmpctircd {
                 }
 
                 if(log != null) {
+                    log.Create(cLogger.Settings);
                     _Loggers.Add(log);
                 }
             }
@@ -82,7 +80,7 @@ namespace cmpctircd {
             }
 
             // Output the message to all of the applicable loggers
-            Parallel.ForEach(_Loggers, (logger, state) => {
+            Parallel.ForEach(_Loggers, (logger) => {
                 if(skip != null && skip.Contains(logger)) return;
                 if(type.CompareTo(logger.Level) < 0) {
                     // Skip this logger if the level of this message is less than its minimum

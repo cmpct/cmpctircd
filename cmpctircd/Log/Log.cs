@@ -71,6 +71,15 @@ namespace cmpctircd {
         }
 
         private void Write(LogType type, string message) {
+            if(_Loggers.Count == 0) {
+                // No Loggers currently registered
+                // Create a temporary Stdout
+                var stdout = new Stdout(_IRCd, LogType.Info);
+                if(type.CompareTo(stdout.Level) < 0) return;
+                stdout.WriteLine(stdout.Prepare(message, type), type);
+                return;
+            }
+
             // Output the message to all of the applicable loggers
             foreach(BaseLogger logger in _Loggers) {
                 if(type.CompareTo(logger.Level) < 0) {

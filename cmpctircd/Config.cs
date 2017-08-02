@@ -51,16 +51,18 @@ namespace cmpctircd {
 
         private string FileName { get; } = "ircd.xml";
         private XmlDocument Xml = new XmlDocument();
+        private Log _Log;
 
 
-        public Config() {
+        public Config(Log log) {
+            _Log = log;
             try {
                 XmlReaderSettings readerSettings = new XmlReaderSettings();
                 readerSettings.IgnoreComments = true;
                 XmlReader reader = XmlReader.Create(FileName, readerSettings);
                 Xml.Load(reader);
             } catch(System.IO.IOException e) {
-                Console.WriteLine($"Unable to open the configuration file: {FileName}");
+                _Log.Error($"Unable to open the configuration file: {FileName}");
                 throw e;
             }
         }
@@ -91,7 +93,7 @@ namespace cmpctircd {
                             listener.TLS  = Boolean.Parse(listenNode.Attributes["tls"].InnerText);
                             data.Listeners.Add(listener);
 
-                            Console.WriteLine($"Got a listener: {listener.IP}:{listener.Port} tls={listener.TLS}");
+                            _Log.Debug($"Got a listener: {listener.IP}:{listener.Port} tls={listener.TLS}");
                         }
                         break;
 
@@ -135,7 +137,7 @@ namespace cmpctircd {
                         data.PingTimeout       = Int32.Parse(node["ping_timeout"].InnerText);
                         data.MaxTargets        = Int32.Parse(node["max_targets"].InnerText);
                         data.CloakKey          = node["cloak_key"].InnerText;
-                        Console.WriteLine($"Configured with advanced options: RequirePongCookie={data.RequirePongCookie}, PingTimeout={data.PingTimeout}, MaxTargets={data.MaxTargets}, CloakKey={data.CloakKey}");
+                        _Log.Info($"Configured with advanced options: RequirePongCookie={data.RequirePongCookie}, PingTimeout={data.PingTimeout}, MaxTargets={data.MaxTargets}, CloakKey={data.CloakKey}");
                         break;
 
                     case "cmodes":
@@ -151,7 +153,7 @@ namespace cmpctircd {
                     break;
 
                     default:
-                        Console.WriteLine($"Unrecognised tag name: {node.Name.ToLower()}");
+                        _Log.Warn($"Unrecognised tag name: {node.Name.ToLower()}");
                         break;
 
                 }

@@ -70,7 +70,7 @@ namespace cmpctircd {
             }
         }
 
-        private void Write(LogType type, string message) {
+        private void Write(LogType type, string message, List<BaseLogger> skip = null) {
             if(_Loggers.Count == 0) {
                 // No Loggers currently registered
                 // Create a temporary Stdout
@@ -82,13 +82,24 @@ namespace cmpctircd {
 
             // Output the message to all of the applicable loggers
             foreach(BaseLogger logger in _Loggers) {
+                if(skip != null && skip.Contains(logger)) continue;
                 if(type.CompareTo(logger.Level) < 0) {
                     // Skip this logger if the level of this message is less than its minimum
                     continue;
                 }
 
-                var line = logger.Prepare(message, type);
-                logger.WriteLine(line, type);
+                try {
+                    var line = logger.Prepare(message, type);
+                    logger.WriteLine(line, type);
+                } catch(Exception e) {
+                    if(skip == null || skip.Count == 0) {
+                        skip = new List<BaseLogger>();
+                    }
+                    skip.Add(logger);
+
+                    Write(LogType.Debug, $"Unable to write to logger: {logger.Type}; {e.GetType()}", skip);
+                    continue;
+                }
             }
         }
 

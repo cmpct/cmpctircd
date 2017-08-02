@@ -22,7 +22,7 @@ namespace cmpctircd {
         override public void WriteLine(string msg, Log.LogType type, bool prepared = true) {
             if(!prepared) msg = Prepare(msg, type);
 
-            Console.WriteLine(msg);
+            writer.WriteLine(msg);
         }
 
 

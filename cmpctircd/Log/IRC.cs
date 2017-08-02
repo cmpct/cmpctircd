@@ -5,7 +5,7 @@ using System.IO;
 namespace cmpctircd {
     public class IRC : BaseLogger {
 
-        Channel channel;
+        private Channel _Channel;
 
         public IRC(IRCd ircd, Log.LogType type) : base(ircd, type) {}
 
@@ -19,26 +19,26 @@ namespace cmpctircd {
 
             try {
                 // Use the channel if it already exists (very unlikely)
-                channel = IRCd.ChannelManager.Channels[channelName];
+                _Channel = IRCd.ChannelManager.Channels[channelName];
             } catch(KeyNotFoundException) {
-                channel = IRCd.ChannelManager.Create(channelName);
+                _Channel = IRCd.ChannelManager.Create(channelName);
             }
 
-            channel.CanDestroy = false;
+            _Channel.CanDestroy = false;
         }
 
         override public void Close() {
-            channel.CanDestroy = true;
-            channel.Destroy();
+            _Channel.CanDestroy = true;
+            _Channel.Destroy();
         }
 
         override public string Prepare(string msg, Log.LogType Type) {
-            return $":{IRCd.Host} PRIVMSG {channel.Name} :{msg}";
+            return $":{IRCd.Host} PRIVMSG {_Channel.Name} :{msg}";
         }
 
         override public void WriteLine(string msg, Log.LogType type, bool prepared = true) {
             if(!prepared) msg = Prepare(msg, type);
-            channel.SendToRoom(null, msg);
+            _Channel.SendToRoom(null, msg);
         }
 
 

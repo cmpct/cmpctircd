@@ -10,10 +10,10 @@ namespace cmpctircd {
 
         override public void Close() {}
 
-        override public async void WriteLine(string msg, Log.LogType type, bool prepared = true) {
+        override public void WriteLine(string msg, Log.LogType type, bool prepared = true) {
             if(!prepared) msg = Prepare(msg, type);
 
-            await Console.Out.WriteLineAsync(msg);
+            Console.Out.WriteLine(msg);
         }
 
 

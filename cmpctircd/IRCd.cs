@@ -56,7 +56,6 @@ namespace cmpctircd {
         }
 
         public void Run() {
-
             Log.Info($"==> Starting cmpctircd-{Version}");
             if(Version.Contains("-dev")) {
                 Log.Info("===> You are running a development version of cmpctircd.NET.");
@@ -70,7 +69,7 @@ namespace cmpctircd {
 
             foreach(var listener in Config.Listeners) {
                 SocketListener sl = new SocketListener(this, listener.IP, listener.Port, listener.TLS);
-                Log.Info($"==> Listening on: {listener.IP}:{listener.Port}");
+                Log.Info($"==> Listening on: {listener.IP}:{listener.Port} ({(listener.TLS ? "SSL/TLS" : "Plain" )})");
                 Listeners.Add(sl);
             }
 

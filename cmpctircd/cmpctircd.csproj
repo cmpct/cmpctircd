@@ -56,7 +56,11 @@
     <Compile Include="IRCd.cs" />
     <Compile Include="IrcNumeric.cs" />
     <Compile Include="IrcNumericExtensions.cs" />
-    <Compile Include="Log.cs" />
+    <Compile Include="Log\Log.cs" />
+    <Compile Include="Log\BaseLogger.cs" />
+    <Compile Include="Log\File.cs" />
+    <Compile Include="Log\IRC.cs" />
+    <Compile Include="Log\Stdout.cs" />
     <Compile Include="Modes\Channel\Ban.cs" />
     <Compile Include="Modes\Channel\Invite.cs" />
     <Compile Include="Modes\Channel\Topic.cs" />

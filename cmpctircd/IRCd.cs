@@ -35,7 +35,8 @@ namespace cmpctircd {
 
         public DateTime CreateTime { get; private set; }
 
-        public IRCd(Config.ConfigData config) {
+        public IRCd(Log log, Config.ConfigData config) {
+            this.Log = log;
             this.Config = config;
 
             // Interpret the ConfigData
@@ -55,9 +56,6 @@ namespace cmpctircd {
         }
 
         public void Run() {
-            PacketManager = new PacketManager(this);
-            ChannelManager = new ChannelManager(this);
-            Log = new Log(this, Loggers);
 
             Log.Info($"==> Starting cmpctircd-{Version}");
             if(Version.Contains("-dev")) {
@@ -75,6 +73,9 @@ namespace cmpctircd {
                 Log.Info($"==> Listening on: {listener.IP}:{listener.Port}");
                 Listeners.Add(sl);
             }
+
+            PacketManager = new PacketManager(this);
+            ChannelManager = new ChannelManager(this);
 
             Listeners.ForEach(listener => listener.Bind());
             PacketManager.Load();

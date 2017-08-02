@@ -15,8 +15,8 @@ namespace cmpctircd.Modes {
         public UserMode(IRCd ircd) {
             // XXX: This exists for IRCd.GetSupportedUModes()
             // XXX: A better solution would be nice
-            ircd.Log.Warn("You've initialised a User Mode with no client. This is NOT recommended.");
-            ircd.Log.Warn("This constructor only exists for IRCd.GetSupportedUModes(). You probably want UserMode(Client)!");
+            ircd.Log.Debug("You've initialised a User Mode with no client. This is NOT recommended.");
+            ircd.Log.Debug("This constructor only exists for IRCd.GetSupportedUModes(). You probably want UserMode(Client)!");
         }
 
         public UserMode(Client subject) {

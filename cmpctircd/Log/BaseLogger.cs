@@ -18,7 +18,7 @@ namespace cmpctircd {
         abstract public void WriteLine(string msg, Log.LogType type, bool prepared = true);
         abstract public void Close();
 
-        public string Prepare(string msg, Log.LogType type) {
+        virtual public string Prepare(string msg, Log.LogType type) {
             return $"[{type.ToString().ToUpper()}] {msg}";
         }
     }

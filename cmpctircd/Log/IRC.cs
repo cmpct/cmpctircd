@@ -25,12 +25,13 @@ namespace cmpctircd {
             // kill channel if empty?
         }
 
+        override public string Prepare(string msg, Log.LogType Type) {
+            return $":{IRCd.Host} PRIVMSG {channel.Name} :{msg}";
+        }
+
         override public void WriteLine(string msg, Log.LogType type, bool prepared = true) {
             if(!prepared) msg = Prepare(msg, type);
-            // TODO: need Closable flag?
-            // TODO: make sure it still exists?
-            // _ChannelHandles[channelName].SendToRoom(null, $":{_IRCd.Host} PRIVMSG {channelName} :{line}");
-            Console.WriteLine(msg);
+            channel.SendToRoom(null, msg);
         }
 
 

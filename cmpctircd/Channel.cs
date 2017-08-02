@@ -25,6 +25,9 @@ namespace cmpctircd {
         public ConcurrentDictionary<Client, ChannelPrivilege> Privileges = new ConcurrentDictionary<Client, ChannelPrivilege>();
         public int CreationTime { get; set; }
 
+        // Used to prevent logging channels from being destroyed
+        public bool CanDestroy = true;
+
         public Channel(ChannelManager manager, IRCd ircd) {
             this.Manager = manager;
 
@@ -226,7 +229,7 @@ namespace cmpctircd {
 
         public void Destroy() {
             // Destroy if last user to leave room (TODO: may need modification for cloaking)
-            if(Size == 0)
+            if(CanDestroy && Size == 0)
                 Manager.Remove(Name);
         }
         public int Size => Clients.Count();

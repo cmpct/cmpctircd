@@ -12,17 +12,24 @@ namespace cmpctircd {
         override public void Create(Dictionary<string, string> arguments) {
             var channelName = arguments["channel"];
 
+            if(IRCd.ChannelManager == null) {
+                System.Threading.Tasks.Task.Delay(10000).ContinueWith(t => Create(arguments));
+                return;
+            }
+
             try {
                 // Use the channel if it already exists (very unlikely)
                 channel = IRCd.ChannelManager.Channels[channelName];
             } catch(KeyNotFoundException) {
                 channel = IRCd.ChannelManager.Create(channelName);
             }
+
+            channel.CanDestroy = false;
         }
 
         override public void Close() {
-            // TODO: tell channel we're going
-            // kill channel if empty?
+            channel.CanDestroy = true;
+            channel.Destroy();
         }
 
         override public string Prepare(string msg, Log.LogType Type) {

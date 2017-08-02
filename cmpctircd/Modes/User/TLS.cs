@@ -4,6 +4,9 @@ using System.Net;
 namespace cmpctircd.Modes {
     public class TLSMode : UserMode {
 
+        // XXX: DO NOT USE THIS CONSTRUCTOR
+        public TLSMode(IRCd ircd) : base(ircd) {}
+
         public TLSMode(Client subject) : base(subject) {
             Name = "TLS";
             Description = "Provides the +z (TLS) mode for users connecting via TLS";

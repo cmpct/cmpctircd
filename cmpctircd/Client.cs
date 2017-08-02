@@ -111,13 +111,15 @@ namespace cmpctircd
             Write(String.Format(":{0} {1} {2} :Welcome to the {3} IRC Network {4}", IRCd.Host, IrcNumeric.RPL_WELCOME.Printable(), Nick, IRCd.Network, Mask));
             Write(String.Format(":{0} {1} {2} :Your host is {3}, running version cmpctircd-{4}", IRCd.Host, IrcNumeric.RPL_YOURHOST.Printable(), Nick, IRCd.Host, IRCd.Version));
             Write(String.Format(":{0} {1} {2} :This server was created {3}", IRCd.Host, IrcNumeric.RPL_CREATED.Printable(), Nick, IRCd.CreateTime.ToString("h:mm:ss MMM d yyyy")));
-            // TODO: This was commented out in the Perl version, probably not something to use for now.
-            // TODO: I don't think MYINFO is very popular?
-            //write(String.Format(":{0} {1} {2} {3} {4} x ntlo", ircd.Host, IrcNumeric.RPL_MYINFO.Printable(), nick, ircd.Host, ircd.version));
+
+            var UModeTypes = IRCd.GetSupportedUModes();
             var ModeTypes = IRCd.GetSupportedModesByType();
             var modes     = IRCd.GetSupportedModes(true);
+
+            Write($":{IRCd.Host} {IrcNumeric.RPL_MYINFO.Printable()} {Nick} {IRCd.Host} {IRCd.Version} {string.Join("",UModeTypes)} {modes["Characters"]} {string.Join("",ModeTypes["A"])}{string.Join("",ModeTypes["B"])}{string.Join("",ModeTypes["C"])}");
             Write($":{IRCd.Host} {IrcNumeric.RPL_ISUPPORT.Printable()} {Nick} :CASEMAPPING=rfc1459 PREFIX=({modes["Characters"]}){modes["Symbols"]} STATUSMSG={modes["Symbols"]} NETWORK={IRCd.Network} MAXTARGETS={IRCd.MaxTargets} :are supported by this server");
             Write($":{IRCd.Host} {IrcNumeric.RPL_ISUPPORT.Printable()} {Nick} :CHANTYPES=# CHANMODES={string.Join("",ModeTypes["A"])},{string.Join("",ModeTypes["B"])},{string.Join("", ModeTypes["C"])},{string.Join("", ModeTypes["D"])} :are supported by this server");
+
             SendLusers();
             // Send MOTD
             SendMotd();

@@ -4,6 +4,9 @@ using System.Net;
 namespace cmpctircd.Modes {
     public class CloakMode : UserMode {
 
+        // XXX: DO NOT USE THIS CONSTRUCTOR
+        public CloakMode(IRCd ircd) : base(ircd) {}
+
         public CloakMode(Client subject) : base(subject) {
             Name = "cloak";
             Description = "Provides the +x (cloak) mode to hide user hostnames/IPs";

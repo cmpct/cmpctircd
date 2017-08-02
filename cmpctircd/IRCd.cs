@@ -17,6 +17,7 @@ namespace cmpctircd {
         public List<List<Client>> ClientLists { get; set; }
         private Dictionary<string, List<string>> ModeTypes { get; set; }
         private Dictionary<string, string> ModeDict { get; set; }
+        private List<string> UserModes { get; set; }
 
         public Log Log;
         public Config.ConfigData Config;
@@ -134,6 +135,32 @@ namespace cmpctircd {
             ModeDict.Add("Symbols", modeSymbols);
 
             return ModeDict;
+        }
+
+        public List<string> GetSupportedUModes() {
+            if(UserModes != null && UserModes.Count() > 0) {
+                // Caching because reflection is an expensive operation to perform on each connection
+                // This is called by SendWelcome() to provide RPL_MYINFO
+                return UserModes;
+            }
+            UserModes = new List<string>();
+
+            string[] badClasses = { "Mode", "ModeType" };
+            var classes = AppDomain.CurrentDomain.GetAssemblies()
+                                   .SelectMany(t => t.GetTypes())
+                                   .Where(
+                                       t => t.IsClass &&
+                                       t.Namespace == "cmpctircd.Modes" &&
+                                       t.BaseType.Equals(typeof(UserMode)) &&
+                                       !badClasses.Contains(t.Name)
+            );
+
+            foreach(Type className in classes) {
+                UserMode modeInstance = (UserMode) Activator.CreateInstance(Type.GetType(className.ToString()), this);
+                UserModes.Add(modeInstance.Character);
+            }
+
+            return UserModes;
         }
 
         public Dictionary<string, List<string>> GetSupportedModesByType() {

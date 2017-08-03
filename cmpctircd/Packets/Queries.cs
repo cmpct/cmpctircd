@@ -90,7 +90,7 @@ namespace cmpctircd.Packets
         }
         public Boolean AwayHandler(HandlerArgs args) {
             String[] splitLine = args.Line.Split(' ');
-            String[] splitColonLine = args.Line.Split(':');
+            String[] splitColonLine = args.Line.Split(new char[] { ':' }, 2);
             String message;
 
             try {

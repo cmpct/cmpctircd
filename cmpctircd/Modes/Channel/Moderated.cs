@@ -1,16 +1,19 @@
 namespace cmpctircd.Modes {
     public class ModeratedMode : ChannelMode {
 
-        public ModeratedMode(Channel channel) : base(channel) {
-            Name = "moderated";
-            Description = "Provides the +m (moderated) mode for muting non-voiced users";
-            Character = "m";
-            Symbol = "";
-            Type = ChannelModeType.D;
-            MinimumUseLevel = ChannelPrivilege.Op;
-            HasParameters = false;
-            ChannelWide = true;
-        }
+
+        override public string Name { get; } = "moderated";
+        override public string Description { get; } = "Provides the +m (moderated) mode for muting non-voiced users";
+        override public string Character { get; } = "m";
+        override public string Symbol { get; } = "";
+        override public ChannelModeType Type { get; } = ChannelModeType.D;
+        override public ChannelPrivilege MinimumUseLevel { get; } = ChannelPrivilege.Op;
+        override public ChannelPrivilege ProvidedLevel { get; } = ChannelPrivilege.Normal;
+        override public bool HasParameters { get; } = false;
+        override public bool ChannelWide { get; } = true;
+        override public bool Stackable { get; } = true;
+
+        public ModeratedMode(Channel channel) : base(channel) {}
         private bool Enabled { get; set; }
 
         override public string GetValue() {

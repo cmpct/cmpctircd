@@ -1,16 +1,18 @@
 namespace cmpctircd.Modes {
     public class TopicMode : ChannelMode {
 
-        public TopicMode(Channel channel) : base(channel) {
-            Name = "topic";
-            Description = "Provides +t/-t for locking or unlocking topic set";
-            Character = "t";
-            Symbol = "";
-            Type = ChannelModeType.D;
-            MinimumUseLevel = ChannelPrivilege.Op;
-            HasParameters = false;
-            ChannelWide = true;
-        }
+        override public string Name { get; } = "topic";
+        override public string Description { get; } = "Provides +t/-t for locking or unlocking topic set";
+        override public string Character { get; } = "t";
+        override public string Symbol { get; } = "";
+        override public ChannelModeType Type { get; } = ChannelModeType.D;
+        override public ChannelPrivilege MinimumUseLevel { get; } = ChannelPrivilege.Op;
+        override public ChannelPrivilege ProvidedLevel { get; } = ChannelPrivilege.Normal;
+        override public bool HasParameters { get; } = false;
+        override public bool ChannelWide { get; } = true;
+        override public bool Stackable { get; } = true;
+
+        public TopicMode(Channel channel) : base(channel) {}
         private bool Enabled { get; set; }
 
         override public string GetValue() {

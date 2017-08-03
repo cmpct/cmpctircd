@@ -1,17 +1,18 @@
 namespace cmpctircd.Modes {
     public class OpMode : ChannelMode {
 
-        public OpMode(Channel channel) : base(channel) {
-            Name = "op";
-            Description = "Provides the +o (op) mode for moderating a channel";
-            Character = "o";
-            Type = ChannelModeType.PerUser;
-            Symbol = "@";
-            MinimumUseLevel = ChannelPrivilege.Op;
-            ProvidedLevel = ChannelPrivilege.Op;
-            HasParameters = true;
-            ChannelWide = false;
-        }
+        override public string Name { get; } = "op";
+        override public string Description { get; } = "Provides the +o (op) mode for moderating a channel";
+        override public string Character { get; } = "o";
+        override public string Symbol { get; } = "@";
+        override public ChannelModeType Type { get; } = ChannelModeType.PerUser;
+        override public ChannelPrivilege MinimumUseLevel { get; } = ChannelPrivilege.Op;
+        override public ChannelPrivilege ProvidedLevel { get; } = ChannelPrivilege.Op;
+        override public bool HasParameters { get; } = true;
+        override public bool ChannelWide { get; } = false;
+        override public bool Stackable { get; } = true;
+
+        public OpMode(Channel channel) : base(channel) {}
 
         override public bool Grant(Client client, string args, bool forceSet = false, bool announce = false, bool sendSelf = true) {
             string targetNick = args;

@@ -6,25 +6,25 @@ namespace cmpctircd.Modes {
     public abstract class ChannelMode {
 
         public Channel channel { get; protected set; }
-        public string Name { get; protected set; }
-        public string Character { get; protected set; }
-        public string Symbol { get; protected set; }
-        public string Description { get; protected set; }
-        public ChannelModeType Type { get; protected set; }
-        public bool HasParameters { get; protected set; }
-        public bool ChannelWide { get; protected set; }
-        public bool Stackable { get; protected set; } = true;
+        abstract public string Name { get; }
+        abstract public string Character { get; }
+        abstract public string Symbol { get; }
+        abstract public string Description { get; }
+        abstract public ChannelModeType Type { get; }
+        abstract public bool HasParameters { get; }
+        abstract public bool ChannelWide { get; }
+        abstract public bool Stackable { get; }
         public List<Client> Affects = new List<Client>();
 
         // Minimum level to use the command
-        public ChannelPrivilege MinimumUseLevel {
-            get; protected set;
-        } = ChannelPrivilege.Normal;
+        abstract public ChannelPrivilege MinimumUseLevel {
+            get;
+        }
 
         // Level given to those who have the mode set
-        public ChannelPrivilege ProvidedLevel {
-            get; protected set;
-        } = ChannelPrivilege.Normal;
+        abstract public ChannelPrivilege ProvidedLevel {
+            get;
+        }
 
         public ChannelMode(Channel channel) {
             this.channel = channel;

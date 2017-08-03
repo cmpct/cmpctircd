@@ -5,17 +5,19 @@ using System.Text.RegularExpressions;
 namespace cmpctircd.Modes {
     public class BanMode : ChannelMode {
 
-        public BanMode(Channel channel) : base(channel) {
-            Name = "ban";
-            Description = "Provides the +b (ban) mode for banning users from channels";
-            Character = "b";
-            Symbol = "";
-            Type = ChannelModeType.A;
-            MinimumUseLevel = ChannelPrivilege.Op;
-            HasParameters = true;
-            ChannelWide = false;
-            Stackable = false;
-        }
+        override public string Name { get; } = "ban";
+        override public string Description { get; } = "Provides the +b (ban) mode for banning users from channels";
+        override public string Character { get; } = "b";
+        override public string Symbol { get; } = "";
+        override public ChannelModeType Type { get; } = ChannelModeType.A;
+        override public ChannelPrivilege MinimumUseLevel { get; } = ChannelPrivilege.Op;
+        override public ChannelPrivilege ProvidedLevel { get; } = ChannelPrivilege.Normal;
+        override public bool HasParameters { get; } = true;
+        override public bool ChannelWide { get; } = false;
+        override public bool Stackable { get; } = false;
+
+        public BanMode(Channel channel) : base(channel) {}
+
         // Dictionary of bans. mask => Ban
         public Dictionary<string, Ban> Bans = new Dictionary<string, Ban>();
 

@@ -1,16 +1,18 @@
 namespace cmpctircd.Modes {
     public class NoExternalMode : ChannelMode {
 
-        public NoExternalMode(Channel channel) : base(channel) {
-            Name = "noexternal";
-            Description = "Provides the +n (no external messages) mode.";
-            Character = "n";
-            Symbol = "";
-            Type = ChannelModeType.D;
-            MinimumUseLevel = ChannelPrivilege.Op;
-            HasParameters = false;
-            ChannelWide = true;
-        }
+        override public string Name { get; } = "noexternal";
+        override public string Description { get; } = "Provides the +n (no external messages) mode.";
+        override public string Character { get; } = "n";
+        override public string Symbol { get; } = "";
+        override public ChannelModeType Type { get; } = ChannelModeType.D;
+        override public ChannelPrivilege MinimumUseLevel { get; } = ChannelPrivilege.Op;
+        override public ChannelPrivilege ProvidedLevel { get; } = ChannelPrivilege.Normal;
+        override public bool HasParameters { get; } = false;
+        override public bool ChannelWide { get; } = true;
+        override public bool Stackable { get; } = true;
+
+        public NoExternalMode(Channel channel) : base(channel) {}
         private bool Enabled { get; set; }
 
         override public string GetValue() {

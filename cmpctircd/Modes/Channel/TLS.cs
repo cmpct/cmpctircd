@@ -1,16 +1,18 @@
 namespace cmpctircd.Modes {
     public class TlsMode : ChannelMode {
 
-        public TlsMode(Channel channel) : base(channel) {
-            Name = "TLS";
-            Description = "Provides the +z (TLS users only) mode.";
-            Character = "z";
-            Symbol = "";
-            Type = ChannelModeType.D;
-            MinimumUseLevel = ChannelPrivilege.Op;
-            HasParameters = false;
-            ChannelWide = true;
-        }
+        override public string Name { get; } = "TLS";
+        override public string Description { get; } = "Provides the +z (TLS users only) mode";
+        override public string Character { get; } = "z";
+        override public string Symbol { get; } = "";
+        override public ChannelModeType Type { get; } = ChannelModeType.D;
+        override public ChannelPrivilege MinimumUseLevel { get; } = ChannelPrivilege.Op;
+        override public ChannelPrivilege ProvidedLevel { get; } = ChannelPrivilege.Normal;
+        override public bool HasParameters { get; } = false;
+        override public bool ChannelWide { get; } = true;
+        override public bool Stackable { get; } = true;
+
+        public TlsMode(Channel channel) : base(channel) {}
         private bool Enabled { get; set; }
 
         override public string GetValue() {

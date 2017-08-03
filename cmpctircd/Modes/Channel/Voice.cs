@@ -1,17 +1,18 @@
 namespace cmpctircd.Modes {
     public class VoiceMode : ChannelMode {
 
-        public VoiceMode(Channel channel) : base(channel) {
-            Name = "voice";
-            Description = "Provides the +v (voice) mode for voicing a user";
-            Character = "v";
-            Type = ChannelModeType.PerUser;
-            Symbol = "+";
-            MinimumUseLevel = ChannelPrivilege.Op;
-            ProvidedLevel = ChannelPrivilege.Voice;
-            HasParameters = true;
-            ChannelWide = false;
-        }
+        override public string Name { get; } = "voice";
+        override public string Description { get; } = "Provides the +v (voice) mode for voicing a user";
+        override public string Character { get; } = "v";
+        override public string Symbol { get; } = "+";
+        override public ChannelModeType Type { get; } = ChannelModeType.PerUser;
+        override public ChannelPrivilege MinimumUseLevel { get; } = ChannelPrivilege.Op;
+        override public ChannelPrivilege ProvidedLevel { get; } = ChannelPrivilege.Voice;
+        override public bool HasParameters { get; } = true;
+        override public bool ChannelWide { get; } = false;
+        override public bool Stackable { get; } = true;
+
+        public VoiceMode(Channel channel) : base(channel) {}
 
         override public bool Grant(Client client, string args, bool forceSet = false, bool announce = false, bool sendSelf = true) {
             string targetNick = args;

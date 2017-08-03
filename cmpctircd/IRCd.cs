@@ -137,7 +137,7 @@ namespace cmpctircd {
             return ModeDict;
         }
 
-        public List<string> GetSupportedUModes() {
+        public List<string> GetSupportedUModes(Client client) {
             if(UserModes != null && UserModes.Count() > 0) {
                 // Caching because reflection is an expensive operation to perform on each connection
                 // This is called by SendWelcome() to provide RPL_MYINFO
@@ -156,7 +156,7 @@ namespace cmpctircd {
             );
 
             foreach(Type className in classes) {
-                UserMode modeInstance = (UserMode) Activator.CreateInstance(Type.GetType(className.ToString()), this);
+                UserMode modeInstance = (UserMode) Activator.CreateInstance(Type.GetType(className.ToString()), client);
                 UserModes.Add(modeInstance.Character);
             }
 

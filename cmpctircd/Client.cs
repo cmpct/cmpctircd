@@ -74,6 +74,7 @@ namespace cmpctircd
                                        t.BaseType.Equals(typeof(UserMode)) &&
                                        !badClasses.Contains(t.Name)
                                     );
+
             foreach(Type className in classes) {
                 UserMode modeInstance = (UserMode) Activator.CreateInstance(Type.GetType(className.ToString()), this);
                 string modeChar = modeInstance.Character;
@@ -112,7 +113,7 @@ namespace cmpctircd
             Write(String.Format(":{0} {1} {2} :Your host is {3}, running version cmpctircd-{4}", IRCd.Host, IrcNumeric.RPL_YOURHOST.Printable(), Nick, IRCd.Host, IRCd.Version));
             Write(String.Format(":{0} {1} {2} :This server was created {3}", IRCd.Host, IrcNumeric.RPL_CREATED.Printable(), Nick, IRCd.CreateTime.ToString("h:mm:ss MMM d yyyy")));
 
-            var UModeTypes = IRCd.GetSupportedUModes();
+            var UModeTypes = IRCd.GetSupportedUModes(this);
             var ModeTypes = IRCd.GetSupportedModesByType();
             var modes     = IRCd.GetSupportedModes(true);
 

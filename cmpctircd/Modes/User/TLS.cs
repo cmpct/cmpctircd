@@ -4,16 +4,14 @@ using System.Net;
 namespace cmpctircd.Modes {
     public class TLSMode : UserMode {
 
-        // XXX: DO NOT USE THIS CONSTRUCTOR
-        public TLSMode(IRCd ircd) : base(ircd) {}
+        override public string Name { get; } = "TLS";
+        override public string Description { get; } = "Provides the +z (TLS) mode for users connecting via TLS";
+        override public string Character { get; }  = "z";
+        override public bool HasParameters { get; } = false;
+        override public bool Stackable { get; } = true;
+        override public bool Enabled { get; set; } = false;
 
-        public TLSMode(Client subject) : base(subject) {
-            Name = "TLS";
-            Description = "Provides the +z (TLS) mode for users connecting via TLS";
-            Character = "z";
-            HasParameters = false;
-        }
-
+        public TLSMode(Client subject) : base(subject) {}
 
         override public bool Grant(string args, bool forceSet = false, bool announce = false, bool sendSelf = true) {
             if (Enabled && !forceSet)

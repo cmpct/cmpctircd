@@ -4,20 +4,13 @@ using cmpctircd.Modes;
 namespace cmpctircd.Modes {
     public abstract class UserMode {
 
-        public string Name { get; protected set; }
-        public string Character { get; protected set; }
-        public string Description { get; protected set; }
-        public bool HasParameters { get; protected set; }
-        public bool Stackable = true;
-        public bool Enabled = false;
+        abstract public string Name { get; }
+        abstract public string Character { get; }
+        abstract public string Description { get; }
+        abstract public bool HasParameters { get; }
+        abstract public bool Stackable { get; }
+        abstract public bool Enabled { get; set; }
         public Client Subject;
-
-        public UserMode(IRCd ircd) {
-            // XXX: This exists for IRCd.GetSupportedUModes()
-            // XXX: A better solution would be nice
-            ircd.Log.Debug("You've initialised a User Mode with no client. This is NOT recommended.");
-            ircd.Log.Debug("This constructor only exists for IRCd.GetSupportedUModes(). You probably want UserMode(Client)!");
-        }
 
         public UserMode(Client subject) {
             this.Subject = subject;

@@ -4,15 +4,14 @@ using System.Net;
 namespace cmpctircd.Modes {
     public class CloakMode : UserMode {
 
-        // XXX: DO NOT USE THIS CONSTRUCTOR
-        public CloakMode(IRCd ircd) : base(ircd) {}
+        override public string Name { get; } = "cloak";
+        override public string Description { get; } = "Provides the +x (cloak) mode to hide user hostnames/IPs";
+        override public string Character { get; } = "x";
+        override public bool HasParameters {get; } = false;
+        override public bool Stackable { get; } = true;
+        override public bool Enabled { get; set; } = false;
 
-        public CloakMode(Client subject) : base(subject) {
-            Name = "cloak";
-            Description = "Provides the +x (cloak) mode to hide user hostnames/IPs";
-            Character = "x";
-            HasParameters = false;
-        }
+        public CloakMode(Client subject) : base(subject) {}
 
 
         override public bool Grant(string args, bool forceSet = false, bool announce = false, bool sendSelf = true) {

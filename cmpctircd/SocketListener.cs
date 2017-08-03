@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
@@ -85,34 +86,33 @@ namespace cmpctircd {
             client.BeginTasks();
 
             while (true) {
+                StreamReader reader = null;
                 try {
-                    int bytesRead;
+                    string line;
+                    
+                    // Need to supply a different stream for TLS
                     if(TLS) {
-                        bytesRead = await client.ClientTlsStream.ReadAsync(client.Buffer, 0, client.Buffer.Length);
+                        reader = new StreamReader(client.ClientTlsStream);
+                        line   = await reader.ReadLineAsync();
                     } else {
-                        bytesRead = await client.ClientStream.ReadAsync(client.Buffer, 0, client.Buffer.Length);
+                        reader = new StreamReader(client.ClientStream);
+                        line   = await reader.ReadLineAsync();
                     }
 
-                    if (bytesRead > 0) {
-                        // Would a TcpClient have ReadLine for us?
-                        string data = Encoding.UTF8.GetString(client.Buffer);
-                        string[] lines = Regex.Split(data, "\r\n");
-                        foreach (string line in lines) {
-                            // Split each line into bits
-                            string[] parts = Regex.Split(line, " ");
-                            var args = new HandlerArgs(_ircd, client, line);
-                            if (parts[0].Contains("\0")) continue;
-                            _ircd.PacketManager.FindHandler(parts[0], args);
-                        }
-                        client.Buffer = new Byte[1024];
-                    } else {
-                        _ircd.Log.Debug("No data, killing client");
-                        // Close the connection
-                        client.Disconnect("Connection reset by host", true, false);
-                        break;
+                    while(line != null) {
+                        // Read until there's no more left
+                        var parts = Regex.Split(line, " ");
+                        var args  = new HandlerArgs(_ircd, client, line);
+                        _ircd.PacketManager.FindHandler(parts[0], args);
+
+                        // Grab another line
+                        line = await reader.ReadLineAsync();
                     }
-                } catch(ObjectDisposedException) {
+                } catch(Exception) {
                     client.Disconnect("Connection reset by host", true, false);
+                    if(reader != null) {
+                        reader.Dispose();
+                    }
                     break;
                 };
             }

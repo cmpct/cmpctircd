@@ -90,6 +90,29 @@ namespace cmpctircd {
                 Listeners.ForEach(listener => listener.Stop());
             }
 
+            if(Log.ShouldLogLevel(LogType.Debug)) {
+                System.Timers.Timer statTimer = new System.Timers.Timer();
+
+                // Run the timer every 5 minutes
+                statTimer.Interval = new TimeSpan(0, 0, 5).TotalSeconds;
+                statTimer.Elapsed += delegate {
+                    // Create a report on how each of the listeners is preforming (ratio of authenticated clients)
+                    // Should let us see if there's some problem with a specific listener - or in general with the handshake
+                    Log.Debug($"Since {CreateTime}, the following activity has occurred:");
+                    foreach(var listener in this.Listeners) {
+                        if(listener.ClientCount == 0) continue;
+
+                        var authRatio   = decimal.Round((listener.AuthClientCount / listener.ClientCount) * 100);
+                        var unauthCount = listener.ClientCount - listener.AuthClientCount;
+                        var prefixLine  = $"[{listener.Address}:{listener.Port} ({(listener.TLS ? "SSL/TLS" : "Plain" )})]";
+
+                        Log.Debug($"==> {prefixLine} Authed: {listener.AuthClientCount} ({authRatio}%). Unauthed: {unauthCount}. Total: {listener.ClientCount}.");
+                    }
+                };
+                statTimer.Start();
+            }
+
+
             while (true) {
                 System.Threading.Thread.Sleep(10);
             }

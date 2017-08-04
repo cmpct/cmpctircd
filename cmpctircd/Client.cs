@@ -108,6 +108,7 @@ namespace cmpctircd
 
             // Henceforth, we assume user can become Authenticated!
             State = ClientState.Auth;
+            System.Threading.Interlocked.Increment(ref Listener.AuthClientCount);
 
             Write(String.Format(":{0} {1} {2} :Welcome to the {3} IRC Network {4}", IRCd.Host, IrcNumeric.RPL_WELCOME.Printable(), Nick, IRCd.Network, Mask));
             Write(String.Format(":{0} {1} {2} :Your host is {3}, running version cmpctircd-{4}", IRCd.Host, IrcNumeric.RPL_YOURHOST.Printable(), Nick, IRCd.Host, IRCd.Version));

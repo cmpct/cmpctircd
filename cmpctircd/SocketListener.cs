@@ -20,11 +20,18 @@ namespace cmpctircd {
         private TcpListener _listener = null;
         private List<Client> _clients = new List<Client>();
 
+        public IPAddress Address { get; private set; }
+        public int Port { get; private set; }
+        public int ClientCount = 0;
+        public int AuthClientCount = 0;
+
         public bool TLS { get; set; } = false;
 
         public SocketListener(IRCd ircd, IPAddress IP, int port, bool TLS) {
             this._ircd = ircd;
             this.TLS = TLS;
+            this.Address = IP;
+            this.Port = port;
             _listener = new TcpListener(IP, port);
             lock(_ircd.ClientLists) {
                 _ircd.ClientLists.Add(_clients);
@@ -63,6 +70,10 @@ namespace cmpctircd {
             lock (_clients)
                 _clients.Add(client);
             
+            // Increment the client count
+            System.Threading.Interlocked.Increment(ref ClientCount);
+
+
             // Handshake with TLS if they're from a TLS port
             SslStream sslStream = null;
             if(TLS) {

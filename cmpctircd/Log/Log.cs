@@ -20,6 +20,8 @@ namespace cmpctircd {
         }
 
 
+        // Useful for finding out if ANY loggers are interested in the a given level (e.g. debug)
+        public bool ShouldLogLevel(LogType level) => _Loggers.Exists(log => (log.Level <= level));
         public void Debug(string msg) => Write(LogType.Debug, msg);
         public void Info(string msg)  => Write(LogType.Info, msg);
         public void Warn(string msg) => Write(LogType.Warn, msg);

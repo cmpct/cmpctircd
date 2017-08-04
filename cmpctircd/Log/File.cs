@@ -7,7 +7,7 @@ namespace cmpctircd {
 
         StreamWriter writer;
 
-        public File(IRCd ircd, Log.LogType type) : base(ircd, type) {}
+        public File(IRCd ircd, LogType type) : base(ircd, type) {}
 
         override public void Create(Dictionary<string, string> arguments) {
             var path  = arguments["path"];
@@ -19,7 +19,7 @@ namespace cmpctircd {
             writer.Close();
         }
 
-        override public void WriteLine(string msg, Log.LogType type, bool prepared = true) {
+        override public void WriteLine(string msg, LogType type, bool prepared = true) {
             if(!prepared) msg = Prepare(msg, type);
 
             writer.WriteLine(msg);

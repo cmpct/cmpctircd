@@ -7,7 +7,7 @@ namespace cmpctircd {
 
         private Channel _Channel;
 
-        public IRC(IRCd ircd, Log.LogType type) : base(ircd, type) {}
+        public IRC(IRCd ircd, LogType type) : base(ircd, type) {}
 
         override public void Create(Dictionary<string, string> arguments) {
             var channelName = arguments["channel"];
@@ -32,11 +32,11 @@ namespace cmpctircd {
             _Channel.Destroy();
         }
 
-        override public string Prepare(string msg, Log.LogType Type) {
+        override public string Prepare(string msg, LogType Type) {
             return $":{IRCd.Host} PRIVMSG {_Channel.Name} :{msg}";
         }
 
-        override public void WriteLine(string msg, Log.LogType type, bool prepared = true) {
+        override public void WriteLine(string msg, LogType type, bool prepared = true) {
             if(!prepared) msg = Prepare(msg, type);
             _Channel.SendToRoom(null, msg);
         }

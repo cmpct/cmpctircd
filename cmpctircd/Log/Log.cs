@@ -19,18 +19,6 @@ namespace cmpctircd {
             }
         }
 
-        public enum LogType {
-            Error = 4,
-            Warn = 3,
-            Info = 2,
-            Debug = 1
-        }
-
-        public enum LoggerType {
-            IRC,
-            File,
-            Stdout
-        }
 
         public void Debug(string msg) => Write(LogType.Debug, msg);
         public void Info(string msg)  => Write(LogType.Info, msg);

@@ -57,6 +57,8 @@
     <Compile Include="IrcNumeric.cs" />
     <Compile Include="IrcNumericExtensions.cs" />
     <Compile Include="Log\Log.cs" />
+    <Compile Include="Log\LogType.cs" />
+    <Compile Include="Log\LoggerType.cs" />
     <Compile Include="Log\BaseLogger.cs" />
     <Compile Include="Log\File.cs" />
     <Compile Include="Log\IRC.cs" />

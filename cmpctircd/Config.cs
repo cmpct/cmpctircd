@@ -44,8 +44,8 @@ namespace cmpctircd {
         }
 
         public struct LoggerInfo {
-            public cmpctircd.Log.LoggerType Type;
-            public cmpctircd.Log.LogType Level;
+            public LoggerType Type;
+            public LogType Level;
             public Dictionary<string, string> Settings;
         }
 
@@ -112,11 +112,11 @@ namespace cmpctircd {
                                 switch(attribute.Name) {
                                     case "type":
                                         // Parse out the type
-                                        logger.Type = (Log.LoggerType) Enum.Parse(typeof(Log.LoggerType), logLine.Attributes["type"].InnerText);
+                                        logger.Type = (LoggerType) Enum.Parse(typeof(LoggerType), logLine.Attributes["type"].InnerText);
                                         break;
 
                                     case "level":
-                                        logger.Level = (Log.LogType) Enum.Parse(typeof(Log.LogType), logLine.Attributes["level"].InnerText);
+                                        logger.Level = (LogType) Enum.Parse(typeof(LogType), logLine.Attributes["level"].InnerText);
                                         break;
 
                                     default:

@@ -94,7 +94,7 @@ namespace cmpctircd {
                 System.Timers.Timer statTimer = new System.Timers.Timer();
 
                 // Run the timer every 5 minutes
-                statTimer.Interval = new TimeSpan(0, 5, 0).TotalSeconds;
+                statTimer.Interval = new TimeSpan(0, 5, 0).TotalMilliseconds;
                 statTimer.Elapsed += delegate {
                     // Create a report on how each of the listeners is preforming (ratio of authenticated clients)
                     // Should let us see if there's some problem with a specific listener - or in general with the handshake

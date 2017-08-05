@@ -133,7 +133,12 @@ namespace cmpctircd
                 Modes["z"].Grant("", true, true);
             }
             foreach(var mode in IRCd.AutoUModes) {
-                Modes[mode.Key].Grant(mode.Value, true, true);
+                if(Modes.ContainsKey(mode.Key)) {
+                    Modes[mode.Key].Grant(mode.Value, true, true);
+                } else {
+                    IRCd.Log.Warn($"Attempting to autoset non-existent user mode: {mode.Key}!");
+                    IRCd.Log.Warn($"You may wish to remove {mode.Key} from <umodes> in config file.");
+                }
             }
         }
 

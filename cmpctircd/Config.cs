@@ -62,14 +62,27 @@ namespace cmpctircd {
                 XmlReader reader = XmlReader.Create(FileName, readerSettings);
                 Xml.Load(reader);
             } catch(System.IO.IOException e) {
-                _Log.Error($"Unable to open the configuration file: {FileName}");
+                _Log.Error($"Unable to open the configuration file: {FileName}. Exiting.");
                 throw e;
+            } catch(XmlException) {
+                _Log.Error($"Invalid XML syntax! Exiting.");
+                throw;
+            } catch(NullReferenceException) {
+                _Log.Error($"Missing tag from config file! Exiting.");
+                throw;
             }
         }
 
         public ConfigData Parse() {
-            var data   = new ConfigData();
-            var config = Xml.GetElementsByTagName("config").Item(0);
+            var data    = new ConfigData();
+            var configs = Xml.GetElementsByTagName("config");
+            var config  = configs.Item(0);
+
+            if(configs.Count > 1) {
+                _Log.Warn("Multiple <config> tags in ircd.xml. Only the first will be parsed.");
+                _Log.Warn("Please delete one <config> tag from the config file.");
+            }
+
             data.Listeners = new List<ListenerInfo>();
             data.AutoModes = new Dictionary<string, string>();
             data.AutoUModes = new Dictionary<string, string>();
@@ -154,6 +167,7 @@ namespace cmpctircd {
 
                     default:
                         _Log.Warn($"Unrecognised tag name: {node.Name.ToLower()}");
+                        _Log.Warn("Check that you haven't misspelt the tag and/or you're running the latest version?");
                         break;
 
                 }

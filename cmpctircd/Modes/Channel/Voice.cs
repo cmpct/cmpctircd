@@ -11,6 +11,7 @@ namespace cmpctircd.Modes {
         override public bool HasParameters { get; } = true;
         override public bool ChannelWide { get; } = false;
         override public bool Stackable { get; } = true;
+        override public bool AllowAutoSet { get; } = false;
 
         public VoiceMode(Channel channel) : base(channel) {}
 

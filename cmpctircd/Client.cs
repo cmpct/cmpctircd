@@ -134,7 +134,13 @@ namespace cmpctircd
             }
             foreach(var mode in IRCd.AutoUModes) {
                 if(Modes.ContainsKey(mode.Key)) {
-                    Modes[mode.Key].Grant(mode.Value, true, true);
+                    var modeObject = Modes[mode.Key];
+                    if(!modeObject.AllowAutoSet) {
+                        IRCd.Log.Warn($"Attempting to set non-auto-settable user mode: {mode.Key}!");
+                        IRCd.Log.Warn($"You may wish to remove {mode.Key} from <umodes> in config file.");
+                        continue;
+                    }
+                    modeObject.Grant(mode.Value, true, true);
                 } else {
                     IRCd.Log.Warn($"Attempting to autoset non-existent user mode: {mode.Key}!");
                     IRCd.Log.Warn($"You may wish to remove {mode.Key} from <umodes> in config file.");

@@ -14,6 +14,7 @@ namespace cmpctircd.Modes {
         abstract public bool HasParameters { get; }
         abstract public bool ChannelWide { get; }
         abstract public bool Stackable { get; }
+        abstract public bool AllowAutoSet { get; }
         public List<Client> Affects = new List<Client>();
 
         // Minimum level to use the command

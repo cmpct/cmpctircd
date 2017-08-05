@@ -12,6 +12,7 @@ namespace cmpctircd.Modes {
         override public bool HasParameters { get; } = false;
         override public bool ChannelWide { get; } = true;
         override public bool Stackable { get; } = true;
+        override public bool AllowAutoSet { get; } = true;
 
         public ModeratedMode(Channel channel) : base(channel) {}
         private bool Enabled { get; set; }

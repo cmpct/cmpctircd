@@ -75,7 +75,13 @@ namespace cmpctircd {
                 Modes["o"].Grant(client, client.Nick, true, true);
                 foreach(var mode in client.IRCd.AutoModes) {
                     if(Modes.ContainsKey(mode.Key)) {
-                        Modes[mode.Key].Grant(client, mode.Value, true, false);
+                        var modeObject = Modes[mode.Key];
+                        if(!modeObject.AllowAutoSet) {
+                            client.IRCd.Log.Warn($"Attempting to set non-auto-settable channel mode: {mode.Key}!");
+                            client.IRCd.Log.Warn($"You may wish to remove {mode.Key} from <cmodes> in config file.");
+                            continue;
+                        }
+                        modeObject.Grant(client, mode.Value, true, false);
                     } else {
                         client.IRCd.Log.Warn($"Attempting to autoset non-existent channel mode: {mode.Key}!");
                         client.IRCd.Log.Warn($"You may wish to remove {mode.Key} from <cmodes> in config file.");

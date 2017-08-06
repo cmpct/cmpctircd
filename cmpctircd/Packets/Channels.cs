@@ -163,6 +163,8 @@ namespace cmpctircd.Packets {
             }
 
             for(int i = 0; i < splitCommaLine.Count(); i++) {
+                if((i + 1) > ircd.MaxTargets) break;
+
                 string channel_name = splitCommaLine[i];
                 // Some bots will try to send ':' with the channel, remove this
                 channel_name = channel_name.StartsWith(":") ? channel_name.Substring(1) : channel_name;
@@ -469,7 +471,10 @@ namespace cmpctircd.Packets {
                 throw new IrcErrNotEnoughParametersException(args.Client, "NAMES");
             }
 
-            foreach(var channel_name in splitCommaLine) {
+            for(int i = 0; i < splitCommaLine.Count(); i++) {
+                if((i + 1) > args.IRCd.MaxTargets) break;
+
+                var channel_name = splitCommaLine[i];
                 if (!ChannelManager.IsValid(channel_name)) {
                     throw new IrcErrNoSuchTargetChannelException(args.Client, channel_name);
                 }

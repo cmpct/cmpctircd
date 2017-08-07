@@ -24,7 +24,7 @@ namespace cmpctircd {
         public string Host;
         public string Desc;
         public string Network;
-        public const string Version = "0.2.0";
+        public const string Version = "0.2.1-dev";
         public int MaxTargets;
         public int MaxSeen { get; set; } = 0;
         public bool RequirePong { get; set; } = true;

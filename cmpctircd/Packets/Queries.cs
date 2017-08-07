@@ -214,7 +214,7 @@ namespace cmpctircd.Packets
                         // Return if the mode string doesn't contain an operator
                         return true;
                     }
-                    targetClient.Write($":{args.Client.Mask} MODE {modeString}");
+                    targetClient.Write($":{args.Client.Mask} MODE {targetClient.Nick} {modeString}");
                 }
             }
             return true;

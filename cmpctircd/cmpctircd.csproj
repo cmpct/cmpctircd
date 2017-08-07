@@ -75,6 +75,7 @@
     <Compile Include="Modes\Channel\Voice.cs" />
     <Compile Include="Modes\Channel\Moderated.cs" />
     <Compile Include="Modes\UserMode.cs" />
+    <Compile Include="Modes\User\Bot.cs" />
     <Compile Include="Modes\User\Cloak.cs" />
     <Compile Include="Modes\User\TLS.cs" />
     <Compile Include="PacketManager.cs" />

@@ -84,6 +84,10 @@ namespace cmpctircd.Packets
                 args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_AWAY.Printable()} {args.Client.Nick} {targetClient.Nick} :{targetClient.AwayMessage}");
             }
 
+            if (targetClient.Modes["B"].Enabled) {
+                // TODO: Unreal bolds the 'Bot', not sure about that for us
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISBOT.Printable()} {args.Client.Nick} {targetClient.Nick} :is a Bot on {args.IRCd.Network}");
+            }
             args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISIDLE.Printable()} {args.Client.Nick} {targetClient.Nick} {idleTime} {targetClient.SignonTime} :seconds idle, signon time");
             args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFWHOIS.Printable()} {args.Client.Nick} {targetClient.Nick} :End of /WHOIS list");
             return true;

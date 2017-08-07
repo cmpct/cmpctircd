@@ -61,6 +61,7 @@ namespace cmpctircd
         RPL_NOTOPIC       = 331,
         RPL_TOPIC         = 332,
         RPL_TOPICWHOTIME  = 333,
+        RPL_WHOISBOT      = 335,
         RPL_INVITING      = 341,
         RPL_VERSION       = 351,
         RPL_WHOREPLY      = 352,

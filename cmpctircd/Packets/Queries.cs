@@ -30,7 +30,7 @@ namespace cmpctircd.Packets
             String[] splitLineSpace = args.Line.Split(' ');
             String[] splitLineComma = args.Line.Split(',');
             Client targetClient;
-            int idleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds - args.Client.IdleTime;
+            int idleTime;
 
             try {
                 splitLineComma = splitLineSpace[1].Split(new char[] { ','});

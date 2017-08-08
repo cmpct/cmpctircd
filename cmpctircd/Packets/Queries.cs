@@ -27,71 +27,78 @@ namespace cmpctircd.Packets
         }
 
         public Boolean WhoisHandler(HandlerArgs args) {
-            String[] splitLine = args.Line.Split(' ');
-            String target;
+            String[] splitLineSpace = args.Line.Split(' ');
+            String[] splitLineComma = args.Line.Split(',');
             Client targetClient;
             int idleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds - args.Client.IdleTime;
 
             try {
-                target = splitLine[1];
+                splitLineComma = splitLineSpace[1].Split(new char[] { ','});
             } catch(IndexOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "WHOIS");
             }
 
             // Need the client object of the target...
-            try {
-                targetClient = args.IRCd.GetClientByNick(target);
-            } catch(InvalidOperationException) {
-                throw new IrcErrNoSuchTargetNickException(args.Client, target);
-            }
+            for(int i = 0; i < splitLineComma.Count(); i++) {
+                if((i + 1) > args.IRCd.MaxTargets) break;
 
-            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISUSER.Printable()} {args.Client.Nick} {targetClient.Nick} {targetClient.Ident} {targetClient.GetHost()} * :{targetClient.RealName}");
-
-            // Generate a list of all the channels inhabited by the target
-            // XXX: no LINQ for now because of strange bug where LINQ in Packet/dynamic classes causes an exception
-            //Predicate<Channel> channelFinder = (Channel chan) => { return chan.Inhabits(targetClient); };
-            //List<Channel> inhabitedChannels = args.IRCd.ChannelManager.Channels.Values.ToList().FindAll(channelFinder);
-
-            var inhabitedChannels = new List<String>();
-            foreach(var channel in args.IRCd.ChannelManager.Channels.Values) {
-                if(channel.Inhabits(targetClient)) {
-                    var userPriv = channel.Status(targetClient);
-                    var userSymbol = channel.GetUserSymbol(userPriv);
-                    inhabitedChannels.Add($"{userSymbol}{channel.Name}");
+                var target = splitLineComma[i];
+                try {
+                    targetClient = args.IRCd.GetClientByNick(target);
+                } catch(InvalidOperationException) {
+                    throw new IrcErrNoSuchTargetNickException(args.Client, target);
                 }
-            }
 
-            if(targetClient == args.Client) {
-                // Only allow the target client's sensitive connection info if WHOISing themselves
-                // TODO: modify to allow ircops to see this too (when we have ircops)
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISHOST.Printable()} {args.Client.Nick} {targetClient.Nick} :is connecting from {targetClient.Ident}@{targetClient.GetHost(false)} {targetClient.GetHost(false)}");
-            }
+                idleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds - targetClient.IdleTime;
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISUSER.Printable()} {args.Client.Nick} {targetClient.Nick} {targetClient.Ident} {targetClient.GetHost()} * :{targetClient.RealName}");
 
-            if(inhabitedChannels.Count() > 0) {
-                // Only show if the target client resides in at least one channel
-                // TODO: needs modification for DNS (the last 'Host' should become 'IP', but there's no distinction between these yet)
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISCHANNELS.Printable()} {args.Client.Nick} {targetClient.Nick} :{string.Join(" ", inhabitedChannels)}");
-            }
+                // Generate a list of all the channels inhabited by the target
+                // XXX: no LINQ for now because of strange bug where LINQ in Packet/dynamic classes causes an exception
+                //Predicate<Channel> channelFinder = (Channel chan) => { return chan.Inhabits(targetClient); };
+                //List<Channel> inhabitedChannels = args.IRCd.ChannelManager.Channels.Values.ToList().FindAll(channelFinder);
 
-            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISSERVER.Printable()} {args.Client.Nick} {targetClient.Nick} {args.IRCd.Host} :{args.IRCd.Desc}");
+                var inhabitedChannels = new List<String>();
+                foreach(var channel in args.IRCd.ChannelManager.Channels.Values) {
+                    if(channel.Inhabits(targetClient)) {
+                        var userPriv = channel.Status(targetClient);
+                        var userSymbol = channel.GetUserSymbol(userPriv);
+                        inhabitedChannels.Add($"{userSymbol}{channel.Name}");
+                    }
+                }
 
-            if (targetClient.Modes["z"].Enabled) {
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISSECURE.Printable()} {args.Client.Nick} {targetClient.Nick} :is using a secure connection");
-            }
+                if(targetClient == args.Client) {
+                    // Only allow the target client's sensitive connection info if WHOISing themselves
+                    // TODO: modify to allow ircops to see this too (when we have ircops)
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISHOST.Printable()} {args.Client.Nick} {targetClient.Nick} :is connecting from {targetClient.Ident}@{targetClient.GetHost(false)} {targetClient.GetHost(false)}");
+                }
 
-            if(!String.IsNullOrWhiteSpace(targetClient.AwayMessage)) {
-                // Only show if the user is away
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_AWAY.Printable()} {args.Client.Nick} {targetClient.Nick} :{targetClient.AwayMessage}");
-            }
+                if(inhabitedChannels.Count() > 0) {
+                    // Only show if the target client resides in at least one channel
+                    // TODO: needs modification for DNS (the last 'Host' should become 'IP', but there's no distinction between these yet)
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISCHANNELS.Printable()} {args.Client.Nick} {targetClient.Nick} :{string.Join(" ", inhabitedChannels)}");
+                }
 
-            if (targetClient.Modes["B"].Enabled) {
-                // TODO: Unreal bolds the 'Bot', not sure about that for us
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISBOT.Printable()} {args.Client.Nick} {targetClient.Nick} :is a Bot on {args.IRCd.Network}");
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISSERVER.Printable()} {args.Client.Nick} {targetClient.Nick} {args.IRCd.Host} :{args.IRCd.Desc}");
+
+                if (targetClient.Modes["z"].Enabled) {
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISSECURE.Printable()} {args.Client.Nick} {targetClient.Nick} :is using a secure connection");
+                }
+
+                if(!String.IsNullOrWhiteSpace(targetClient.AwayMessage)) {
+                    // Only show if the user is away
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_AWAY.Printable()} {args.Client.Nick} {targetClient.Nick} :{targetClient.AwayMessage}");
+                }
+
+                if (targetClient.Modes["B"].Enabled) {
+                    // TODO: Unreal bolds the 'Bot', not sure about that for us
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISBOT.Printable()} {args.Client.Nick} {targetClient.Nick} :is a Bot on {args.IRCd.Network}");
+                }
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISIDLE.Printable()} {args.Client.Nick} {targetClient.Nick} {idleTime} {targetClient.SignonTime} :seconds idle, signon time");
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFWHOIS.Printable()} {args.Client.Nick} {targetClient.Nick} :End of /WHOIS list");
             }
-            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISIDLE.Printable()} {args.Client.Nick} {targetClient.Nick} {idleTime} {targetClient.SignonTime} :seconds idle, signon time");
-            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFWHOIS.Printable()} {args.Client.Nick} {targetClient.Nick} :End of /WHOIS list");
             return true;
         }
+
         public Boolean AwayHandler(HandlerArgs args) {
             String[] splitLine = args.Line.Split(' ');
             String[] splitColonLine = args.Line.Split(new char[] { ':' }, 2);

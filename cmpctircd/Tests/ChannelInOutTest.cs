@@ -16,6 +16,7 @@ namespace cmpctircd.Tests {
 
         public static IrcClient irc = new IrcClient();
         public static string channel = "#test";
+        public static int port = 9001;
         public static bool joined = false;
         public static bool parted = false;
         public static bool setup  = false;
@@ -55,6 +56,7 @@ namespace cmpctircd.Tests {
             }
             setup = true;
 
+            // Setup the IRC client to connect
             irc.Encoding = System.Text.Encoding.UTF8;
             irc.SendDelay = 200;
             irc.ActiveChannelSyncing = true;
@@ -64,8 +66,6 @@ namespace cmpctircd.Tests {
             irc.OnPart += new PartEventHandler(OnPart);
 
             string[] servers = new string[] {"127.0.0.1"};
-            int port = 6667;
-            string channel = "#cmpctircd-test";
             
             try {
                 irc.Connect(servers, port);

@@ -27,13 +27,19 @@ namespace cmpctircd {
             TopicText = rawLine.Split(new char[] { ':' }, 2)[1];
             Channel = client.IRCd.ChannelManager[target];
             if (Channel.Inhabits(client)) {
+                var userRank = Channel.Status(client);
+                var isOp     = userRank.CompareTo(ChannelPrivilege.Op);
+
                 try {
                     Channel.Modes["t"].GetValue();
-                    var userRank = Channel.Status(client);
-                    if (userRank.CompareTo(ChannelPrivilege.Op) < 0) {
+                    if (isOp < 0) {
                         throw new IrcErrChanOpPrivsNeededException(client, Channel.Name);
                     }
-                } catch (IrcModeNotEnabledException) {}
+                } catch (IrcModeNotEnabledException) {
+                    if((isOp < 0) && Channel.Modes["b"].Has(client)) {
+                        throw new IrcErrCannotSendToChanException(client, Channel.Name, "Cannot send to channel (You're banned)");
+                    }
+                }
                 // TO DO: Change how we get the unix timestamp
                 Date = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 Setter = client.Nick;

@@ -24,7 +24,6 @@ namespace cmpctircd {
         }
 
         public void SetTopic(Client client, string target, string rawLine) {
-            TopicText = rawLine.Split(new char[] { ':' }, 2)[1];
             Channel = client.IRCd.ChannelManager[target];
             if (Channel.Inhabits(client)) {
                 var userRank = Channel.Status(client);
@@ -40,6 +39,7 @@ namespace cmpctircd {
                         throw new IrcErrCannotSendToChanException(client, Channel.Name, "Cannot send to channel (You're banned)");
                     }
                 }
+                TopicText = rawLine.Split(new char[] { ':' }, 2)[1];
                 // TO DO: Change how we get the unix timestamp
                 Date = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 Setter = client.Nick;

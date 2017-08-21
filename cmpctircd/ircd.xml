@@ -43,6 +43,7 @@
 
     <umodes>
         <mode name='x' param=''/>
+        <mode name='i' param=''/>
     </umodes>
 
 </config>

@@ -30,6 +30,7 @@ namespace cmpctircd.Modes {
             if (!Enabled)
                 return false;
 
+            Enabled = false;
             if(announce) {
                 Subject.Write($":{Subject.Mask} MODE {Subject.Nick} -B");
             }

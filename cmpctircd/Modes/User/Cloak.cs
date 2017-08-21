@@ -66,6 +66,7 @@ namespace cmpctircd.Modes {
             if (!Enabled)
                 return false;
 
+            Enabled = false;
             Subject.Cloak = "";
             Subject.Write($":{Subject.IRCd.Host} {IrcNumeric.RPL_HOSTHIDDEN.Printable()} {Subject.Nick} {Subject.GetHost()} :is now your displayed host");
             if(announce) {

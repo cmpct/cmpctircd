@@ -10,7 +10,7 @@ namespace cmpctircd.Modes {
         override public bool HasParameters { get; } = false;
         override public bool Stackable { get; } = true;
         override public bool Enabled { get; set; } = false;
-        override public bool AllowAutoSet { get; } = false;
+        override public bool AllowAutoSet { get; } = true;
 
         public InvisibleMode(Client subject) : base(subject) {}
 

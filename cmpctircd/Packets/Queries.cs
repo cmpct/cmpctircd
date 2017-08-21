@@ -57,9 +57,17 @@ namespace cmpctircd.Packets
                 //Predicate<Channel> channelFinder = (Channel chan) => { return chan.Inhabits(targetClient); };
                 //List<Channel> inhabitedChannels = args.IRCd.ChannelManager.Channels.Values.ToList().FindAll(channelFinder);
 
-                var inhabitedChannels = new List<String>();
-                foreach(var channel in args.IRCd.ChannelManager.Channels.Values) {
+                var inhabitedChannels = new List<string>();
+                var channelList       = args.IRCd.ChannelManager.Channels.Values;
+
+                foreach(var channel in channelList) {
                     if(channel.Inhabits(targetClient)) {
+                        if(targetClient.Modes["i"].Enabled) {
+                            // If the user has +i, we can only tell the originator of the query about common channels
+                            // Grab all of the inhabited channels, check we're both in them, and make a list of the names of those channels
+                            if(!channel.Inhabits(args.Client)) continue;
+                        }
+
                         var userPriv = channel.Status(targetClient);
                         var userSymbol = channel.GetUserSymbol(userPriv);
                         inhabitedChannels.Add($"{userSymbol}{channel.Name}");
@@ -68,13 +76,13 @@ namespace cmpctircd.Packets
 
                 if(targetClient == args.Client) {
                     // Only allow the target client's sensitive connection info if WHOISing themselves
+                    // TODO: needs modification for DNS (the last 'Host' should become 'IP', but there's no distinction between these yet)
                     // TODO: modify to allow ircops to see this too (when we have ircops)
                     args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISHOST.Printable()} {args.Client.Nick} {targetClient.Nick} :is connecting from {targetClient.Ident}@{targetClient.GetHost(false)} {targetClient.GetHost(false)}");
                 }
 
                 if(inhabitedChannels.Count() > 0) {
                     // Only show if the target client resides in at least one channel
-                    // TODO: needs modification for DNS (the last 'Host' should become 'IP', but there's no distinction between these yet)
                     args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISCHANNELS.Printable()} {args.Client.Nick} {targetClient.Nick} :{string.Join(" ", inhabitedChannels)}");
                 }
 

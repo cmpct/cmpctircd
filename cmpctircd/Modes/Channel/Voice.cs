@@ -42,7 +42,6 @@ namespace cmpctircd.Modes {
                 }
             }
 
-            // TODO: this should be ERR_NOSUCHNICK when we have +i to avoid leaking user's presence on a channel?
             if (!channel.Inhabits(targetClient))
                 throw new IrcErrNotOnChannelException(targetClient, channel.Name);
 
@@ -93,7 +92,6 @@ namespace cmpctircd.Modes {
                 }
             }
 
-            // TODO: this should be ERR_NOSUCHNICK when we have +i to avoid leaking user's presence on a channel?
             if (!channel.Inhabits(targetClient))
                 throw new IrcErrNotOnChannelException(targetClient, channel.Name);
 

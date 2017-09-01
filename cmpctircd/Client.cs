@@ -149,7 +149,12 @@ namespace cmpctircd
         }
 
         public void SendLusers() {
-            int invisible = 0; // TODO: Add this when we have +i umode
+            int invisible = 0;
+            foreach(var list in IRCd.ClientLists) {
+                // Count all of the users with the user mode +i (invisible)
+                invisible += list.Where(client => client.Modes["i"].Enabled).Count();
+            }
+
             int servers = 1; // TODO: Adjust this when we have linking
             int linkedServers = 0;
             int ircops = 0; // TODO: Add this when we have ircops
@@ -158,6 +163,8 @@ namespace cmpctircd
             foreach (var clientList in IRCd.ClientLists) {
                 users += clientList.Count();
             }
+            users -= invisible;
+
             if (users > IRCd.MaxSeen) {
                 IRCd.MaxSeen = users;
             }

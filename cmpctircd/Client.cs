@@ -292,7 +292,18 @@ namespace cmpctircd
         public static String CreatePingCookie() => System.IO.Path.GetRandomFileName().Substring(0, 7);
 
         // Returns the user's raw IP
-        public IPAddress IP => ((System.Net.IPEndPoint)TcpClient.Client.RemoteEndPoint).Address;
+        public IPAddress IP {
+            get {
+                var EndPoint = (System.Net.IPEndPoint) TcpClient.Client.RemoteEndPoint;
+                if(EndPoint != null) {
+                    // Live socket
+                    return EndPoint.Address;
+                } else {
+                    // Fake local client with no remote host
+                    return IPAddress.Parse("127.0.0.1");
+                }
+            }
+        }
 
         // Returns the user's mask
         // TODO: cloaking
@@ -346,9 +357,9 @@ namespace cmpctircd
         public void Write(String packet) {
             byte[] packetBytes = Encoding.UTF8.GetBytes(packet + "\r\n");
             try {
-                if(ClientTlsStream != null) {
+                if(ClientTlsStream != null && ClientTlsStream.CanWrite) {
                     ClientTlsStream.Write(packetBytes, 0, packetBytes.Length);
-                } else {
+                } else if(ClientStream != null && ClientStream.CanWrite) {
                     ClientStream.Write(packetBytes, 0, packetBytes.Length);
                 }
             } catch(Exception e) when (e is System.IO.IOException || e is System.ObjectDisposedException) {

@@ -102,7 +102,7 @@ namespace cmpctircd {
                     foreach(var listener in this.Listeners) {
                         if(listener.ClientCount == 0) continue;
 
-                        var authRatio   = decimal.Round((listener.AuthClientCount / listener.ClientCount) * 100);
+                        var authRatio   = decimal.Round(((decimal) listener.AuthClientCount / (decimal) listener.ClientCount) * 100);
                         var unauthCount = listener.ClientCount - listener.AuthClientCount;
                         var prefixLine  = $"[{listener.Address}:{listener.Port} ({(listener.TLS ? "SSL/TLS" : "Plain" )})]";
 

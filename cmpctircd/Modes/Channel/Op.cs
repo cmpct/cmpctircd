@@ -25,27 +25,27 @@ namespace cmpctircd.Modes {
                 throw new IrcErrNoSuchTargetNickException(client, targetNick);
             }
 
-            // Check if both the source and the target are on the channel
-            if(!channel.Inhabits(client))
-                throw new IrcErrNotOnChannelException(client, channel.Name);
-
-            // TODO: this should be ERR_NOSUCHNICK when we have +i to avoid leaking user's presence on a channel?
-            if(!channel.Inhabits(targetClient))
-                throw new IrcErrNotOnChannelException(targetClient, channel.Name);
-
-            // User already has the mode
-            if(Has(targetClient) && !forceSet)
-                return false;
-
             // Check user has right to set the mode
             // Get the setters's privilege if not forcing the mode change
             if(!forceSet) {
+                // Check if both the source and the target are on the channel
+                if (!channel.Inhabits(client))
+                    throw new IrcErrNotOnChannelException(client, channel.Name);
+
+                // User already has the mode
+                if (Has(targetClient))
+                    return false;
+
                 ChannelPrivilege sourcePrivs = channel.Privileges.GetOrAdd(client, ChannelPrivilege.Normal);
                 if(sourcePrivs.CompareTo(MinimumUseLevel) < 0) {
                     // Insufficient setter privileges
                     throw new IrcErrChanOpPrivsNeededException(client, channel.Name);
                 }
             }
+
+            // TODO: this should be ERR_NOSUCHNICK when we have +i to avoid leaking user's presence on a channel?
+            if (!channel.Inhabits(targetClient))
+                throw new IrcErrNotOnChannelException(targetClient, channel.Name);
 
             // Set the subject's privilege to the new status
             // But first check if they already have such a privilege...
@@ -77,21 +77,17 @@ namespace cmpctircd.Modes {
                 throw new IrcErrNoSuchTargetNickException(client, targetNick);
             }
 
-            // Check if both the source and the target are on the channel
-            if(!channel.Inhabits(client))
-                throw new IrcErrNotOnChannelException(client, channel.Name);
-
-            // TODO: this should be ERR_NOSUCHNICK when we have +i to avoid leaking user's presence on a channel?
-            if(!channel.Inhabits(targetClient))
-                throw new IrcErrNotOnChannelException(targetClient, channel.Name);
-
-            // User doesn't already have the mode
-            if(!Has(targetClient) && !forceSet)
-                return false;
-
             // Check user has right to set the mode
             // Get the setters's privilege if not forcing the mode change
             if(!forceSet) {
+                // Check if both the source and the target are on the channel
+                if (!channel.Inhabits(client))
+                    throw new IrcErrNotOnChannelException(client, channel.Name);
+
+                // User doesn't already have the mode
+                if (!Has(targetClient))
+                    return false;
+
                 ChannelPrivilege sourcePrivs = channel.Privileges.GetOrAdd(client, ChannelPrivilege.Normal);
                 if(sourcePrivs.CompareTo(MinimumUseLevel) < 0) {
                     // Insufficient setter privileges
@@ -99,8 +95,12 @@ namespace cmpctircd.Modes {
                 }
             }
 
+            // TODO: this should be ERR_NOSUCHNICK when we have +i to avoid leaking user's presence on a channel?
+            if (!channel.Inhabits(targetClient))
+                throw new IrcErrNotOnChannelException(targetClient, channel.Name);
+
             // Announce the change to the room
-            lock(Affects) {
+            lock (Affects) {
                 Affects.Remove(targetClient);
             }
 

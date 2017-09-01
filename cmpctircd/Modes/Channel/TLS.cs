@@ -23,20 +23,19 @@ namespace cmpctircd.Modes {
             throw new IrcModeNotEnabledException(Character);
         }
         override public bool Grant(Client client, string args, bool forceSet = false, bool announce = false, bool sendSelf = true) {
-
-            if (!channel.Inhabits(client))
-                throw new IrcErrNotOnChannelException(client, channel.Name);
-
             if(!forceSet) {
+                if (!channel.Inhabits(client))
+                    throw new IrcErrNotOnChannelException(client, channel.Name);
+
                 ChannelPrivilege sourcePrivs = channel.Privileges.GetOrAdd(client, ChannelPrivilege.Normal);
                 if(sourcePrivs.CompareTo(MinimumUseLevel) < 0) {
                     // Insufficient setter privileges
                     throw new IrcErrChanOpPrivsNeededException(client, channel.Name);
                 }
-            }
 
-            if (Enabled && !forceSet) {
-                return false;
+                if (Enabled) {
+                    return false;
+                }
             }
 
             // Announce the change to the room
@@ -53,22 +52,21 @@ namespace cmpctircd.Modes {
         }
 
         override public bool Revoke(Client client, string args, bool forceSet = false, bool announce = false, bool sendSelf = true) {
-
-            if (!channel.Inhabits(client))
-                throw new IrcErrNotOnChannelException(client, channel.Name);
-
             // Check user has right to set the mode
             // Get the setters's privilege if not forcing the mode change
             if(!forceSet) {
+                if (!channel.Inhabits(client))
+                    throw new IrcErrNotOnChannelException(client, channel.Name);
+
                 ChannelPrivilege sourcePrivs = channel.Privileges.GetOrAdd(client, ChannelPrivilege.Normal);
                 if(sourcePrivs.CompareTo(MinimumUseLevel) < 0) {
                     // Insufficient setter privileges
                     throw new IrcErrChanOpPrivsNeededException(client, channel.Name);
                 }
-            }
 
-            if (!Enabled && !forceSet) {
-                return false;
+                if (!Enabled) {
+                    return false;
+                }
             }
 
             Enabled = false;

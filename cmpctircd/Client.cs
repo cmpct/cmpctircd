@@ -293,7 +293,7 @@ namespace cmpctircd
                 Disconnect("Ping timeout", true);
             }
 
-            Task.Delay(60000).ContinueWith(t => CheckTimeout());
+            Task.Delay((int) TimeSpan.FromMinutes(1).TotalMilliseconds).ContinueWith(t => CheckTimeout());
         }
 
         public static String CreatePingCookie() => System.IO.Path.GetRandomFileName().Substring(0, 7);

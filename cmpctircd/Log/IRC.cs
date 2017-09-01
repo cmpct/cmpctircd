@@ -14,7 +14,7 @@ namespace cmpctircd {
             var channelName = arguments["channel"];
 
             if(IRCd.ChannelManager == null) {
-                System.Threading.Tasks.Task.Delay(10000).ContinueWith(t => Create(arguments));
+                System.Threading.Tasks.Task.Delay((int) TimeSpan.FromSeconds(10).TotalMilliseconds).ContinueWith(t => Create(arguments));
                 return;
             }
 

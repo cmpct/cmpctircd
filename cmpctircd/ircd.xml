@@ -23,8 +23,12 @@
         <!-- 'level' is minimum level of message to be output: Debug, Info, Warn, Error -->
         <logger type="Stdout" level="Info"/>
         <logger type="File" level="Warn" path="ircd.log"/>
+		
+        <!-- For IRC logs... -->
+        <!-- 'modes' can be any valid mode string without arguments, e.g. modes="+nz" -->
+        <!-- TODO: a recommended setting is modes="+nzO" once +O (oper-only) is implemented -->
         <!--
-           <logger type="IRC"  level="Debug" channel="#debug"/>
+            <logger type="IRC"  level="Debug" channel="#debug" modes="+nz"/>
         -->
     </log>
 

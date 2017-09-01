@@ -104,9 +104,10 @@ namespace cmpctircd {
 
                         var authRatio   = decimal.Round(((decimal) listener.AuthClientCount / (decimal) listener.ClientCount) * 100);
                         var unauthCount = listener.ClientCount - listener.AuthClientCount;
+                        var unauthRatio = decimal.Round(((decimal) unauthCount / (decimal) listener.ClientCount) * 100);
                         var prefixLine  = $"[{listener.Address}:{listener.Port} ({(listener.TLS ? "SSL/TLS" : "Plain" )})]";
 
-                        Log.Debug($"==> {prefixLine} Authed: {listener.AuthClientCount} ({authRatio}%). Unauthed: {unauthCount}. Total: {listener.ClientCount}.");
+                        Log.Debug($"==> {prefixLine} Authed: {listener.AuthClientCount} ({authRatio}%). Unauthed: {unauthCount} ({unauthRatio}%). Total: {listener.ClientCount}.");
                     }
                 };
                 statTimer.Start();

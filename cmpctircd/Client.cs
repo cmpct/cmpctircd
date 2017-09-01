@@ -300,7 +300,7 @@ namespace cmpctircd
                     return EndPoint.Address;
                 } else {
                     // Fake local client with no remote host
-                    return IPAddress.Parse("127.0.0.1");
+                    return IPAddress.Loopback;
                 }
             }
         }

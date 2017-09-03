@@ -87,7 +87,7 @@ namespace cmpctircd {
                     // NOTE: Create a TLS certificate using openssl (or $TOOL), then:
                     // NOTE:    openssl pkcs12 -export -in tls_cert.pem -inkey tls_key.pem -out server.pfx
                     X509Certificate serverCertificate = new X509Certificate2(_ircd.Config.TLS_PfxLocation, _ircd.Config.TLS_PfxPassword);
-                    sslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls, true);
+                    sslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12, true);
                 } catch(Exception e) {
                     _ircd.Log.Debug(e.ToString());
                     client.Disconnect(false);

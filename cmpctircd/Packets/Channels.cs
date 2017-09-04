@@ -452,12 +452,11 @@ namespace cmpctircd.Packets {
                     }
                     args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {target} {client.Value.Ident} {client.Value.GetHost()} {args.IRCd.Host} {client.Value.Nick} {away}{userSymbol} :{hopCount} {client.Value.RealName}");
                 }
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {args.Client.Nick} {target} :End of /WHO list.");
             } else {
                 // The target is a user
-                // TODO: implement this once we have +i (invisible mode)
-            }
-
-            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {args.Client.Nick} {target} :End of /WHO list.");
+                // See Queries.cs for the user-WHO implementation
+            };
             return true;
         }
         public Boolean NamesHandler(HandlerArgs args) {

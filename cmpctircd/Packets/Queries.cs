@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace cmpctircd.Packets
@@ -14,6 +15,7 @@ namespace cmpctircd.Packets
         {
             ircd.PacketManager.Register("VERSION", versionHandler);
             ircd.PacketManager.Register("WHOIS", WhoisHandler);
+            ircd.PacketManager.Register("WHO", WhoHandler);
             ircd.PacketManager.Register("AWAY", AwayHandler);
             ircd.PacketManager.Register("LUSERS", LusersHandler);
             ircd.PacketManager.Register("PING", PingHandler);
@@ -104,6 +106,55 @@ namespace cmpctircd.Packets
                 args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISIDLE.Printable()} {args.Client.Nick} {targetClient.Nick} {idleTime} {targetClient.SignonTime} :seconds idle, signon time");
                 args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFWHOIS.Printable()} {args.Client.Nick} {targetClient.Nick} :End of /WHOIS list");
             }
+            return true;
+        }
+
+        public bool WhoHandler(HandlerArgs args) {
+            String[] splitLine = args.Line.Split(' ');
+            string mask = splitLine[1];
+
+            // TODO: when we have ircops, consider if there's a 'o' flag
+            // TODO: may be another change as with channel WHO?
+            // TODO: change when linking
+            var hopCount = 0;
+
+            // Iterate through all of our clients if no mask
+            foreach(var list in args.IRCd.ClientLists) {
+                foreach(var client in list) {
+                    if (!(String.IsNullOrEmpty(mask) || mask.Equals("0"))) {
+                        // If mask isn't blank or 0, then we need to check if the user matches criteria.
+                        var metCriteria = false;
+                        mask = mask.Replace("*", ".*?");
+
+                        // host, server, real name, nickname
+                        var criteria = new string[] { client.GetHost(), args.IRCd.Host, client.RealName, client.Nick };
+                        foreach (var criterion in criteria) {
+                            if (Regex.IsMatch(criterion, mask)) {
+                                metCriteria = true;
+                                break;
+                            }
+                        }
+
+                        if(!metCriteria) {
+                            // Failed to match on any basis, skip
+                            continue;
+                        }
+                    }
+
+                    // Always check if invisible users are being included in the mix
+                    if(client.Modes["i"].Enabled && !args.IRCd.ChannelManager.Channels.Any(
+                            channel => channel.Value.Inhabits(args.Client) &&
+                            channel.Value.Inhabits(client))) {
+                        // Skip if none
+                        continue;
+                    }
+
+                    var away = String.IsNullOrEmpty(client.AwayMessage) ? "H" : "G";
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {client.Nick} {client.Ident} {client.GetHost()} {args.IRCd.Host} {client.Nick} {away} :{hopCount} {client.RealName}");
+                }
+            }
+
+            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {args.Client.Nick} {mask} :End of /WHO list.");
             return true;
         }
 

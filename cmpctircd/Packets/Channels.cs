@@ -507,7 +507,6 @@ namespace cmpctircd.Packets {
                 throw new IrcErrNotEnoughParametersException(args.Client, "MODE");
             }
 
-            // TODO: no user mode support yet
             if(!target.StartsWith("#") && !target.StartsWith("&")) {
                 return false;
             }

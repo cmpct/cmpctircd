@@ -49,7 +49,6 @@ namespace cmpctircd {
                     continue;
                 }
                 Modes.TryAdd(modeChar, modeInstance);
-                // TODO: debug level with logging
                 ircd.Log.Debug($"Creating instance of {modeChar} - {modeInstance.Description}");
             }
 
@@ -210,7 +209,6 @@ namespace cmpctircd {
         // e.g. nick changes will NOT require this (so graceful = false), but leaving the room WOULD (so graceful = true)
         public void Remove(Client client, Boolean graceful = true, Boolean stripModes = true) {
             // Strip all modes
-            // TODO: may need modification for cloaking
             if(stripModes) {
                 foreach(var mode in Modes) {
                     try {

@@ -40,7 +40,7 @@ namespace cmpctircd {
             idleCommands.Add("PING");
             idleCommands.Add("PONG");
             idleCommands.Add("WHOIS");
-            idleCommands.Add("WHO"); // TODO: NOT YET IMPLEMENTED
+            idleCommands.Add("WHO");
             idleCommands.Add("NAMES");
             idleCommands.Add("AWAY");
 

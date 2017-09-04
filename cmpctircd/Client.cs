@@ -149,25 +149,26 @@ namespace cmpctircd
         }
 
         public void SendLusers() {
+            int users     = 0;
             int invisible = 0;
+
             foreach(var list in IRCd.ClientLists) {
+                // Count all of the users in their totality
+                users += list.Count();
                 // Count all of the users with the user mode +i (invisible)
                 invisible += list.Where(client => client.Modes["i"].Enabled).Count();
             }
+            users -= invisible;
 
             int servers = 1; // TODO: Adjust this when we have linking
             int linkedServers = 0;
             int ircops = 0; // TODO: Add this when we have ircops
-            int users = 0;
             int channels = IRCd.ChannelManager.Size;
-            foreach (var clientList in IRCd.ClientLists) {
-                users += clientList.Count();
-            }
-            users -= invisible;
 
             if (users > IRCd.MaxSeen) {
                 IRCd.MaxSeen = users;
             }
+
             // RPL_LUSERCLIENT - Users, Invisible(?), Servers(?)
             Write($":{IRCd.Host} {IrcNumeric.RPL_LUSERCLIENT.Printable()} {Nick} :There are {users} users and {invisible} invisible on {servers} servers");
             // RPL_LUSEROP - IRC Operator count

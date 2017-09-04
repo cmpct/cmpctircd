@@ -169,14 +169,13 @@ namespace cmpctircd
                 IRCd.MaxSeen = users;
             }
 
-            // RPL_LUSERCLIENT - Users, Invisible(?), Servers(?)
+            // RPL_LUSERCLIENT - Users, Invisible, Servers(?)
             Write($":{IRCd.Host} {IrcNumeric.RPL_LUSERCLIENT.Printable()} {Nick} :There are {users} users and {invisible} invisible on {servers} servers");
             // RPL_LUSEROP - IRC Operator count
             Write($":{IRCd.Host} {IrcNumeric.RPL_LUSEROP.Printable()} {Nick} {ircops} :operator(s) online");
             // RPL_LUSERCHANNELS - Number of channels formed
             Write($":{IRCd.Host} {IrcNumeric.RPL_LUSERCHANNELS.Printable()} {Nick} {channels} :channels formed");
             // RPL_LUSERME - This is all clients (including bots)
-            // TODO: Adjust the users variable to not account for +B umode when implemented
             Write($":{IRCd.Host} {IrcNumeric.RPL_LUSERME.Printable()} {Nick} :I have {users} clients and {linkedServers} servers");
             // RPL_LOCALUSERS - Local clients and max local clients
             Write($":{IRCd.Host} {IrcNumeric.RPL_LOCALUSERS.Printable()} {Nick} :Current Local Users: {users} Max: {IRCd.MaxSeen}");
@@ -253,7 +252,6 @@ namespace cmpctircd
                     channel.Value.Add(this, newNick);
                 }
 
-                // TODO: Verify the nickname is safe
                 Write(String.Format(":{0} NICK {1}", Mask, nick));
                 this.Nick = newNick;
 
@@ -268,7 +266,6 @@ namespace cmpctircd
             this.RealName = real_name;
 
             SendWelcome();
-            // this.sendWelcome() a lá cmpctircd?
             return true;
         }
 
@@ -314,7 +311,6 @@ namespace cmpctircd
         }
 
         // Returns the user's mask
-        // TODO: cloaking
         public String Mask
         {
             get

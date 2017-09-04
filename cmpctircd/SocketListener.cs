@@ -104,11 +104,10 @@ namespace cmpctircd {
                     // Need to supply a different stream for TLS
                     if(TLS) {
                         reader = new StreamReader(client.ClientTlsStream);
-                        line   = await reader.ReadLineAsync();
                     } else {
                         reader = new StreamReader(client.ClientStream);
-                        line   = await reader.ReadLineAsync();
                     }
+                    line = await reader.ReadLineAsync();
 
                     while(line != null) {
                         // Read until there's no more left

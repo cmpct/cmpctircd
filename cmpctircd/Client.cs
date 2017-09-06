@@ -127,7 +127,7 @@ namespace cmpctircd
                         // See below comment
                         failedResolve = true;
                     } else {
-                        Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({DNSHost} -- cached");
+                        Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({DNSHost}) -- cached");
                         return;
                     }
                 }

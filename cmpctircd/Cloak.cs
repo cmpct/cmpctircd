@@ -98,7 +98,7 @@ namespace cmpctircd
 
             // Need to know positions of each of the dots
             for (int i = 0; i < host.Length; i++) {
-                if(trunc_host[i].Equals('.')) {
+                if(host[i].Equals('.')) {
                     dot_positions.Add(i);
                 }
             }

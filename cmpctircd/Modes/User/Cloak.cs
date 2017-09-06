@@ -19,8 +19,7 @@ namespace cmpctircd.Modes {
             if (Enabled)
                 return false;
 
-            if (string.Compare(Subject.IP.ToString(), Subject.DNSHost) == 0) {
-                // ip cloaking where host == ip because they clearly don't have a dns host
+            if (Subject.DNSHost == null) {
                switch(Subject.IP.AddressFamily) {
                     case System.Net.Sockets.AddressFamily.InterNetworkV6:
                         // IPv6

@@ -38,6 +38,7 @@ namespace cmpctircd
         public int IdleTime { get; set; }
         public int SignonTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
         public ClientState State { get; set; }
+        public bool ResolvingHost { get; set; } = false;
 
         // Ping information
         public Boolean WaitingForPong { get; set; } = false;
@@ -54,6 +55,9 @@ namespace cmpctircd
 
         public Client(IRCd ircd, TcpClient tc, SocketListener sl) {
             Buffer = new byte[1024];
+
+            if(ircd.Config.ResolveHostnames)
+                ResolvingHost = true;
 
             State = ClientState.PreAuth;
 
@@ -96,8 +100,62 @@ namespace cmpctircd
         public void BeginTasks() {
             // Initialize the stream
             ClientStream = TcpClient.GetStream();
-            // Check for PING/PONG events due (TODO: and DNS)
+            // Check for PING/PONG events due
             CheckTimeout();
+            
+            if(IRCd.Config.ResolveHostnames)
+                Resolve();
+        }
+
+
+        public async void Resolve() {
+            // Don't resolve a user's IP twice
+            if(DNSHost != null) return;
+
+            bool failedResolve = false;
+            Write($":{IRCd.Host} NOTICE Auth :*** Looking up your hostname...");
+
+            if(IRCd.DNSCache == null) {
+                // Create the cache
+                IRCd.DNSCache = new ConcurrentDictionary<string, string>();
+            } else {
+                // Check if this IP is in the cache
+                if(IRCd.DNSCache.ContainsKey(IP.ToString())) {
+                    var cached = IRCd.DNSCache[IP.ToString()];
+
+                    if(cached == IP.ToString()) {
+                        // See below comment
+                        failedResolve = true;
+                    } else {
+                        Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({DNSHost} -- cached");
+                        return;
+                    }
+                }
+            }
+
+            // Not in the cache, look up the IP
+            // XXX: mono won't resolve IPs -> hostnames at present
+            // XXX: this code seems to only run on windows
+            // XXX: https://bugzilla.xamarin.com/show_bug.cgi?id=29279
+            var resolver = await Dns.GetHostEntryAsync(IP);
+
+            if(failedResolve || resolver.HostName == IP.ToString()) {
+                Write($"*** Could not resolve your hostname; using your IP address ({IP.ToString()}) instead.");
+                return;
+            } else {
+                // Don't set the DNSHost of the user if it's the same as the IP
+                // This is so the right cloaking is used etc
+                DNSHost = resolver.HostName;
+            }
+
+            Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({resolver.HostName})");
+
+            // Cache it anyway even if the user's host resolved to the IP
+            IRCd.DNSCache[IP.ToString()] = DNSHost;
+
+            IRCd.Log.Debug($"IP: {IP.ToString()}");
+            IRCd.Log.Debug($"Host: {DNSHost}");
+            IRCd.Log.Debug($"Count: {resolver.Aliases.Count()}");
         }
 
         public void SendWelcome() {

@@ -33,6 +33,7 @@
     </log>
 
     <advanced>
+        <resolve_hostnames>true</resolve_hostnames>
         <require_pong_cookie>true</require_pong_cookie>
         <ping_timeout>120</ping_timeout>
         <max_targets>200</max_targets>

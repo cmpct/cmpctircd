@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -33,6 +34,7 @@ namespace cmpctircd {
         public Dictionary<string, string> AutoModes;
         public Dictionary<string, string> AutoUModes;
         public List<Config.LoggerInfo> Loggers;
+        public ConcurrentDictionary<string, string> DNSCache;
 
         public DateTime CreateTime { get; private set; }
 

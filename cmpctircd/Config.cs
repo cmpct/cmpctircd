@@ -27,6 +27,7 @@ namespace cmpctircd {
             public List<LoggerInfo> Loggers;
 
             // <advanced>
+            public bool ResolveHostnames;
             public bool RequirePongCookie;
             public int PingTimeout;
             public int MaxTargets;
@@ -145,7 +146,8 @@ namespace cmpctircd {
 
 
                     case "advanced":
-                        // <advanced> properties: require_pong_cookie, ping_timeout, max_targets
+                        // <advanced> properties: resolve_hostnames, require_pong_cookie, ping_timeout, max_targets, cloak_key
+                        data.ResolveHostnames  = Boolean.Parse(node["resolve_hostnames"].InnerText);
                         data.RequirePongCookie = Boolean.Parse(node["require_pong_cookie"].InnerText);
                         data.PingTimeout       = Int32.Parse(node["ping_timeout"].InnerText);
                         data.MaxTargets        = Int32.Parse(node["max_targets"].InnerText);

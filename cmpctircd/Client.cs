@@ -137,25 +137,37 @@ namespace cmpctircd
             // XXX: mono won't resolve IPs -> hostnames at present
             // XXX: this code seems to only run on windows
             // XXX: https://bugzilla.xamarin.com/show_bug.cgi?id=29279
-            var resolver = await Dns.GetHostEntryAsync(IP);
+            try {
+                var resolver = await Dns.GetHostEntryAsync(IP);
 
-            if(failedResolve || resolver.HostName == IP.ToString()) {
-                Write($"*** Could not resolve your hostname; using your IP address ({IP.ToString()}) instead.");
-                return;
-            } else {
-                // Don't set the DNSHost of the user if it's the same as the IP
-                // This is so the right cloaking is used etc
-                DNSHost = resolver.HostName;
+                IRCd.Log.Debug($"IP: {IP.ToString()}");
+                IRCd.Log.Debug($"Host: {DNSHost}");
+                IRCd.Log.Debug($"Count: {resolver.Aliases.Count()}");
+
+                if(resolver.HostName == IP.ToString()) {
+                    // Don't set the DNSHost of the user if it's the same as the IP
+                    // This is so the right cloaking is used etc
+                    failedResolve = true;
+                } else {
+                    // This is only reached if:
+                    // 1) IP != Hostname
+                    // AND
+                    // 2) No exception has been thrown by the resolver
+                    DNSHost = resolver.HostName;
+                }
+            } catch(Exception) {
+                failedResolve = true;
             }
 
-            Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({resolver.HostName})");
+            if(failedResolve) {
+                Write($"*** Could not resolve your hostname; using your IP address ({IP.ToString()}) instead.");
+                return;
+            }
+
+            Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({DNSHost})");
 
             // Cache it anyway even if the user's host resolved to the IP
             IRCd.DNSCache[IP.ToString()] = DNSHost;
-
-            IRCd.Log.Debug($"IP: {IP.ToString()}");
-            IRCd.Log.Debug($"Host: {DNSHost}");
-            IRCd.Log.Debug($"Count: {resolver.Aliases.Count()}");
         }
 
         public void SendWelcome() {

@@ -398,14 +398,30 @@ namespace cmpctircd
         }
 
         public string GetHost(bool cloak = true) {
+            var hosts = GetHosts(cloak);
+
             // We prefer a cloak
+            if (cloak && hosts.Cloak != null)
+                return hosts.Cloak;
+
+            if (hosts.Dns != null)
+                return hosts.Dns;
+
+            return hosts.Ip.ToString();
+        }
+
+        public HostInfo GetHosts(bool cloak = true) {
+            var hosts = new HostInfo();
+
             if (cloak && !String.IsNullOrEmpty(Cloak))
-                return Cloak;
+                hosts.Cloak = Cloak;
 
             if (!String.IsNullOrEmpty(DNSHost))
-                return DNSHost;
+                hosts.Dns = DNSHost;
 
-            return IP.ToString();
+            hosts.Ip = IP;
+
+            return hosts;
         }
 
         public string[] GetModeStrings(string characters) {

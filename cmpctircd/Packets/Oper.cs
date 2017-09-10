@@ -30,9 +30,9 @@ namespace cmpctircd.Packets {
                 }
                 // Check the hosts match
                 foreach (var hostList in ircop.Host) {
-                    Dictionary<string, string> mask = Ban.CreateMask(hostList);
-                    if (Regex.IsMatch(args.Client.Nick, @mask["nick"].Replace("*", ".*")) &&Regex.IsMatch(args.Client.Ident, @mask["user"].Replace("*", ".*"))
-                    && (Regex.IsMatch(args.Client.Cloak, @mask["host"].Replace("*", ".*")) || Regex.IsMatch(args.Client.IP.ToString(), @mask["host"].Replace("*", ".*")))) {
+                    var mask = Ban.CreateMask(hostList);
+
+                    if(Ban.Match(args.Client, mask)) {
                         hostMatch = true;
                     }
                 }

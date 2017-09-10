@@ -21,13 +21,41 @@ namespace cmpctircd {
             _date   = Date;
         }
 
-        public bool Match(Client Client) {
+        public bool Match(Client client) {
+            var masks = new Dictionary<string, string>();
+            masks["nick"] = _nick;
+            masks["user"] = _user;
+            masks["host"] = _host;
+            return Match(client, masks);
+        }
 
-            return Regex.IsMatch(Client.Nick, @_nick.Replace("*", ".*"))
-                && Regex.IsMatch(Client.Ident, @_user.Replace("*", ".*"))
-                && (Regex.IsMatch(Client.Cloak, @_host.Replace("*", ".*"))
-                || Regex.IsMatch(Client.DNSHost, @_host.Replace("*", ".*"))
-                || Regex.IsMatch(Client.IP.ToString(), @_host.Replace("*", ".*")));
+        public static bool Match(Client client, Dictionary<string, string> masks) {
+            string mask;
+
+            var identifiers = new List<Tuple<string, string>>() {
+                // Key:   mask
+                // Value: value to compare with
+                Tuple.Create(masks["nick"], client.Nick),
+                Tuple.Create(masks["user"], client.Ident)
+            };
+            var hosts = client.GetHosts(true);
+
+            // Check nick, user/ident
+            foreach(var identifier in identifiers) {
+                mask = @identifier.Item1.Replace("*", ".*");
+                if(!Regex.IsMatch(identifier.Item2, mask))
+                    return false;
+            }
+
+            // Check all the hosts
+            var matchMask = false;
+            mask = masks["host"].Replace("*", ".*");
+            foreach(var host in hosts) {
+                if(Regex.IsMatch(host, mask))
+                    matchMask = true;
+            }
+
+            return matchMask;
         }
 
         public string GetBan() {

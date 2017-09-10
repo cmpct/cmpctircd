@@ -53,6 +53,7 @@
     <Compile Include="Config.cs" />
     <Compile Include="Errors.cs" />
     <Compile Include="HandlerArgs.cs" />
+    <Compile Include="HostInfo.cs" />
     <Compile Include="IRCd.cs" />
     <Compile Include="IrcNumeric.cs" />
     <Compile Include="IrcNumericExtensions.cs" />

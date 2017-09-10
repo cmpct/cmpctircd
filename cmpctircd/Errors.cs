@@ -166,5 +166,19 @@ namespace cmpctircd {
         }
     }
 
+    public class IrcErrNoOperHostException : Exception {
+
+        public IrcErrNoOperHostException(Client client) {
+            client.Write($":{client.IRCd.Host} {IrcNumeric.ERR_NOOPERHOST.Printable()} {client.Nick} :Invalid oper credentials");
+        }
+    }
+
+    public class IrcErrNoPrivileges : Exception {
+
+        public IrcErrNoPrivileges(Client client) {
+            client.Write($":{client.IRCd.Host} {IrcNumeric.ERR_NOPRIVILEGES.Printable()} {client.Nick} :Permission denied - You do not have the required operator privileges");
+        }
+    }
+
 
 }

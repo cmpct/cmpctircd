@@ -36,6 +36,8 @@ namespace cmpctircd {
         public List<Config.LoggerInfo> Loggers;
         public ConcurrentDictionary<string, string> DNSCache;
 
+        public List<Config.Oper> Opers;
+
         public DateTime CreateTime { get; private set; }
 
         public IRCd(Log log, Config.ConfigData config) {
@@ -56,6 +58,7 @@ namespace cmpctircd {
             CloakKey = config.CloakKey;
             AutoModes = config.AutoModes;
             AutoUModes = config.AutoUModes;
+            Opers = config.Opers;
         }
 
         public void Run() {

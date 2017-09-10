@@ -1,0 +1,57 @@
+using System;
+using System.Linq;
+using System.Text;
+using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
+
+namespace cmpctircd.Packets {
+    public class Oper {
+
+        // Class for all IRC Operator commands such as OPER, KILL, SAMODE, etc.
+        public Oper(IRCd ircd) {
+            ircd.PacketManager.Register("OPER", OperHandler);
+        }
+
+        public Boolean OperHandler(HandlerArgs args) {
+            string[] userInput = args.Line.Split(' ');
+            bool hostMatch = false;
+            if (userInput.Count() <= 2) {
+                throw new IrcErrNotEnoughParametersException(args.Client, "OPER");
+            }
+            try {
+                var ircop = args.IRCd.Opers.Single(oper => oper.Name == userInput[1]);
+                // Check for TLS
+                if (ircop.TLS) {
+                    if(!args.Client.Modes["z"].Enabled) {
+                        return false;
+                    }
+                }
+                // Check the hosts match
+                foreach (var hostList in ircop.Host) {
+                    Dictionary<string, string> mask = Ban.CreateMask(hostList);
+                    if (Regex.IsMatch(args.Client.Nick, @mask["nick"].Replace("*", ".*")) &&Regex.IsMatch(args.Client.Ident, @mask["user"].Replace("*", ".*"))
+                    && (Regex.IsMatch(args.Client.Cloak, @mask["host"].Replace("*", ".*")) || Regex.IsMatch(args.Client.IP.ToString(), @mask["host"].Replace("*", ".*")))) {
+                        hostMatch = true;
+                    }
+                }
+                if (!hostMatch) {
+                    throw new IrcErrNoOperHostException(args.Client);
+                }
+                // Hash the user's input to match the stored hash password in the config
+                SHA256 sha256 = SHA256Managed.Create();
+                byte[] password = Encoding.UTF8.GetBytes(userInput[2]);
+                string builtHash = string.Concat(sha256.ComputeHash(password).Select(x => x.ToString("x2")));
+                if (builtHash == ircop.Password) {
+                    args.Client.Modes["o"].Grant("", true, true);
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_YOUREOPER.Printable()} {args.Client.Nick} :You are now an IRC Operator");
+                    return true;
+                } else {
+                    throw new IrcErrNoOperHostException(args.Client);
+                }
+            } catch (InvalidOperationException) {
+                throw new IrcErrNoOperHostException(args.Client);
+            }
+        }
+    }
+}

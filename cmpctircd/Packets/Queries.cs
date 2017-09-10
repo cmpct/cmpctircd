@@ -76,10 +76,9 @@ namespace cmpctircd.Packets
                     }
                 }
 
-                if(targetClient == args.Client) {
+                if(targetClient == args.Client || args.Client.Modes["o"].Enabled) {
                     // Only allow the target client's sensitive connection info if WHOISing themselves
                     // TODO: needs modification for DNS (the last 'Host' should become 'IP', but there's no distinction between these yet)
-                    // TODO: modify to allow ircops to see this too (when we have ircops)
                     args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISHOST.Printable()} {args.Client.Nick} {targetClient.Nick} :is connecting from {targetClient.Ident}@{targetClient.GetHost(false)} {targetClient.GetHost(false)}");
                 }
 
@@ -89,6 +88,11 @@ namespace cmpctircd.Packets
                 }
 
                 args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISSERVER.Printable()} {args.Client.Nick} {targetClient.Nick} {args.IRCd.Host} :{args.IRCd.Desc}");
+
+                if (targetClient.Modes["o"].Enabled) {
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISOPERATOR.Printable()} {args.Client.Nick} {targetClient.Nick} :is an IRC Operator on {args.IRCd.Network}");
+                }
+
 
                 if (targetClient.Modes["z"].Enabled) {
                     args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISSECURE.Printable()} {args.Client.Nick} {targetClient.Nick} :is using a secure connection");
@@ -113,7 +117,6 @@ namespace cmpctircd.Packets
             String[] splitLine = args.Line.Split(' ');
             string mask = splitLine[1];
 
-            // TODO: when we have ircops, consider if there's a 'o' flag
             // TODO: may be another change as with channel WHO?
             // TODO: change when linking
             var hopCount = 0;
@@ -150,7 +153,8 @@ namespace cmpctircd.Packets
                     }
 
                     var away = String.IsNullOrEmpty(client.AwayMessage) ? "H" : "G";
-                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {client.Nick} {client.Ident} {client.GetHost()} {args.IRCd.Host} {client.Nick} {away} :{hopCount} {client.RealName}");
+                    var ircopSymbol = client.Modes["o"].Enabled ? "*" : "";
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {client.Nick} {client.Ident} {client.GetHost()} {args.IRCd.Host} {client.Nick} {away}{ircopSymbol} :{hopCount} {client.RealName}");
                 }
             }
 

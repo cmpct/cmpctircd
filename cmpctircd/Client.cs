@@ -223,18 +223,20 @@ namespace cmpctircd
         public void SendLusers() {
             int users     = 0;
             int invisible = 0;
+            int ircops    = 0;
 
             foreach(var list in IRCd.ClientLists) {
                 // Count all of the users in their totality
                 users += list.Count();
                 // Count all of the users with the user mode +i (invisible)
                 invisible += list.Where(client => client.Modes["i"].Enabled).Count();
+                // Count all of the users with usermode +o (IRC Operators)
+                ircops += list.Where(client => client.Modes["o"].Enabled).Count();
             }
             users -= invisible;
 
             int servers = 1; // TODO: Adjust this when we have linking
             int linkedServers = 0;
-            int ircops = 0; // TODO: Add this when we have ircops
             int channels = IRCd.ChannelManager.Size;
 
             if (users > IRCd.MaxSeen) {

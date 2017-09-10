@@ -95,6 +95,7 @@ namespace cmpctircd
         ERR_CHANNELISFULL    = 471,
         ERR_INVITEONLYCHAN   = 473,
         ERR_BANNEDFROMCHAN   = 474,
+        ERR_NOPRIVILEGES     = 481,
         ERR_CHANOPRIVSNEEDED = 482,
         ERR_SECUREONLYCHAN   = 489,
         ERR_NOOPERHOST       = 491,

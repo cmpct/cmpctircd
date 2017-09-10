@@ -36,6 +36,9 @@ namespace cmpctircd {
             public Dictionary<string, string> AutoModes;
             public Dictionary<string, string> AutoUModes;
 
+            // <opers>
+            public List<Oper> Opers;
+
         }
 
         public struct ListenerInfo {
@@ -48,6 +51,13 @@ namespace cmpctircd {
             public LoggerType Type;
             public LogType Level;
             public Dictionary<string, string> Settings;
+        }
+
+        public struct Oper {
+            public string Name;
+            public string Password;
+            public bool TLS;
+            public List<string> Host;
         }
 
         private string FileName { get; } = "ircd.xml";
@@ -88,6 +98,7 @@ namespace cmpctircd {
             data.AutoModes = new Dictionary<string, string>();
             data.AutoUModes = new Dictionary<string, string>();
             data.Loggers  = new List<LoggerInfo>();
+            data.Opers = new List<Oper>();
 
             foreach(XmlElement node in config) {
                 // Valid types: ircd, server, channelmodes, usermodes, cloak, sockets, log, advanced, opers
@@ -167,6 +178,20 @@ namespace cmpctircd {
                         }
                     break;
 
+                    case "opers":
+                        foreach(XmlElement listenNode in node.GetElementsByTagName("oper")) {
+                            Oper oper = new Oper();
+                            oper.Host = new List<string>();
+                            string[] hosts = listenNode.Attributes["host"].InnerText.Split(' ');
+                            foreach(string host in hosts) {
+                                oper.Host.Add(host);
+                            }
+                            oper.Name      = listenNode.Attributes["name"].InnerText;
+                            oper.Password  = listenNode.Attributes["password"].InnerText;
+                            oper.TLS       = Boolean.Parse(listenNode.Attributes["tls"].InnerText);
+                            data.Opers.Add(oper);
+                        }
+                        break;
                     default:
                         _Log.Warn($"Unrecognised tag name: {node.Name.ToLower()}");
                         _Log.Warn("Check that you haven't misspelt the tag and/or you're running the latest version?");

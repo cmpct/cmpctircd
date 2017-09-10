@@ -438,10 +438,10 @@ namespace cmpctircd.Packets {
                 }
 
                 foreach(var client in targetChannel.Clients) {
-                    // TODO: Needs updating for when we have ircop
                     // TODO: Also for when we have links (:0 is hopcount)
                     var userPriv = targetChannel.Status(client.Value);
                     var userSymbol = targetChannel.GetUserSymbol(userPriv);
+                    var ircopSymbol = client.Value.Modes["o"].Enabled ? "*" : "";
                     var hopCount = 0;
 
                     var away = "";
@@ -450,7 +450,7 @@ namespace cmpctircd.Packets {
                     } else {
                         away = "G"; // "Gone"
                     }
-                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {target} {client.Value.Ident} {client.Value.GetHost()} {args.IRCd.Host} {client.Value.Nick} {away}{userSymbol} :{hopCount} {client.Value.RealName}");
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {target} {client.Value.Ident} {client.Value.GetHost()} {args.IRCd.Host} {client.Value.Nick} {away}{ircopSymbol}{userSymbol} :{hopCount} {client.Value.RealName}");
                 }
                 args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {args.Client.Nick} {target} :End of /WHO list.");
             } else {

@@ -78,8 +78,9 @@ namespace cmpctircd {
 
         private List<Func<HandlerArgs, Boolean>> FindHandlers(string name) {
             var functions = new List<Func<HandlerArgs, Boolean>>();
+            name = name.ToUpper();
             if (handlers.ContainsKey(name)) {
-                foreach(var record in handlers[name.ToUpper()]) {
+                foreach(var record in handlers[name]) {
                     functions.Add(record);
                 }
             }

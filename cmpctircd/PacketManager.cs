@@ -58,8 +58,9 @@ namespace cmpctircd {
                     client.IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 }
 
-                if(handlers.ContainsKey(packet.ToUpper())) {
-                    foreach(var record in handlers[packet.ToUpper()]) {
+                var functions = FindHandlers(packet);
+                if(functions.Count() > 0) {
+                    foreach(var record in functions) {
                         // Invoke all of the handlers for the command
                         record.Invoke(args);
                     }
@@ -72,6 +73,17 @@ namespace cmpctircd {
                 ircd.Log.Debug("Exception: " + e.ToString());
             }
             return true;
+        }
+
+
+        private List<Func<HandlerArgs, Boolean>> FindHandlers(string name) {
+            var functions = new List<Func<HandlerArgs, Boolean>>();
+            if (handlers.ContainsKey(name)) {
+                foreach(var record in handlers[name.ToUpper()]) {
+                    functions.Add(record);
+                }
+            }
+            return functions;
         }
 
         public bool Load() {

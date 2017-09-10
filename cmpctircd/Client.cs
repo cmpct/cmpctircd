@@ -128,6 +128,7 @@ namespace cmpctircd
                         failedResolve = true;
                     } else {
                         Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({DNSHost}) -- cached");
+                        ResolvingHost = false;
                         return;
                     }
                 }
@@ -157,6 +158,8 @@ namespace cmpctircd
                 }
             } catch(Exception) {
                 failedResolve = true;
+            } finally {
+                ResolvingHost = false;
             }
 
             if(failedResolve) {

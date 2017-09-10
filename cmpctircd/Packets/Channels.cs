@@ -577,7 +577,7 @@ namespace cmpctircd.Packets {
                         }
                         if(currentModifier == "+") {
                             // Attempt to add the mode
-                            bool success = modeObject.Grant(args.Client, param[position], false, announce, announce);
+                            bool success = modeObject.Grant(args.Client, param[position], args.Force, announce, announce);
 
                             if(success && modeObject.Stackable) {
                                 modeChars += modeStr;
@@ -587,7 +587,7 @@ namespace cmpctircd.Packets {
                             }
                         } else if(currentModifier == "-") {
                             // Attempt to revoke the mode
-                            bool success = modeObject.Revoke(args.Client, param[position], false, announce, announce);
+                            bool success = modeObject.Revoke(args.Client, param[position], args.Force, announce, announce);
 
                             if(success && modeObject.Stackable) {
                                 modeChars += modeStr;

@@ -11,6 +11,7 @@ namespace cmpctircd.Packets {
         // Class for all IRC Operator commands such as OPER, KILL, SAMODE, etc.
         public Oper(IRCd ircd) {
             ircd.PacketManager.Register("OPER", OperHandler);
+            ircd.PacketManager.Register("SAMODE", SamodeHandler);
         }
 
         public Boolean OperHandler(HandlerArgs args) {
@@ -52,6 +53,18 @@ namespace cmpctircd.Packets {
             } catch (InvalidOperationException) {
                 throw new IrcErrNoOperHostException(args.Client);
             }
+        }
+
+        public Boolean SamodeHandler(HandlerArgs args) {
+            if (args.Line.Split(' ').Count() == 1) {
+                throw new IrcErrNotEnoughParametersException(args.Client, "SAMODE");
+            }
+            if(args.Client.Modes["o"].Enabled) {
+                args.Force = true;
+                args.IRCd.PacketManager.FindHandler("MODE", args);
+                return true;
+            }
+            throw new IrcErrNoPrivileges(args.Client);
         }
     }
 }

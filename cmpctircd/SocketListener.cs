@@ -112,7 +112,7 @@ namespace cmpctircd {
                     while(line != null) {
                         // Read until there's no more left
                         var parts = Regex.Split(line, " ");
-                        var args  = new HandlerArgs(_ircd, client, line);
+                        var args  = new HandlerArgs(_ircd, client, line, false);
                         _ircd.PacketManager.FindHandler(parts[0], args);
 
                         // Grab another line

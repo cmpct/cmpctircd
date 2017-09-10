@@ -14,12 +14,14 @@ namespace cmpctircd
         public IRCd IRCd { get; set; }
         public Client Client { get; set; }
         public string Line { get; set; }
+        public bool Force { get; set; }
 
-        public HandlerArgs(IRCd ircd, Client client, string line)
+        public HandlerArgs(IRCd ircd, Client client, string line, bool force)
         {
             IRCd = ircd;
             Client = client;
             Line = line;
+            Force = force;
         }
     }
 }

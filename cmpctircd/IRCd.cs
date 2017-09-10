@@ -37,8 +37,8 @@ namespace cmpctircd {
         public ConcurrentDictionary<string, string> DNSCache;
 
         public List<Config.Oper> Opers;
-
         public DateTime CreateTime { get; private set; }
+        public readonly static object modeLock = new object();
 
         public IRCd(Log log, Config.ConfigData config) {
             this.Log = log;
@@ -146,22 +146,26 @@ namespace cmpctircd {
                 // This is called by SendWelcome() to provide RPL_ISUPPORT
                 return ModeDict;
             }
-            ModeDict = new Dictionary<string, string>();
 
-            var chan = new Channel(ChannelManager, this);
-            foreach(var modeList in ModeTypes) {
-                foreach(var mode in modeList.Value) {
-                    var modeObject = chan.Modes[mode];
+            lock(modeLock) {
+                ModeDict = new Dictionary<string, string>();
 
-                    if(requireSymbols && String.IsNullOrEmpty(modeObject.Symbol)) continue;
-                    ModeDict.Add(modeObject.Character, modeObject.Symbol);
+                var chan = new Channel(ChannelManager, this);
+                foreach(var modeList in ModeTypes) {
+                    foreach(var mode in modeList.Value) {
+                        var modeObject = chan.Modes[mode];
+
+                        // TODO: Are two different caches needed?
+                        if(requireSymbols && String.IsNullOrEmpty(modeObject.Symbol)) continue;
+                        ModeDict.Add(modeObject.Character, modeObject.Symbol);
+                    }
                 }
-            }
 
-            var modeCharacters  = String.Join("", ModeDict.Select(p => p.Key));
-            var modeSymbols     = String.Join("", ModeDict.Select(p => p.Value));
-            ModeDict.Add("Characters", modeCharacters);
-            ModeDict.Add("Symbols", modeSymbols);
+                var modeCharacters  = String.Join("", ModeDict.Select(p => p.Key));
+                var modeSymbols     = String.Join("", ModeDict.Select(p => p.Value));
+                ModeDict.Add("Characters", modeCharacters);
+                ModeDict.Add("Symbols", modeSymbols);
+            }
 
             return ModeDict;
         }
@@ -172,21 +176,24 @@ namespace cmpctircd {
                 // This is called by SendWelcome() to provide RPL_MYINFO
                 return UserModes;
             }
-            UserModes = new List<string>();
 
-            string[] badClasses = { "Mode", "ModeType" };
-            var classes = AppDomain.CurrentDomain.GetAssemblies()
-                                   .SelectMany(t => t.GetTypes())
-                                   .Where(
-                                       t => t.IsClass &&
-                                       t.Namespace == "cmpctircd.Modes" &&
-                                       t.BaseType.Equals(typeof(UserMode)) &&
-                                       !badClasses.Contains(t.Name)
-            );
+            lock(modeLock) {
+                UserModes = new List<string>();
 
-            foreach(Type className in classes) {
-                UserMode modeInstance = (UserMode) Activator.CreateInstance(Type.GetType(className.ToString()), client);
-                UserModes.Add(modeInstance.Character);
+                string[] badClasses = { "Mode", "ModeType" };
+                var classes = AppDomain.CurrentDomain.GetAssemblies()
+                                    .SelectMany(t => t.GetTypes())
+                                    .Where(
+                                        t => t.IsClass &&
+                                        t.Namespace == "cmpctircd.Modes" &&
+                                        t.BaseType.Equals(typeof(UserMode)) &&
+                                        !badClasses.Contains(t.Name)
+                );
+
+                foreach(Type className in classes) {
+                    UserMode modeInstance = (UserMode) Activator.CreateInstance(Type.GetType(className.ToString()), client);
+                    UserModes.Add(modeInstance.Character);
+                }
             }
 
             return UserModes;
@@ -198,55 +205,57 @@ namespace cmpctircd {
                 return ModeTypes;
             }
 
-            ModeTypes = new Dictionary<string, List<string>>();
+            lock(modeLock) {
+                ModeTypes = new Dictionary<string, List<string>>();
 
-            // http://www.irc.org/tech_docs/005.html
-            List<string> typeA = new List<string>();
-            List<string> typeB = new List<string>();
-            List<string> typeC = new List<string>();
-            List<string> typeD = new List<string>();
-            List<string> typeNone = new List<string>();
+                // http://www.irc.org/tech_docs/005.html
+                List<string> typeA = new List<string>();
+                List<string> typeB = new List<string>();
+                List<string> typeC = new List<string>();
+                List<string> typeD = new List<string>();
+                List<string> typeNone = new List<string>();
 
-            string[] badClasses = { "Mode", "ModeType" };
-            var classes = AppDomain.CurrentDomain.GetAssemblies()
-                                   .SelectMany(t => t.GetTypes())
-                                   .Where(
-                                       t => t.IsClass &&
-                                       t.Namespace == "cmpctircd.Modes" &&
-                                       t.BaseType.Equals(typeof(ChannelMode)) &&
-                                       !badClasses.Contains(t.Name)
-            );
+                string[] badClasses = { "Mode", "ModeType" };
+                var classes = AppDomain.CurrentDomain.GetAssemblies()
+                                    .SelectMany(t => t.GetTypes())
+                                    .Where(
+                                        t => t.IsClass &&
+                                        t.Namespace == "cmpctircd.Modes" &&
+                                        t.BaseType.Equals(typeof(ChannelMode)) &&
+                                        !badClasses.Contains(t.Name)
+                );
 
-            foreach(Type className in classes) {
-                ChannelMode modeInstance = (ChannelMode) Activator.CreateInstance(Type.GetType(className.ToString()), new Channel(ChannelManager, this));
-                ChannelModeType type = modeInstance.Type;
-                string modeChar = modeInstance.Character;
+                foreach(Type className in classes) {
+                    ChannelMode modeInstance = (ChannelMode) Activator.CreateInstance(Type.GetType(className.ToString()), new Channel(ChannelManager, this));
+                    ChannelModeType type = modeInstance.Type;
+                    string modeChar = modeInstance.Character;
 
-                switch(type) {
-                    case ChannelModeType.A:
-                        typeA.Add(modeChar);
-                        break;
-                    case ChannelModeType.B:
-                        typeB.Add(modeChar);
-                        break;
-                    case ChannelModeType.C:
-                        typeC.Add(modeChar);
-                        break;
-                    case ChannelModeType.D:
-                        typeD.Add(modeChar);
-                        break;
+                    switch(type) {
+                        case ChannelModeType.A:
+                            typeA.Add(modeChar);
+                            break;
+                        case ChannelModeType.B:
+                            typeB.Add(modeChar);
+                            break;
+                        case ChannelModeType.C:
+                            typeC.Add(modeChar);
+                            break;
+                        case ChannelModeType.D:
+                            typeD.Add(modeChar);
+                            break;
 
-                    default:
-                        typeNone.Add(modeChar);
-                        break;
+                        default:
+                            typeNone.Add(modeChar);
+                            break;
+                    }
                 }
-            }
 
-            ModeTypes.Add("A", typeA);
-            ModeTypes.Add("B", typeB);
-            ModeTypes.Add("C", typeC);
-            ModeTypes.Add("D", typeD);
-            ModeTypes.Add("None", typeNone);
+                ModeTypes.Add("A", typeA);
+                ModeTypes.Add("B", typeB);
+                ModeTypes.Add("C", typeC);
+                ModeTypes.Add("D", typeD);
+                ModeTypes.Add("None", typeNone);
+            }
             return ModeTypes;
         }
 

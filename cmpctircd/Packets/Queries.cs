@@ -121,6 +121,9 @@ namespace cmpctircd.Packets
             // TODO: change when linking
             var hopCount = 0;
 
+            if(mask.StartsWith("#")) {
+                return false;
+            }
             // Iterate through all of our clients if no mask
             foreach(var list in args.IRCd.ClientLists) {
                 foreach(var client in list) {

@@ -195,6 +195,13 @@ namespace cmpctircd.Packets {
                     }
                 } catch(IrcModeNotEnabledException) {}
 
+                try {
+                    channel.Modes["O"].GetValue();
+                    if (!client.Modes["o"].Enabled) {
+                        throw new IrcErrOperOnlyException(client, channel.Name);
+                    }
+                } catch(IrcModeNotEnabledException) {}
+
                 channel.AddClient(client);
                 client.Invites.Remove(channel);
                 topic = channel.Topic;

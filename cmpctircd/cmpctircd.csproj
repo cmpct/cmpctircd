@@ -73,6 +73,7 @@
     <Compile Include="Modes\ChannelMode.cs" />
     <Compile Include="Modes\ChannelModeType.cs" />
     <Compile Include="Modes\Channel\Op.cs" />
+    <Compile Include="Modes\Channel\OperOnly.cs" />
     <Compile Include="Modes\Channel\Voice.cs" />
     <Compile Include="Modes\Channel\Moderated.cs" />
     <Compile Include="Modes\UserMode.cs" />

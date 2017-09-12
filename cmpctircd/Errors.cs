@@ -180,5 +180,12 @@ namespace cmpctircd {
         }
     }
 
+        public class IrcErrOperOnlyException: Exception {
+
+        public IrcErrOperOnlyException(Client client, string channel) {
+            client.Write($":{client.IRCd.Host} {IrcNumeric.ERR_OPERONLY.Printable()} {client.Nick} {channel} :Only IRC operators may join {channel} (+O is set)");
+        }
+    }
+
 
 }

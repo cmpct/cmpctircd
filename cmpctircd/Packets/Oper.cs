@@ -44,8 +44,25 @@ namespace cmpctircd.Packets {
                 byte[] password = Encoding.UTF8.GetBytes(userInput[2]);
                 string builtHash = string.Concat(sha256.ComputeHash(password).Select(x => x.ToString("x2")));
                 if (builtHash == ircop.Password) {
+                    Channel channel;
+                    Topic topic;
                     args.Client.Modes["o"].Grant("", true, true);
                     args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_YOUREOPER.Printable()} {args.Client.Nick} :You are now an IRC Operator");
+                    if (args.IRCd.OperChan.Count() == 0) {
+                        return true;
+                    }
+                    // Create and join the oper-only chan
+                    foreach (string chan in args.IRCd.OperChan) {
+                        if (args.IRCd.ChannelManager.Exists(chan)) {
+                            channel = args.IRCd.ChannelManager[chan];
+                            args.Client.Invites.Remove(channel);
+                        } else {
+                            channel = args.IRCd.ChannelManager.Create(chan);
+                        }
+                        channel.AddClient(args.Client);
+                        topic = channel.Topic;
+                        topic.GetTopic(args.Client, chan, true);
+                    }
                     return true;
                 } else {
                     throw new IrcErrNoOperHostException(args.Client);

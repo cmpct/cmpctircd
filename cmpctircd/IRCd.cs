@@ -37,6 +37,7 @@ namespace cmpctircd {
         public ConcurrentDictionary<string, string> DNSCache;
 
         public List<Config.Oper> Opers;
+        public List<string> OperChan;
         public DateTime CreateTime { get; private set; }
         public readonly static object modeLock = new object();
 
@@ -59,6 +60,7 @@ namespace cmpctircd {
             AutoModes = config.AutoModes;
             AutoUModes = config.AutoUModes;
             Opers = config.Opers;
+            OperChan = config.OperChan;
         }
 
         public void Run() {

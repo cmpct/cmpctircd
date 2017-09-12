@@ -55,6 +55,8 @@
     <!-- Currently supported crypto hashes are sha256 -->
     <opers>
         <oper name='josh' password='5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8' hash='sha256' tls='false' host='*@127.0.0.1'/>
+        <!-- For automatically joining a channel on oper-up -->
+        <!-- <operjoin channel='#opers' /> -->
     </opers>
 
 </config>

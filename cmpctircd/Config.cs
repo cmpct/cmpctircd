@@ -38,6 +38,7 @@ namespace cmpctircd {
 
             // <opers>
             public List<Oper> Opers;
+            public List<string> OperChan;
 
         }
 
@@ -99,6 +100,7 @@ namespace cmpctircd {
             data.AutoUModes = new Dictionary<string, string>();
             data.Loggers  = new List<LoggerInfo>();
             data.Opers = new List<Oper>();
+            data.OperChan = new List<string>();
 
             foreach(XmlElement node in config) {
                 // Valid types: ircd, server, channelmodes, usermodes, cloak, sockets, log, advanced, opers
@@ -190,6 +192,12 @@ namespace cmpctircd {
                             oper.Password  = listenNode.Attributes["password"].InnerText;
                             oper.TLS       = Boolean.Parse(listenNode.Attributes["tls"].InnerText);
                             data.Opers.Add(oper);
+                        }
+                        foreach(XmlElement listenNode in node.GetElementsByTagName("operjoin")) {
+                            string[] chans = listenNode.Attributes["channel"].InnerText.Split(' ');
+                            foreach(string chan in chans) {
+                                data.OperChan.Add(chan);
+                            }
                         }
                         break;
                     default:

@@ -76,8 +76,8 @@ namespace cmpctircd {
             ClientLists = new List<List<Client>>();
 
             foreach(var listener in Config.Listeners) {
-                SocketListener sl = new SocketListener(this, listener.IP, listener.Port, listener.TLS);
-                Log.Info($"==> Listening on: {listener.IP}:{listener.Port} ({(listener.TLS ? "SSL/TLS" : "Plain" )})");
+                SocketListener sl = new SocketListener(this, listener);
+                Log.Info($"==> Listening on: {listener.IP}:{listener.Port} ({listener.Type}) ({(listener.TLS ? "SSL/TLS" : "Plain" )})");
                 Listeners.Add(sl);
             }
 
@@ -112,7 +112,7 @@ namespace cmpctircd {
                         var authRatio   = decimal.Round(((decimal) listener.AuthClientCount / (decimal) listener.ClientCount) * 100);
                         var unauthCount = listener.ClientCount - listener.AuthClientCount;
                         var unauthRatio = decimal.Round(((decimal) unauthCount / (decimal) listener.ClientCount) * 100);
-                        var prefixLine  = $"[{listener.Address}:{listener.Port} ({(listener.TLS ? "SSL/TLS" : "Plain" )})]";
+                        var prefixLine  = $"[{listener.Info.IP}:{listener.Info.Port} ({listener.Info.Type}) ({(listener.Info.TLS ? "SSL/TLS" : "Plain" )})]";
 
                         Log.Debug($"==> {prefixLine} Authed: {listener.AuthClientCount} ({authRatio}%). Unauthed: {unauthCount} ({unauthRatio}%). Total: {listener.ClientCount}.");
                     }

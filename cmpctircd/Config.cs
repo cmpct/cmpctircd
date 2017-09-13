@@ -43,6 +43,7 @@ namespace cmpctircd {
         }
 
         public struct ListenerInfo {
+            public ListenerType Type;
             public IPAddress IP;
             public int Port;
             public bool TLS;
@@ -113,14 +114,15 @@ namespace cmpctircd {
 
                     case "server":
                         foreach(XmlElement listenNode in node.GetElementsByTagName("listener")) {
-                            // <listener> properties: ip, port, tls
+                            // <listener> properties: type, ip, port, tls
                             ListenerInfo listener = new ListenerInfo();
+                            listener.Type = (ListenerType) Enum.Parse(typeof(ListenerType), listenNode.Attributes["type"].InnerText, true);
                             listener.IP   = IPAddress.Parse(listenNode.Attributes["ip"].InnerText);
                             listener.Port = Int32.Parse(listenNode.Attributes["port"].InnerText);
                             listener.TLS  = Boolean.Parse(listenNode.Attributes["tls"].InnerText);
                             data.Listeners.Add(listener);
 
-                            _Log.Debug($"Got a listener: {listener.IP}:{listener.Port} tls={listener.TLS}");
+                            _Log.Debug($"Got a listener: {listener.IP}:{listener.Port} type={listener.Type} tls={listener.TLS}");
                         }
                         break;
 

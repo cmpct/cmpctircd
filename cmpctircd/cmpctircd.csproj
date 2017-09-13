@@ -57,6 +57,7 @@
     <Compile Include="IRCd.cs" />
     <Compile Include="IrcNumeric.cs" />
     <Compile Include="IrcNumericExtensions.cs" />
+    <Compile Include="ListenerType.cs" />
     <Compile Include="Log\Log.cs" />
     <Compile Include="Log\LogType.cs" />
     <Compile Include="Log\LoggerType.cs" />

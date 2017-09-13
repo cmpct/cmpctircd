@@ -20,19 +20,13 @@ namespace cmpctircd {
         private TcpListener _listener = null;
         private List<Client> _clients = new List<Client>();
 
-        public IPAddress Address { get; private set; }
-        public int Port { get; private set; }
+        public Config.ListenerInfo Info { get; private set; }
         public int ClientCount = 0;
         public int AuthClientCount = 0;
 
-        public bool TLS { get; set; } = false;
-
-        public SocketListener(IRCd ircd, IPAddress IP, int port, bool TLS) {
+        public SocketListener(IRCd ircd, Config.ListenerInfo info) {
             this._ircd = ircd;
-            this.TLS = TLS;
-            this.Address = IP;
-            this.Port = port;
-            _listener = new TcpListener(IP, port);
+            _listener = new TcpListener(info.IP, info.Port);
             lock(_ircd.ClientLists) {
                 _ircd.ClientLists.Add(_clients);
             }
@@ -76,7 +70,7 @@ namespace cmpctircd {
 
             // Handshake with TLS if they're from a TLS port
             SslStream sslStream = null;
-            if(TLS) {
+            if(Info.TLS) {
                 try {
                     sslStream = new SslStream(client.TcpClient.GetStream(), true);
                     client.ClientTlsStream = sslStream;
@@ -102,7 +96,7 @@ namespace cmpctircd {
                     string line;
                     
                     // Need to supply a different stream for TLS
-                    if(TLS) {
+                    if(Info.TLS) {
                         reader = new StreamReader(client.ClientTlsStream);
                     } else {
                         reader = new StreamReader(client.ClientStream);

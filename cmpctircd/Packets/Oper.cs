@@ -78,7 +78,7 @@ namespace cmpctircd.Packets {
             }
             if(args.Client.Modes["o"].Enabled) {
                 args.Force = true;
-                args.IRCd.PacketManager.FindHandler("MODE", args);
+                args.IRCd.PacketManager.FindHandler("MODE", args, ListenerType.Client);
                 return true;
             }
             throw new IrcErrNoPrivileges(args.Client);

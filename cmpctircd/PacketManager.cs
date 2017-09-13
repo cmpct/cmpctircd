@@ -7,28 +7,43 @@ using System.Threading.Tasks;
 namespace cmpctircd {
     public class PacketManager {
         private IRCd ircd;
-        // XXX: Instead of Array, this could be a bundle which we send with each packet - args baked in, ircd, etc?
-        public Dictionary<String, List<Func<HandlerArgs, Boolean>>> handlers = new Dictionary<string, List<Func<HandlerArgs, Boolean>>>();
+        public Dictionary<String, List<HandlerInfo>> handlers = new Dictionary<string, List<HandlerInfo>>();
+
+        public struct HandlerInfo {
+            public string Packet;
+            public Func<HandlerArgs, Boolean> Handler;
+            public ListenerType Type;
+        }
 
         public PacketManager(IRCd ircd) {
             this.ircd = ircd;
         }
 
-        public bool Register(String packet, Func<HandlerArgs, Boolean> handler) {
-            ircd.Log.Debug("Registering packet: " + packet);
-            if (handlers.ContainsKey(packet.ToUpper())) {
+        public bool Register(HandlerInfo info) {
+            ircd.Log.Debug("Registering packet: " + info.Packet);
+            if (handlers.ContainsKey(info.Packet.ToUpper())) {
                 // Already a handler for this packet so add it to the list
-                handlers[packet].Add(handler);
+                handlers[info.Packet].Add(info);
             } else {
                 // No handlers for this packet yet, so create the List
-                var list = new List<Func<HandlerArgs, bool>>();
-                list.Add(handler);
-                handlers.Add(packet.ToUpper(), list);
+                var list = new List<HandlerInfo>();
+                list.Add(info);
+                handlers.Add(info.Packet.ToUpper(), list);
             }
             return true;
         }
 
-        public bool FindHandler(String packet, HandlerArgs args)
+        public bool Register(string packet, Func<HandlerArgs, Boolean> handler, ListenerType type = ListenerType.Client) {
+            // Legacy function, defaults to registering ListenerType.Client packets
+            return Register(new HandlerInfo {
+                Packet  = packet,
+                Handler = handler,
+                Type    = type
+            });
+        }
+
+
+        public bool FindHandler(String packet, HandlerArgs args, ListenerType type)
         {
             List<String> registrationCommands = new List<String>();
             registrationCommands.Add("USER");
@@ -58,11 +73,11 @@ namespace cmpctircd {
                     client.IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                 }
 
-                var functions = FindHandlers(packet);
+                var functions = FindHandlers(packet, type);
                 if(functions.Count() > 0) {
                     foreach(var record in functions) {
                         // Invoke all of the handlers for the command
-                        record.Invoke(args);
+                        record.Handler.Invoke(args);
                     }
                 } else {
                     ircd.Log.Debug("No handler for " + packet.ToUpper());
@@ -76,13 +91,11 @@ namespace cmpctircd {
         }
 
 
-        private List<Func<HandlerArgs, Boolean>> FindHandlers(string name) {
-            var functions = new List<Func<HandlerArgs, Boolean>>();
+        private List<HandlerInfo> FindHandlers(string name, ListenerType type) {
+            var functions = new List<HandlerInfo>();
             name = name.ToUpper();
             if (handlers.ContainsKey(name)) {
-                foreach(var record in handlers[name]) {
-                    functions.Add(record);
-                }
+                functions.AddRange(handlers[name].Where(record => record.Type == type));
             }
             return functions;
         }

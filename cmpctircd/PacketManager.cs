@@ -46,47 +46,52 @@ namespace cmpctircd {
         public bool FindHandler(String packet, HandlerArgs args, ListenerType type)
         {
             List<String> registrationCommands = new List<String>();
-            registrationCommands.Add("USER");
-            registrationCommands.Add("NICK");
-            registrationCommands.Add("CAP"); // TODO: NOT YET IMPLEMENTED
-            registrationCommands.Add("PONG");
-
             List<String> idleCommands = new List<String>();
-            idleCommands.Add("PING");
-            idleCommands.Add("PONG");
-            idleCommands.Add("WHOIS");
-            idleCommands.Add("WHO");
-            idleCommands.Add("NAMES");
-            idleCommands.Add("AWAY");
 
             var client = args.Client;
-            try
-            {
+            if(client != null) {
 
-                // Restrict the commands which non-registered (i.e. pre PONG, pre USER/NICK) users can execute
-                if((client.State.Equals(ClientState.PreAuth) || (args.IRCd.Config.ResolveHostnames && args.Client.ResolvingHost)) && !registrationCommands.Contains(packet.ToUpper())) {
-                    throw new IrcErrNotRegisteredException(client);
-                }
+                registrationCommands.Add("USER");
+                registrationCommands.Add("NICK");
+                registrationCommands.Add("CAP"); // TODO: NOT YET IMPLEMENTED
+                registrationCommands.Add("PONG");
+                idleCommands.Add("PING");
+                idleCommands.Add("PONG");
+                idleCommands.Add("WHOIS");
+                idleCommands.Add("WHO");
+                idleCommands.Add("NAMES");
+                idleCommands.Add("AWAY");
 
-                // Only certain commands should reset the idle clock
-                if(!idleCommands.Contains(packet.ToUpper())) {
-                    client.IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-                }
-
-                var functions = FindHandlers(packet, type);
-                if(functions.Count() > 0) {
-                    foreach(var record in functions) {
-                        // Invoke all of the handlers for the command
-                        record.Handler.Invoke(args);
+                try {
+                    // Restrict the commands which non-registered (i.e. pre PONG, pre USER/NICK) users can execute
+                    if((client.State.Equals(ClientState.PreAuth) || (args.IRCd.Config.ResolveHostnames && args.Client.ResolvingHost)) && !registrationCommands.Contains(packet.ToUpper())) {
+                        throw new IrcErrNotRegisteredException(client);
                     }
-                } else {
-                    ircd.Log.Debug("No handler for " + packet.ToUpper());
-                    throw new IrcErrUnknownCommandException(client, packet.ToUpper());
+
+                    // Only certain commands should reset the idle clock
+                    if(!idleCommands.Contains(packet.ToUpper())) {
+                        client.IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                    }
+                } catch(Exception e) {
+                    ircd.Log.Debug("Exception: " + e.ToString());
                 }
-                ircd.Log.Debug("Handler for " + packet.ToUpper() + " executed");
-            } catch (Exception e) {
-                ircd.Log.Debug("Exception: " + e.ToString());
+            } else {
+                // Server
+                // TODO add server specific checks
             }
+
+            var functions = FindHandlers(packet, type);
+            if(functions.Count() > 0) {
+                foreach(var record in functions) {
+                    // Invoke all of the handlers for the command
+                    record.Handler.Invoke(args);
+                }
+            } else {
+                ircd.Log.Debug("No handler for " + packet.ToUpper());
+                if(client != null)
+                    throw new IrcErrUnknownCommandException(client, packet.ToUpper());
+            }
+            ircd.Log.Debug("Handler for " + packet.ToUpper() + " executed");
             return true;
         }
 

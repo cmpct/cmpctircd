@@ -8,15 +8,17 @@ namespace cmpctircd.Packets {
     class Server {
 
         public Server(IRCd ircd) {
-            /*ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
-                Packet = "HELLO",
+            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
+                Packet  = "HELLO",
                 Handler = Test,
-                Type = ListenerType.Server
-            });*/
+                Type    = ListenerType.Server
+            });
         }
 
         public bool Test(HandlerArgs args) {
-            args.Sender.Write("hello");
+            // This is an example command
+            // Writes "hello" to the server
+            args.Server.Write("hello");
             return true;
         }
     }

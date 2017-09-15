@@ -127,6 +127,7 @@ namespace cmpctircd
                         // See below comment
                         failedResolve = true;
                     } else {
+                        DNSHost = cached;
                         Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({DNSHost}) -- cached");
                         ResolvingHost = false;
                         return;

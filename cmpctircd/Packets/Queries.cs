@@ -78,8 +78,7 @@ namespace cmpctircd.Packets
 
                 if(targetClient == args.Client || args.Client.Modes["o"].Enabled) {
                     // Only allow the target client's sensitive connection info if WHOISing themselves
-                    // TODO: needs modification for DNS (the last 'Host' should become 'IP', but there's no distinction between these yet)
-                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISHOST.Printable()} {args.Client.Nick} {targetClient.Nick} :is connecting from {targetClient.Ident}@{targetClient.GetHost(false)} {targetClient.GetHost(false)}");
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISHOST.Printable()} {args.Client.Nick} {targetClient.Nick} :is connecting from {targetClient.Ident}@{targetClient.GetHost(false)} {targetClient.IP}");
                 }
 
                 if(inhabitedChannels.Count() > 0) {

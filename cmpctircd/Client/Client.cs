@@ -14,16 +14,7 @@ using System.Net;
 
 namespace cmpctircd
 {
-    public class Client {
-        // Internals
-        // TODO: Many of these look like they shouldn't be public or should be private set. Review?
-        public IRCd IRCd { get; set; }
-        public TcpClient TcpClient { get; set; }
-        public NetworkStream ClientStream { get; private set; }
-        public SslStream ClientTlsStream { get; set; }
-        public SocketListener Listener { get; set; }
-        public byte[] Buffer { get; set; }
-
+    public class Client : SocketBase {
         // Metadata
         // TODO: Make these read-only apart from via setNick()?
         public String Nick { get; set; }
@@ -53,18 +44,13 @@ namespace cmpctircd
 
         public readonly static object nickLock = new object();
 
-        public Client(IRCd ircd, TcpClient tc, SocketListener sl) {
+        public Client(IRCd ircd, TcpClient tc, SocketListener sl) : base(ircd, tc, sl) {
             Buffer = new byte[1024];
 
             if(ircd.Config.ResolveHostnames)
                 ResolvingHost = true;
 
             State = ClientState.PreAuth;
-
-            IRCd = ircd;
-            TcpClient = tc;
-            Listener = sl;
-
             IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
             // Initialise modes
@@ -93,13 +79,11 @@ namespace cmpctircd
         }
 
         ~Client() {
-            ClientStream?.Close();
+            Stream?.Close();
             TcpClient?.Close();
         }
 
-        public void BeginTasks() {
-            // Initialize the stream
-            ClientStream = TcpClient.GetStream();
+        public new void BeginTasks() {
             // Check for PING/PONG events due
             CheckTimeout();
             
@@ -202,7 +186,7 @@ namespace cmpctircd
         }
 
         public void SetModes() {
-            if (ClientTlsStream != null) {
+            if (TlsStream != null) {
                 Modes["z"].Grant("", true, true);
             }
             foreach(var mode in IRCd.AutoUModes) {
@@ -449,21 +433,8 @@ namespace cmpctircd
 
         }
 
-        public void Write(String packet) {
-            byte[] packetBytes = Encoding.UTF8.GetBytes(packet + "\r\n");
-            try {
-                if(ClientTlsStream != null && ClientTlsStream.CanWrite) {
-                    ClientTlsStream.Write(packetBytes, 0, packetBytes.Length);
-                } else if(ClientStream != null && ClientStream.CanWrite) {
-                    ClientStream.Write(packetBytes, 0, packetBytes.Length);
-                }
-            } catch(Exception e) when (e is System.IO.IOException || e is System.ObjectDisposedException) {
-                Disconnect("Connection reset by host", true, false);
-            }
-        }
-
-        public void Disconnect(bool graceful) => Disconnect("", graceful, graceful);
-        public void Disconnect(string quitReason = "", bool graceful = true, bool sendToSelf = true) {
+        public new void Disconnect(bool graceful) => Disconnect("", graceful, graceful);
+        public new void Disconnect(string quitReason = "", bool graceful = true, bool sendToSelf = true) {
             if(State.Equals(ClientState.Disconnected)) return;
 
             if (graceful) {
@@ -484,8 +455,8 @@ namespace cmpctircd
 
             State = ClientState.Disconnected;
             Listener.Remove(this);
-            if(ClientTlsStream != null) {
-                ClientTlsStream.Close();
+            if(TlsStream != null) {
+                TlsStream.Close();
             }
             TcpClient.Close();
         }

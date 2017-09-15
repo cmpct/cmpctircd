@@ -60,35 +60,37 @@ namespace cmpctircd {
         }
 
         async Task HandleClient(TcpClient tc) {
-            var client = new Client(_ircd, tc, this);
-            lock (_clients)
-                _clients.Add(client);
-            
-            // Increment the client count
-            System.Threading.Interlocked.Increment(ref ClientCount);
+            Client client = null;
+            Server server = null;
 
+            if (Info.Type == ListenerType.Client) {
+                client = new Client(_ircd, tc, this);
+                lock (_clients)
+                    _clients.Add(client);
 
-            // Handshake with TLS if they're from a TLS port
-            SslStream sslStream = null;
-            if(Info.TLS) {
-                try {
-                    sslStream = new SslStream(client.TcpClient.GetStream(), true);
-                    client.ClientTlsStream = sslStream;
+                // Increment the client count
+                System.Threading.Interlocked.Increment(ref ClientCount);
+            } else {
+                server = new Server(_ircd, tc, this);
+                lock (_servers)
+                    _servers.Add(server);
 
-                    // NOTE: Must use carefully constructed cert in PKCS12 format (.pfx)
-                    // NOTE: https://security.stackexchange.com/a/29428
-                    // NOTE: You will get a NotSupportedException otherwise
-                    // NOTE: Create a TLS certificate using openssl (or $TOOL), then:
-                    // NOTE:    openssl pkcs12 -export -in tls_cert.pem -inkey tls_key.pem -out server.pfx
-                    X509Certificate serverCertificate = new X509Certificate2(_ircd.Config.TLS_PfxLocation, _ircd.Config.TLS_PfxPassword);
-                    sslStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls | SslProtocols.Tls11 | SslProtocols.Tls12, true);
-                } catch(Exception e) {
-                    _ircd.Log.Debug(e.ToString());
-                    client.Disconnect(false);
-                }
+                // Increment the server count
+                System.Threading.Interlocked.Increment(ref ServerCount);
             }
 
-            client.BeginTasks();
+            // Handshake with TLS if they're from a TLS port
+            if(Info.TLS) {
+                HandshakeTls(Info.Type == ListenerType.Client ? (SocketBase) client : (SocketBase) server);
+            }
+
+            // Call the appropriate BeginTasks
+            // Must be AFTER TLS handshake because could send text
+            if(Info.Type == ListenerType.Client) {
+                client.BeginTasks();
+            } else {
+                server.BeginTasks();
+            }
 
             while (true) {
                 StreamReader reader = null;
@@ -97,17 +99,30 @@ namespace cmpctircd {
                     
                     // Need to supply a different stream for TLS
                     if(Info.TLS) {
-                        reader = new StreamReader(client.ClientTlsStream);
+                        reader = new StreamReader(Info.Type == ListenerType.Client ? client.TlsStream : server.TlsStream);
                     } else {
-                        reader = new StreamReader(client.ClientStream);
+                        // TODO: need outbound server support
+                        reader = new StreamReader(Info.Type == ListenerType.Client ? client.Stream : server.Stream);
                     }
+
                     line = await reader.ReadLineAsync();
 
                     while(line != null) {
                         // Read until there's no more left
                         var parts = Regex.Split(line, " ");
-                        var args  = new HandlerArgs(_ircd, client, line, false);
-                        _ircd.PacketManager.FindHandler(parts[0], args, ListenerType.Client);
+
+                        HandlerArgs args;
+                        switch(Info.Type) {
+                            case ListenerType.Server:
+                                args = new ServerHandlerArgs(_ircd, server, line, false);
+                                break;
+ 
+                            case ListenerType.Client:
+                            default:
+                                args = new ClientHandlerArgs(_ircd, client, line, false);
+                                break;
+                        }
+                        _ircd.PacketManager.FindHandler(parts[0], args, Info.Type);
 
                         // Grab another line
                         line = await reader.ReadLineAsync();
@@ -119,6 +134,23 @@ namespace cmpctircd {
                     }
                     break;
                 };
+            }
+        }
+
+        public void HandshakeTls(SocketBase s) {
+            try {
+                s.TlsStream = new SslStream(s.TcpClient.GetStream(), true);
+
+                // NOTE: Must use carefully constructed cert in PKCS12 format (.pfx)
+                // NOTE: https://security.stackexchange.com/a/29428
+                // NOTE: You will get a NotSupportedException otherwise
+                // NOTE: Create a TLS certificate using openssl (or $TOOL), then:
+                // NOTE:    openssl pkcs12 -export -in tls_cert.pem -inkey tls_key.pem -out server.pfx
+                X509Certificate serverCertificate = new X509Certificate2(_ircd.Config.TLS_PfxLocation, _ircd.Config.TLS_PfxPassword);
+                s.TlsStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls12, true);
+            } catch(Exception e) {
+                _ircd.Log.Debug(e.ToString());
+                s.Disconnect(false);
             }
         }
 

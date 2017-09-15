@@ -89,8 +89,12 @@
     <Compile Include="Packets\Channels.cs" />
     <Compile Include="Packets\Queries.cs" />
     <Compile Include="Packets\Oper.cs" />
+    <Compile Include="Packets\Server.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Server\Server.cs" />
+    <Compile Include="Server\ServerState.cs" />
+    <Compile Include="SocketBase.cs" />
     <Compile Include="SocketListener.cs" />
     <Compile Include="Channel\Topic.cs" />
   </ItemGroup>

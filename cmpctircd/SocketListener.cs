@@ -119,14 +119,16 @@ namespace cmpctircd {
                         HandlerArgs args;
                         switch(Info.Type) {
                             case ListenerType.Server:
-                                args = new ServerHandlerArgs(_ircd, server, line, false);
+                                //args = new ServerHandlerArgs(_ircd, server, line, false);
                                 break;
  
                             case ListenerType.Client:
                             default:
-                                args = new ClientHandlerArgs(_ircd, client, line, false);
+                                //args = new ClientHandlerArgs(_ircd, client, line, false);
                                 break;
                         }
+
+                        args = new HandlerArgs(_ircd, client, line, false);
                         _ircd.PacketManager.FindHandler(parts[0], args, Info.Type);
 
                         // Grab another line

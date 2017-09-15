@@ -19,13 +19,18 @@ namespace cmpctircd {
         private Boolean _started = false;
         private TcpListener _listener = null;
         private List<Client> _clients = new List<Client>();
+        private List<Server> _servers = new List<Server>();
 
         public Config.ListenerInfo Info { get; private set; }
         public int ClientCount = 0;
         public int AuthClientCount = 0;
 
+        public int ServerCount = 0;
+        public int AuthServerCount = 0;
+
         public SocketListener(IRCd ircd, Config.ListenerInfo info) {
             this._ircd = ircd;
+            this.Info = info;
             _listener = new TcpListener(info.IP, info.Port);
             lock(_ircd.ClientLists) {
                 _ircd.ClientLists.Add(_clients);

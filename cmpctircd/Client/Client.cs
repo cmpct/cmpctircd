@@ -17,6 +17,7 @@ namespace cmpctircd
     public class Client : SocketBase {
         // Metadata
         // TODO: Make these read-only apart from via setNick()?
+        public String UID { get; set; }
         public String Nick { get; set; }
         public String Ident { get; set; }
         public String RealName { get; set; }
@@ -44,11 +45,15 @@ namespace cmpctircd
 
         public readonly static object nickLock = new object();
 
-        public Client(IRCd ircd, TcpClient tc, SocketListener sl) : base(ircd, tc, sl) {
+        public Client(IRCd ircd, TcpClient tc, SocketListener sl, String UID = null) : base(ircd, tc, sl) {
             Buffer = new byte[1024];
 
             if(ircd.Config.ResolveHostnames)
                 ResolvingHost = true;
+
+            this.UID = UID;
+            if (this.UID == null)
+                this.UID = ircd.GenerateUID();
 
             State = ClientState.PreAuth;
             IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;

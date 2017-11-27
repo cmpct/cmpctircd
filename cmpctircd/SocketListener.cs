@@ -18,10 +18,10 @@ namespace cmpctircd {
         private IRCd _ircd;
         private Boolean _started = false;
         private TcpListener _listener = null;
-        private List<Client> _clients = new List<Client>();
         private List<Server> _servers = new List<Server>();
 
         public Config.ListenerInfo Info { get; private set; }
+        public List<Client> Clients = new List<Client>();
         public int ClientCount = 0;
         public int AuthClientCount = 0;
 
@@ -33,7 +33,7 @@ namespace cmpctircd {
             this.Info = info;
             _listener = new TcpListener(info.IP, info.Port);
             lock(_ircd.ClientLists) {
-                _ircd.ClientLists.Add(_clients);
+                _ircd.ClientLists.Add(Clients);
             }
         }
         ~SocketListener() {
@@ -70,8 +70,8 @@ namespace cmpctircd {
 
             if (Info.Type == ListenerType.Client) {
                 client = new Client(_ircd, tc, this);
-                lock (_clients)
-                    _clients.Add(client);
+                lock (Clients)
+                    Clients.Add(client);
 
                 // Increment the client count
                 System.Threading.Interlocked.Increment(ref ClientCount);
@@ -161,8 +161,8 @@ namespace cmpctircd {
         }
 
         public void Remove(Client client) {
-            lock (_clients) {
-                _clients.Remove(client);
+            lock (Clients) {
+                Clients.Remove(client);
             }
         }
     }

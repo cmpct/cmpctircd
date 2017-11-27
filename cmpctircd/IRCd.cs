@@ -40,6 +40,7 @@ namespace cmpctircd {
         public List<string> OperChan;
         public DateTime CreateTime { get; private set; }
         public readonly static object modeLock = new object();
+        public static char[] lastUID = new char[] { };
 
         public IRCd(Log log, Config.ConfigData config) {
             this.Log = log;
@@ -259,6 +260,65 @@ namespace cmpctircd {
                 ModeTypes.Add("None", typeNone);
             }
             return ModeTypes;
+        }
+
+        // UID <-> Nick translation helpers
+
+        public string GenerateUID() {
+            var UID = new char[6];
+            var highestUid = 6 * 90; // Sum of 6(Z) 
+            var aCharacter = Convert.ToChar(65); // A
+            var zCharacter = Convert.ToChar(90); // Z
+
+            lock (lastUID) {
+                if (new String(lastUID) == "" || UID.Sum(character => Convert.ToInt32(character)) == highestUid) {
+                    // We're at the start or we've hit the maximum possible ID (ZZZZZZ)
+                    // Start (again)...
+                    UID = new char[] { 'A', 'A', 'A', 'A', 'A', 'A' };
+                } else {
+                    for (int i = UID.Length - 1; i >= 0; i--) {
+                        // We need to increment every index, starting at UID[5] (6) until it reaches Z
+                        // Once it reaches Z (this will depend on subsequent UIDs), hop to the next column and repeat
+
+                        // Skip this column because it's a Z
+                        if (lastUID[i] == zCharacter)
+                            continue;
+
+                        // Add one to the column if the previous column is Z or we're at the start
+                        if (i == UID.Length - 1 || lastUID[i + 1] == zCharacter) {
+                            UID[i] = Convert.ToChar(lastUID[i] + 1);
+                        } else {
+                            // Otherwise just copy that value
+                            // e.g. with AAAAAB -> AAAAAC, only the B -> C has changed, so rest can be copied
+                            UID[i] = lastUID[i];
+                        }
+                    }
+                }
+
+                // Don't allow this UID to be generated again...
+                lastUID = UID;
+            }
+
+            var string_UID = new String(UID);
+            Log.Debug($"Generated a UID: {string_UID}");
+            return string_UID;
+
+        }
+
+        // Works on nick or (U)UID
+        public string ExtractIdentifierFromMessage(string message, bool split = false) {
+            var identifier = message;
+
+            if(split) {
+                var message_split = message.Split(new string[] { " " }, StringSplitOptions.None);
+                identifier = message_split[0];
+            }
+
+            identifier = identifier.Replace(":", "");
+            // in case it is a nick with host format
+            identifier = Regex.Replace(identifier, "!.*", "");
+
+            return identifier;
         }
 
     }

@@ -77,8 +77,9 @@ namespace cmpctircd {
             }
             Log.Info($"==> Host: {Host}");
 
-            Listeners = new List<SocketListener>();
+            Listeners   = new List<SocketListener>();
             ClientLists = new List<List<Client>>();
+            ServerLists = new List<List<Server>>();
 
             foreach(var listener in Config.Listeners) {
                 SocketListener sl = new SocketListener(this, listener);

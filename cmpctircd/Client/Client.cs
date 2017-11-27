@@ -195,6 +195,10 @@ namespace cmpctircd
             // Send MOTD
             SendMotd();
             SetModes();
+
+            IRCd.ServerLists.ForEach(serverList => serverList.ForEach(
+                server => server.SyncClient(this)
+            ));
         }
 
         public void SetModes() {

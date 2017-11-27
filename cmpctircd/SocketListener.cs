@@ -35,6 +35,9 @@ namespace cmpctircd {
             lock(_ircd.ClientLists) {
                 _ircd.ClientLists.Add(Clients);
             }
+            lock(_ircd.ServerLists) {
+                _ircd.ServerLists.Add(_servers);
+            }
         }
         ~SocketListener() {
             Stop();

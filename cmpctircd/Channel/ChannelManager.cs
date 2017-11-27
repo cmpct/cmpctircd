@@ -23,6 +23,10 @@ namespace cmpctircd {
             Channel channel = new Channel(this, IRCd);
             channel.Name = channel_name;
             Channels.TryAdd(channel_name, channel);
+
+            IRCd.ServerLists.ForEach(serverList => serverList.ForEach(
+                server => server.SyncChannel(channel)
+            ));
             return channel;
         }
 

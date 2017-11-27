@@ -49,8 +49,18 @@ namespace cmpctircd {
         }
 
         public void SyncChannel(Channel channel) {
-            // TODO
-            return;
+            var nicks = "";
+            foreach (var client in channel.Clients) {
+                nicks += String.Join("", channel.Modes.Values.Where(mode => !mode.ChannelWide && mode.Has(client.Value)));
+                nicks += ",";
+                nicks += client.Value.UUID;
+                nicks += " ";
+            }
+            nicks = nicks.TrimEnd(new char[] { ',' });
+
+            var modeStrings = channel.GetModeStrings("+");
+            var modeString  = (modeStrings[0] + modeStrings[1]).TrimEnd();
+            Write($":{SID} FJOIN {channel.Name} {channel.CreationTime} {modeString} :{nicks}");
         }
 
         ~Server() {

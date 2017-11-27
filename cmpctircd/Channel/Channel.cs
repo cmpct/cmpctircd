@@ -105,6 +105,10 @@ namespace cmpctircd {
                 // Attempt to set +Z (only works if applicable)
                 Modes["Z"].Grant(client, client.Nick, false, true, true);
             }
+
+            client.IRCd.ServerLists.ForEach(serverList => serverList.ForEach(
+                server => server.SyncChannel(this)
+            ));
         }
 
 

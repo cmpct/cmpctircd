@@ -52,5 +52,9 @@ namespace cmpctircd.Modes {
             return "";
         }
 
+        // TODO allow override with params?
+        public override string ToString() {
+            return Character;
+        }
     }
 }

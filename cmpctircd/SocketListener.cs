@@ -128,7 +128,9 @@ namespace cmpctircd {
                                 break;
                         }
 
-                        _ircd.PacketManager.FindHandler(parts[0], args, Info.Type);
+                        // For ListenerType.Client, search for parts[0]
+                        // But for ListenerType.Server, packets are prefixed with :SID
+                        _ircd.PacketManager.FindHandler(Info.Type == ListenerType.Client ? parts[0] : parts[1], args, Info.Type);
 
                         // Grab another line
                         line = await reader.ReadLineAsync();

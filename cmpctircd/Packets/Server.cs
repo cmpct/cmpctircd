@@ -9,16 +9,159 @@ namespace cmpctircd.Packets {
 
         public Server(IRCd ircd) {
             ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
-                Packet  = "HELLO",
-                Handler = Test,
+                Packet  = "SERVER",
+                Handler = ServerHandler,
                 Type    = ListenerType.Server
             });
+
+            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
+                Packet  = "UID",
+                Handler = UidHandler,
+                Type    = ListenerType.Server
+            });
+
+            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
+                Packet  = "FJOIN",
+                Handler = FjoinHandler,
+                Type    = ListenerType.Server
+            });
+
+            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
+                Packet  = "PRIVMSG",
+                Handler = PrivmsgHandler,
+                Type    = ListenerType.Server
+            });
+
+            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
+                Packet  = "NOTICE",
+                Handler = NoticeHandler,
+                Type    = ListenerType.Server
+            });
+
+            // TODO: three CAPAB packets
+        }
+        
+        public bool ServerHandler(HandlerArgs args) {
+            // TODO: introduce some ServerState magic
+            var parts = args.Line.Split(new char[] { ' ' }, 7);
+
+            // Check there are enough parameters
+            if(parts.Count() != 7) {
+                // TODO: send an error
+                return false;
+            }
+
+            // Parse out some values
+            var hostname = parts[2];
+            var password = parts[3];
+            var sid      = parts[5];
+            var desc     = parts[6].Substring(1);
+
+            // Compare with config
+            bool foundMatch = true;
+            foreach(var link in args.IRCd.Config.ServerLinks) {
+                if(link.Host     != hostname) foundMatch = false;
+                if(link.Password != password) foundMatch = false;
+                // TODO check TLS, SID
+
+                if(foundMatch) {
+                    // If we're got a match after all of the checks, stop looking
+                    break;
+                } else {
+                    // Reset for next iteration
+                    foundMatch = true;
+                }
+            }
+
+            if(foundMatch) {
+                args.IRCd.Log.Warn("[SERVER] got an authed server");
+
+                // Introduce ourselves...
+                // TODO: send password?
+                args.Server.SID = sid;
+                args.Server.Write($"SERVER {args.IRCd.Host} {password} 0 {args.Server.IRCd} :{args.IRCd.Desc}");
+                args.Server.Sync();
+            } else {
+                args.IRCd.Log.Warn("[SERVER] got an unauthed server");
+                // TODO: Send error?
+                // TODO: May send error above instead to be specific?
+                return false;
+            }
+            return true;
         }
 
-        public bool Test(HandlerArgs args) {
-            // This is an example command
-            // Writes "hello" to the server
-            args.Server.Write("hello");
+        public bool UidHandler(HandlerArgs args) {
+            var parts = args.Line.Split(new char[] { ' ' }, 12);
+
+            // TODO: check parts count
+            var last_index = parts.Count() - 1;
+            var sid_from     = parts[0];
+            var user_uuid    = parts[2];
+            var timestamp    = parts[3];
+            var nick         = parts[4];
+            var hostname     = parts[5];
+            var display_host = parts[6];
+            var ident        = parts[7];
+            var ip           = parts[8];
+            var signon_time  = parts[9];
+            var modes        = parts[10];
+            var mode_params  = "";
+            var realname     = parts[last_index].Substring(1);
+            if(last_index != 11) {
+                // If the last index != 11, realname is pushed back by one for an additional mode parameter
+                mode_params = parts[11];
+            }
+
+            // TODO: needed for FJOIN (???)
+            var uid = user_uuid.Substring(3); // Drop the first 2 characters of UUID to make it a UID
+            var client = new Client(args.IRCd, args.Server.TcpClient, null, uid, args.Server, true) {
+                Nick  = nick,
+                Ident = ident,
+                SignonTime = Int32.Parse(signon_time),
+                RealName = realname,
+                OriginServer = args.Server,
+                State = ClientState.Auth,
+                ResolvingHost = false,
+                // TODO IP
+                // client.IP = System.Net.IPAddress.Parse(ip)
+            };
+
+            // TODO modes
+            lock(args.Server.Listener.Clients)
+                args.Server.Listener.Clients.Add(client);
+
+            args.IRCd.Log.Debug($"[SERVER] got new client {nick}");
+            return true;
+        }
+
+        public bool FjoinHandler(HandlerArgs args) {
+            // TODO check if the SID is one we know, maybe specify in config? (???)
+            var parts     = args.Line.Split(new char[] { ' ' }, 6);
+            var channel   = parts[2];
+            var userList  = parts[5].Split(new char[] { ' ' });
+            foreach(var user in userList) {
+                var userParts = user.Split(new char[] { ',' });
+                var modes     = userParts[0];
+                var UID       = userParts[1];
+
+                try {
+                    Channel chan = null;
+                    var client = args.IRCd.GetClientByUUID(UID);
+                    try {
+                        // Use the channel if it already exists (very unlikely)
+                        chan = args.IRCd.ChannelManager.Channels[channel];
+                    } catch(KeyNotFoundException) {
+                        chan = args.IRCd.ChannelManager.Create(channel);
+                    } finally {
+                        chan.AddClient(client);
+                    }
+                    
+                } catch(Exception e) {
+                    args.IRCd.Log.Debug($"[SERVER] exception in FJOIN handler! {e.ToString()}");
+                }
+
+                
+            }
             return true;
         }
     }

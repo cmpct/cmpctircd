@@ -12,6 +12,7 @@ namespace cmpctircd {
 
         public struct ConfigData {
             // <ircd>
+            public string SID;
             public string Host;
             public string Network;
             public string Description;
@@ -36,6 +37,9 @@ namespace cmpctircd {
             public Dictionary<string, string> AutoModes;
             public Dictionary<string, string> AutoUModes;
 
+            // <servers>
+            public List<ServerLink> ServerLinks;
+
             // <opers>
             public List<Oper> Opers;
             public List<string> OperChan;
@@ -53,6 +57,13 @@ namespace cmpctircd {
             public LoggerType Type;
             public LogType Level;
             public Dictionary<string, string> Settings;
+        }
+
+        public struct ServerLink {
+            public string Host;
+            public int Port;
+            public string Password;
+            public bool TLS;
         }
 
         public struct Oper {
@@ -102,14 +113,21 @@ namespace cmpctircd {
             data.Loggers  = new List<LoggerInfo>();
             data.Opers = new List<Oper>();
             data.OperChan = new List<string>();
+            data.ServerLinks = new List<ServerLink>();
 
             foreach(XmlElement node in config) {
                 // Valid types: ircd, server, channelmodes, usermodes, cloak, sockets, log, advanced, opers
                 switch(node.Name.ToLower()) {
                     case "ircd":
+                        data.SID         = node["sid"].InnerText;
                         data.Host        = node["host"].InnerText;
                         data.Network     = node["network"].InnerText;
                         data.Description = node["desc"].InnerText;
+
+                        // TODO check if conflict
+                        if(data.SID == "auto") {
+                            data.SID = IRCd.GenerateSID(data.Host, data.Description);
+                        }
                         break;
 
                     case "server":
@@ -179,6 +197,18 @@ namespace cmpctircd {
                     case "umodes":
                         foreach (XmlElement listenNode in node.GetElementsByTagName("mode")) {
                             data.AutoUModes.Add(listenNode.Attributes["name"].InnerText, listenNode.Attributes["param"].InnerText);
+                        }
+                    break;
+
+                    case "servers":
+                        foreach (XmlElement serverNode in node.GetElementsByTagName("server")) {
+                            ServerLink server = new ServerLink {
+                                Host     = serverNode.Attributes["host"].InnerText,
+                                Port     = Int32.Parse(serverNode.Attributes["port"].InnerText),
+                                Password = serverNode.Attributes["password"].InnerText,
+                                TLS      = Boolean.Parse(serverNode.Attributes["tls"].InnerText),
+                            };
+                            data.ServerLinks.Add(server);
                         }
                     break;
 

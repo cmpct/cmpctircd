@@ -34,7 +34,12 @@ namespace cmpctircd {
             // noop in base
         }
 
+        // TODO rework these? (for TLS links especially?)
         public void Write(string packet) {
+            Write(packet, Stream);
+        }
+
+        public void Write(string packet, NetworkStream Stream) {
             byte[] packetBytes = Encoding.UTF8.GetBytes(packet + "\r\n");
             try {
                 if(TlsStream != null && TlsStream.CanWrite) {

@@ -9,6 +9,7 @@ using System.Net.Sockets;
 
 using cmpctircd.Packets;
 using cmpctircd.Modes;
+using System.Text.RegularExpressions;
 
 namespace cmpctircd {
     public class IRCd {
@@ -16,12 +17,14 @@ namespace cmpctircd {
         public PacketManager PacketManager { get; set; }
         public ChannelManager ChannelManager { get; set; }
         public List<List<Client>> ClientLists { get; set; }
+        public List<List<Server>> ServerLists { get; set; }
         private Dictionary<string, List<string>> ModeTypes { get; set; }
         private Dictionary<string, string> ModeDict { get; set; }
         private List<string> UserModes { get; set; }
 
         public Log Log;
         public Config.ConfigData Config;
+        public string SID;
         public string Host;
         public string Desc;
         public string Network;
@@ -47,6 +50,7 @@ namespace cmpctircd {
             this.Config = config;
 
             // Interpret the ConfigData
+            SID     = config.SID;
             Host    = config.Host;
             Desc    = config.Description;
             Network = config.Network;
@@ -140,6 +144,25 @@ namespace cmpctircd {
                 }
             }
             throw new InvalidOperationException("No such user exists");
+        }
+
+        public Client GetClientByUUID(String UUID) {
+            foreach(var clientList in ClientLists) {
+                try {
+                    return clientList.Single(client => client.UUID == UUID);
+                    // TODO: hack?
+                } catch(Exception) { }
+            }
+            throw new InvalidOperationException("No such user exists");
+        }
+
+        public Server GetServerBySID(String SID) {
+            foreach (var serverList in ServerLists) {
+                try {
+                    return serverList.Single(server => server.SID == SID);
+                } catch (Exception) { }
+            }
+            throw new InvalidOperationException("No such server exists");
         }
 
         public Dictionary<string, string> GetSupportedModes(bool requireSymbols) {
@@ -305,6 +328,10 @@ namespace cmpctircd {
 
         }
 
+        public bool IsUUID(string message) {
+            return Regex.IsMatch(message, "^[0-9][A-Z0-9][A-Z0-9][A-Z][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9][A-Z0-9]$");
+        }
+
         // Works on nick or (U)UID
         public string ExtractIdentifierFromMessage(string message, bool split = false) {
             var identifier = message;
@@ -321,5 +348,53 @@ namespace cmpctircd {
             return identifier;
         }
 
+        // todo: UID -> UUID rename
+        public string ReplaceUUIDWithNick(string message, int index = 0) {
+            var split_message = message.Split(new string[] { " " }, StringSplitOptions.None);
+            if(IsUUID(split_message[index].Replace(":", ""))) {
+                split_message[index] = ExtractIdentifierFromMessage(split_message[index]);
+                if (split_message[index] != Host) {
+                    Log.Debug($"Looking for client with UUID (want their nick): {split_message[index]}");
+
+                    var client = GetClientByUUID(split_message[index]);
+                    split_message[index] = ":" + client.Nick;
+                    // TODO exception if non existent?
+                }
+            }
+            return String.Join(" ", split_message); 
+        }
+
+        public string ReplaceNickWithUUID(string message, int index = 0) {
+            var split_message = message.Split(new string[] { " " }, StringSplitOptions.None);
+            if (!IsUUID(split_message[index])) {
+                split_message[index] = ExtractIdentifierFromMessage(split_message[index]);
+                if (split_message[index] != Host) {
+                    Log.Debug($"Looking for client with nick (want their UUID): {split_message[index]}");
+
+                    var client = GetClientByNick(split_message[index]);
+                    split_message[index] = ":" + client.UUID;
+                    // TODO exception if non existent?
+                }
+            }
+            return String.Join(" ", split_message);
+        }
+
+
+        // SID
+        public static string GenerateSID(string name, string description) {
+            // http://www.inspircd.org/wiki/Modules/spanningtree/UUIDs.html
+            var SID = 0;
+
+            for(int i = 0; i < name.Length; i++) {
+                SID = (5 * SID) + Convert.ToInt32(name[i]);
+            }
+
+            for(int n = 0; n < description.Length; n++) {
+                SID = (5 * SID) + Convert.ToInt32(description[n]);
+            }
+
+            SID = SID % 999;
+            return SID.ToString("000");
+        }
     }
 }

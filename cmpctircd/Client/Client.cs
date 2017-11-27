@@ -25,6 +25,8 @@ namespace cmpctircd
         public List<Channel> Invites = new List<Channel>();
 
         // Connection information
+        public Server OriginServer { get; set; }
+        public bool RemoteClient { get; set; } = false;
         public string Cloak { get; set; }
         public String DNSHost { get; set; }
         public int IdleTime { get; set; }
@@ -41,20 +43,25 @@ namespace cmpctircd
             get; set;
         } = new ConcurrentDictionary<string, UserMode>();
 
+        // TODO will this work for multiple hops? think so but it's something to bare in mind
+        public string UUID;
         public void SendVersion() => Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.Host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.Version));
 
         public readonly static object nickLock = new object();
 
-        public Client(IRCd ircd, TcpClient tc, SocketListener sl, String UID = null) : base(ircd, tc, sl) {
+        public Client(IRCd ircd, TcpClient tc, SocketListener sl, String UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl) {
             Buffer = new byte[1024];
 
             if(ircd.Config.ResolveHostnames)
                 ResolvingHost = true;
 
             this.UID = UID;
+            this.OriginServer = OriginServer;
+            this.RemoteClient = RemoteClient;
             if (this.UID == null)
                 this.UID = ircd.GenerateUID();
 
+            UUID = (RemoteClient ? OriginServer.SID : IRCd.SID) + this.UID;
             State = ClientState.PreAuth;
             IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
 
@@ -436,6 +443,17 @@ namespace cmpctircd
             }
             return new string[] { characters, args };
 
+        }
+
+        public void Write(String packet, bool transformIfServer = true) {
+            if(RemoteClient && transformIfServer) {
+                // Need to translate any nicks into UIDs
+                packet = IRCd.ReplaceNickWithUUID(packet);
+                // TODO sock changes? (TLS?)
+                base.Write(packet, OriginServer.Stream);
+            } else {
+                base.Write(packet);
+            }
         }
 
         public new void Disconnect(bool graceful) => Disconnect("", graceful, graceful);

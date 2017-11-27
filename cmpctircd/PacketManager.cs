@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace cmpctircd {
@@ -43,14 +44,18 @@ namespace cmpctircd {
         }
 
 
-        public bool FindHandler(String packet, HandlerArgs args, ListenerType type)
+        public bool FindHandler(String packet, HandlerArgs args, ListenerType type, bool convertUids = false)
         {
             List<String> registrationCommands = new List<String>();
             List<String> idleCommands = new List<String>();
 
-            var client = args.Client;
-            if(client != null) {
+            if(convertUids) {
+                args.Line   = ircd.ReplaceUUIDWithNick(args.Line);
+                args.Client = ircd.GetClientByNick(ircd.ExtractIdentifierFromMessage(args.Line, true));
+            }
 
+            var client = args.Client;
+            if (client != null) {
                 registrationCommands.Add("USER");
                 registrationCommands.Add("NICK");
                 registrationCommands.Add("CAP"); // TODO: NOT YET IMPLEMENTED
@@ -80,17 +85,24 @@ namespace cmpctircd {
                 // TODO add server specific checks
             }
 
-            var functions = FindHandlers(packet, type);
-            if(functions.Count() > 0) {
-                foreach(var record in functions) {
-                    // Invoke all of the handlers for the command
-                    record.Handler.Invoke(args);
+            try {
+                var functions = FindHandlers(packet, type);
+                if(functions.Count() > 0) {
+                    foreach(var record in functions) {
+                        // Invoke all of the handlers for the command
+                        record.Handler.Invoke(args);
+                    }
+                } else {
+                    ircd.Log.Debug("No handler for " + packet.ToUpper());
+                    if(client != null)
+                        throw new IrcErrUnknownCommandException(client, packet.ToUpper());
                 }
-            } else {
-                ircd.Log.Debug("No handler for " + packet.ToUpper());
-                if(client != null)
-                    throw new IrcErrUnknownCommandException(client, packet.ToUpper());
+            } catch(Exception e) {
+                ircd.Log.Debug("Exception: " + e.ToString());
             }
+
+            if(args.Server != null)
+                ircd.Log.Debug($"Got a server line: {args.Line}");
             ircd.Log.Debug("Handler for " + packet.ToUpper() + " executed");
             return true;
         }

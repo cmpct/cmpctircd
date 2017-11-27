@@ -1,5 +1,8 @@
 <config>
     <ircd>
+        <!-- Recommended that sid remain as 'auto' -->
+        <!-- Only set manually if conflict ([0-9][0-9A-Z][0-9A-Z])-->
+        <sid>auto</sid>
         <host>irc.cmpct.info</host>
         <network>cmpct</network>
         <desc>the c# irc server</desc>
@@ -9,6 +12,11 @@
         <listener type='client' ip='127.0.0.1' port='6667' tls='false'/>
         <!--
             <listener ip='127.0.0.1' port='6697' tls='true'/>
+        -->
+
+        <!--
+            <listener type='server' ip='127.0.0.1' port='9000' tls='false'/>
+            <listener type='server' ip='127.0.0.1' port='9001' tls='true'/>
         -->
     </server>
 
@@ -50,6 +58,10 @@
         <mode name='x' param=''/>
         <mode name='i' param=''/>
     </umodes>
+
+    <servers>
+        <server host="services.cmpct.info" port="9000" password="password" tls='false'/>
+    </servers>
 
     <!-- Default password is 'password', change it! -->
     <!-- Currently supported crypto hashes are sha256 -->

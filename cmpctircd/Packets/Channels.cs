@@ -616,6 +616,17 @@ namespace cmpctircd.Packets {
                         // Return if the mode string doesn't contain an operator
                         return true;
                     }
+                    // Need to send UUID to room and not the nick if stacking
+                    if(args.Client.RemoteClient) {
+                        if (modeString.Contains(" ")) {
+                            var splitBySpaces = modeString.Split(' ');
+                            foreach(var chunk in splitBySpaces) {
+                                if(args.IRCd.IsUUID(chunk)) {
+                                    modeString = modeString.Replace(chunk, args.IRCd.GetClientByUUID(chunk).Nick);
+                                }
+                            }
+                        }
+                    }
                     channel.SendToRoom(args.Client, $":{args.Client.Mask} MODE {channel.Name} {modeString}");
                 }
             }

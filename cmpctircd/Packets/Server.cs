@@ -87,6 +87,30 @@ namespace cmpctircd.Packets {
                 // TODO: send password?
                 args.Server.SID = sid;
                 args.Server.Write($"SERVER {args.IRCd.Host} {password} 0 {args.Server.IRCd} :{args.IRCd.Desc}");
+
+                // CAPAB BEGIN
+                var version = 1202;
+                args.Server.Write($"CAPAB START {version}");
+                // TODO: Can this be de-duplicated with Client.SendWelcome()?
+                var UModeTypes = args.IRCd.GetSupportedUModes(new Client(args.IRCd, null, args.Server.Listener));
+                var ModeTypes  = args.IRCd.GetSupportedModesByType();
+                var modes      = args.IRCd.GetSupportedModes(true);
+
+                // TODO: Lie a bit for now
+                // TODO: Dynamic!
+                // https://pypkg.com/pypi/pylinkirc/f/protocols/inspircd.py
+                // https://www.anope.org/doxy/2.0/d6/dd0/inspircd20_8cpp_source.html
+                args.Server.Write($"CAPAB MODULES m_services_account.so");
+                args.Server.Write($"CAPAB MODSUPPORT m_services_account.so");
+                args.Server.Write($"CAPAB USERMODES hidechans");
+                args.Server.Write($"CAPAB CHANMODES op=@o");
+
+                // TODO: Make this dynamic
+                // TODO: Need to (elsewhere) look at the capabilities of the remote server!
+                args.Server.Write($"CAPAB CAPABILITIES :CASEMAPPING=rfc1459 :PREFIX=({modes["Characters"]}){modes["Symbols"]}");
+                args.Server.Write($"CAPAB CAPABILITIES :CHANMODES={string.Join("", ModeTypes["A"])},{string.Join("", ModeTypes["B"])},{string.Join("", ModeTypes["C"])},{string.Join("", ModeTypes["D"])}");
+                args.Server.Write($"CAPAB END");
+
                 args.Server.Sync();
             } else {
                 args.IRCd.Log.Warn("[SERVER] got an unauthed server");

@@ -26,7 +26,7 @@ namespace cmpctircd {
             IRCd = ircd;
             TcpClient = tc;
             Listener = sl;
-            Stream = TcpClient.GetStream();
+            Stream = TcpClient?.GetStream();
         }
 
         public void BeginTasks() {

@@ -119,6 +119,10 @@ namespace cmpctircd {
             client.IRCd.Log.Debug($"Removing {client.Nick} from {Name}");
             SendToRoom(client, String.Format(":{0} PART {1} :{2}", client.Mask, Name, reason), true);
             Remove(client, strip, strip);
+
+            client.IRCd.ServerLists.ForEach(serverList => serverList.ForEach(
+                server => server.Write($":{client.UUID} PART {Name} :{reason}")
+            ));
         }
 
         public void Quit(Client client, String reason) {

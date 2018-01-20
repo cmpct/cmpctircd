@@ -61,6 +61,7 @@ namespace cmpctircd.Packets {
             bool foundMatch = true;
             foreach(var link in args.IRCd.Config.ServerLinks) {
                 // TODO: Add error messages
+                // TODO: Check the host they're claiming to be actually matches? Name != IP
                 if(link.Host     != hostname) foundMatch = false;
                 if(link.Port     != args.Server.Listener.Info.Port) foundMatch = false;
                 if(link.TLS      != args.Server.Listener.Info.TLS) foundMatch = false;
@@ -81,6 +82,7 @@ namespace cmpctircd.Packets {
             }
 
             if(foundMatch) {
+                args.Server.State = ServerState.Auth;
                 args.IRCd.Log.Warn("[SERVER] got an authed server");
 
                 // Introduce ourselves...

@@ -78,11 +78,23 @@ namespace cmpctircd {
                         client.IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                     }
                 } catch(Exception e) {
-                    ircd.Log.Debug("Exception: " + e.ToString());
+                    ircd.Log.Debug($"Exception (client): {e.ToString()}");
                 }
             } else {
                 // Server
-                // TODO add server specific checks
+                var server = args.Server;
+                try {
+                    registrationCommands.Add("CAPAB");
+                    registrationCommands.Add("SERVER");
+                    if(server.State.Equals(ServerState.PreAuth) && !registrationCommands.Contains(packet.ToUpper())) {
+                        ircd.Log.Error($"Server just tried to use command pre-auth: {packet.ToUpper()}");
+                        server.Write("ERROR: Sent command before auth (send SERVER packet!)");
+                        server.Disconnect(true);
+                        return false;
+                    }
+                } catch(Exception e) {
+                    ircd.Log.Debug($"Exception (server): ${e.ToString()}");
+                }
             }
 
             try {

@@ -60,9 +60,16 @@ namespace cmpctircd.Packets {
             // Compare with config
             bool foundMatch = true;
             foreach(var link in args.IRCd.Config.ServerLinks) {
+                // TODO: Add error messages
                 if(link.Host     != hostname) foundMatch = false;
+                if(link.Port     != args.Server.Listener.Info.Port) foundMatch = false;
+                if(link.TLS      != args.Server.Listener.Info.TLS) foundMatch = false;
                 if(link.Password != password) foundMatch = false;
-                // TODO check TLS, SID
+
+                try {
+                    args.IRCd.GetServerBySID(sid);
+                    foundMatch = false; // If we get to here, no match.
+                } catch (InvalidOperationException) {}
 
                 if(foundMatch) {
                     // If we're got a match after all of the checks, stop looking

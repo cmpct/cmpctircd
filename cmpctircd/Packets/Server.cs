@@ -119,6 +119,7 @@ namespace cmpctircd.Packets {
                 args.Server.Sync();
             } else {
                 args.IRCd.Log.Warn("[SERVER] got an unauthed server");
+                args.Server.Disconnect("ERROR: Invalid credentials", true);
                 // TODO: Send error?
                 // TODO: May send error above instead to be specific?
                 return false;

@@ -59,7 +59,9 @@ namespace cmpctircd.Packets {
 
             // Compare with config
             bool foundMatch = true;
-            foreach(var link in args.IRCd.Config.ServerLinks) {
+            for(int i = 0; i < args.IRCd.Config.ServerLinks.Count(); i++) {
+                var link = args.IRCd.Config.ServerLinks[i];
+
                 // TODO: Add error messages
                 // TODO: Check the host they're claiming to be actually matches? Name != IP
                 if(link.Host     != hostname) foundMatch = false;
@@ -76,8 +78,9 @@ namespace cmpctircd.Packets {
                     // If we're got a match after all of the checks, stop looking
                     break;
                 } else {
-                    // Reset for next iteration
-                    foundMatch = true;
+                    // Reset for next iteration unless we're at the end
+                    if(i != args.IRCd.Config.ServerLinks.Count() - 1)
+                        foundMatch = true;
                 }
             }
 

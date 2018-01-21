@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Net.Security;
+using System.Net;
 
 namespace cmpctircd {
     public class SocketBase {
@@ -32,6 +33,20 @@ namespace cmpctircd {
         public void BeginTasks() {
             // Base tasks such as DNS or connections
             // noop in base
+        }
+
+        // Returns the socket's raw IP
+        public IPAddress IP {
+            get {
+                var EndPoint = (System.Net.IPEndPoint) TcpClient.Client.RemoteEndPoint;
+                if(EndPoint != null) {
+                    // Live socket
+                    return EndPoint.Address;
+                } else {
+                    // Fake local client with no remote host
+                    return IPAddress.Loopback;
+                }
+            }
         }
 
         // TODO rework these? (for TLS links especially?)

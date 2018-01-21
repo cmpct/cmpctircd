@@ -371,20 +371,6 @@ namespace cmpctircd
 
         public static String CreatePingCookie() => System.IO.Path.GetRandomFileName().Substring(0, 7);
 
-        // Returns the user's raw IP
-        public IPAddress IP {
-            get {
-                var EndPoint = (System.Net.IPEndPoint) TcpClient.Client.RemoteEndPoint;
-                if(EndPoint != null) {
-                    // Live socket
-                    return EndPoint.Address;
-                } else {
-                    // Fake local client with no remote host
-                    return IPAddress.Loopback;
-                }
-            }
-        }
-
         // Returns the user's mask
         public String Mask
         {

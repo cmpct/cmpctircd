@@ -63,11 +63,24 @@ namespace cmpctircd.Packets {
                 var link = args.IRCd.Config.ServerLinks[i];
 
                 // TODO: Add error messages
-                // TODO: Check the host they're claiming to be actually matches? Name != IP
                 if(link.Host     != hostname) foundMatch = false;
                 if(link.Port     != args.Server.Listener.Info.Port) foundMatch = false;
                 if(link.TLS      != args.Server.Listener.Info.TLS) foundMatch = false;
                 if(link.Password != password) foundMatch = false;
+
+                var foundHostMatch = false;
+                foreach(var mask in link.Masks) {
+                    var maskObject = Ban.CreateMask(mask);
+                    // TODO: Allow DNS in Masks (for Servers)
+                    var hostInfo   = new HostInfo {
+                        Ip = args.Server.IP
+                    };
+
+                    if (Ban.CheckHost(maskObject, hostInfo)) {
+                        foundHostMatch = true;
+                    }
+                }
+                foundMatch = foundHostMatch;
 
                 try {
                     args.IRCd.GetServerBySID(sid);

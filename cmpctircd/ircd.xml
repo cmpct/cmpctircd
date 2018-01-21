@@ -60,7 +60,7 @@
     </umodes>
 
     <servers>
-        <server host="services.cmpct.info" port="9000" password="password" tls='false'/>
+        <server host="services.cmpct.info" masks="*@127.0.0.1" port="9000" password="mypassword" tls='false'/>
     </servers>
 
     <!-- Default password is 'password', change it! -->

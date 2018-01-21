@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Net;
 using System.Xml;
+using System.Linq;
 using System.Collections.Generic;
 
 using cmpctircd;
@@ -64,6 +65,7 @@ namespace cmpctircd {
             public int Port;
             public string Password;
             public bool TLS;
+            public List<string> Masks;
         }
 
         public struct Oper {
@@ -202,10 +204,12 @@ namespace cmpctircd {
 
                     case "servers":
                         foreach (XmlElement serverNode in node.GetElementsByTagName("server")) {
+                            var masks = serverNode.Attributes["masks"].InnerText.Split(' ').ToList();
                             ServerLink server = new ServerLink {
                                 Host     = serverNode.Attributes["host"].InnerText,
                                 Port     = Int32.Parse(serverNode.Attributes["port"].InnerText),
                                 Password = serverNode.Attributes["password"].InnerText,
+                                Masks    = masks,
                                 TLS      = Boolean.Parse(serverNode.Attributes["tls"].InnerText),
                             };
                             data.ServerLinks.Add(server);

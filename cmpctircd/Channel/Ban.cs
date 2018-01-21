@@ -29,7 +29,7 @@ namespace cmpctircd {
             return Match(client, masks);
         }
 
-        public static bool Match(Client client, Dictionary<string, string> masks) {
+        public static bool Match(Client client, Dictionary<string, string> masks, HostInfo hosts = null) {
             string mask;
 
             var identifiers = new List<Tuple<string, string>>() {
@@ -38,7 +38,9 @@ namespace cmpctircd {
                 Tuple.Create(masks["nick"], client.Nick),
                 Tuple.Create(masks["user"], client.Ident)
             };
-            var hosts = client.GetHosts(true);
+
+            if(hosts == null)
+                hosts = client.GetHosts(true);
 
             // Check nick, user/ident
             foreach(var identifier in identifiers) {
@@ -48,14 +50,21 @@ namespace cmpctircd {
             }
 
             // Check all the hosts
-            var matchMask = false;
-            mask = masks["host"].Replace("*", ".*");
-            foreach(var host in hosts) {
-                if(Regex.IsMatch(host, mask))
-                    matchMask = true;
-            }
+            var matchMask = CheckHost(masks, hosts);
 
             return matchMask;
+        }
+
+        public static bool CheckHost(Dictionary<string, string> masks, HostInfo hosts) {
+            var match = false;
+            var mask  = masks["host"].Replace("*", ".*");
+
+            foreach(var host in hosts) {
+                if(Regex.IsMatch(host, mask))
+                    match = true;
+            }
+
+            return match;
         }
 
         public string GetBan() {

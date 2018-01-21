@@ -170,5 +170,11 @@ namespace cmpctircd {
                 Clients.Remove(client);
             }
         }
+
+        public void Remove(Server server) {
+            lock (_servers) {
+                _servers.Remove(server);
+            }
+        }
     }
 }

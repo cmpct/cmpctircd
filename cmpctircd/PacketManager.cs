@@ -88,8 +88,7 @@ namespace cmpctircd {
                     registrationCommands.Add("SERVER");
                     if(server.State.Equals(ServerState.PreAuth) && !registrationCommands.Contains(packet.ToUpper())) {
                         ircd.Log.Error($"Server just tried to use command pre-auth: {packet.ToUpper()}");
-                        server.Write("ERROR: Sent command before auth (send SERVER packet!)");
-                        server.Disconnect(true);
+                        server.Disconnect("ERROR: Sent command before auth (send SERVER packet!)", true);
                         return false;
                     }
                 } catch(Exception e) {

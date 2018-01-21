@@ -54,6 +54,11 @@ namespace cmpctircd {
 
         public void Disconnect(bool graceful = false) => Disconnect("", graceful, graceful);
         public void Disconnect(string reason = "", bool graceful = false, bool sendToSelf = false) {
+            Write(reason);
+            if(TlsStream != null) {
+                TlsStream.Close();
+            }
+            TcpClient.Close();
             // graceful means inform clients of departure
             // !graceful means kill the connection
         }

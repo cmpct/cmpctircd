@@ -78,6 +78,7 @@ namespace cmpctircd.Packets {
 
                     if (Ban.CheckHost(maskObject, hostInfo)) {
                         foundHostMatch = true;
+                        break;
                     }
                 }
                 foundMatch = foundHostMatch;

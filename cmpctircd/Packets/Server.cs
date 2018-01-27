@@ -26,7 +26,7 @@ namespace cmpctircd.Packets {
                 Type    = ListenerType.Server
             });
 
-            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
+            /*ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
                 Packet  = "PRIVMSG",
                 Handler = PrivmsgHandler,
                 Type    = ListenerType.Server
@@ -36,11 +36,11 @@ namespace cmpctircd.Packets {
                 Packet  = "NOTICE",
                 Handler = NoticeHandler,
                 Type    = ListenerType.Server
-            });
+            });*/
 
             // TODO: three CAPAB packets
         }
-        
+
         public bool ServerHandler(HandlerArgs args) {
             // TODO: introduce some ServerState magic
             var parts = args.Line.Split(new char[] { ' ' }, 7);

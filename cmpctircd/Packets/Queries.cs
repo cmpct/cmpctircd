@@ -18,6 +18,7 @@ namespace cmpctircd.Packets
             ircd.PacketManager.Register("WHO", WhoHandler);
             ircd.PacketManager.Register("AWAY", AwayHandler);
             ircd.PacketManager.Register("LUSERS", LusersHandler);
+            ircd.PacketManager.Register("USERHOST", UserhostHandler);
             ircd.PacketManager.Register("PING", PingHandler);
             ircd.PacketManager.Register("MODE", ModeHandler);
         }
@@ -192,6 +193,33 @@ namespace cmpctircd.Packets
             return true;
         }
 
+        public bool UserhostHandler(HandlerArgs args) {
+            // the format is USERHOST nick1 nick2; so skip the command name
+            var items = args.Line.Split(' ').Skip(1).ToArray();
+            if (items.Length == 0) {
+                throw new IrcErrNotEnoughParametersException(args.Client, "USERHOST");
+            }
+
+            var replyBase = $":{args.IRCd.Host} {IrcNumeric.RPL_USERHOST.Printable()} :";
+            var replyBuilder = new StringBuilder(replyBase);
+            for (int i = 0; i < items.Length; i++) {
+                // <nick>['*'] '=' <'+'|'-'><hostname>
+                var userClient = args.IRCd.GetClientByNick(items[i]);
+
+                var isOp = userClient.Modes["o"].Enabled ? "*" : "";
+                var isAway = !string.IsNullOrEmpty(userClient.AwayMessage) ? "-" : "+";
+
+                var replyItem = $"{userClient.Nick}{isOp}={isAway}{userClient.Ident}@{userClient.GetHost()}";
+                replyBuilder.Append(replyItem);
+                if (i != items.Length - 1) // if not last item
+                    replyBuilder.Append(" ");
+            }
+
+            args.Client.Write(replyBuilder.ToString());
+
+            return true;
+        }
+
         public Boolean PingHandler(HandlerArgs args) {
             // TODO: Modification for multiple servers
             string cookie = args.Line.Split(' ')[1];
@@ -253,8 +281,9 @@ namespace cmpctircd.Packets
                         modeChars += modeStr;
                     }
 
+                    Modes.UserMode modeObject; // HACK for C# 6 without discards
                     if (targetClient.Modes.ContainsKey(noOperatorMode)) {
-                        targetClient.Modes.TryGetValue(noOperatorMode, out var modeObject);
+                        targetClient.Modes.TryGetValue(noOperatorMode, out modeObject);
 
                         if (!modeObject.Stackable) {
                             announce = true;

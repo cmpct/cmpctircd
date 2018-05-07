@@ -196,7 +196,7 @@ namespace cmpctircd.Packets
         public bool UserhostHandler(HandlerArgs args) {
             // the format is USERHOST nick1 nick2; so skip the command name
             var items = args.Line.Split(' ').Skip(1).ToArray();
-            if (items.Length == 0) {
+            if (items.Length == 0 || items.Length > 5) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "USERHOST");
             }
 

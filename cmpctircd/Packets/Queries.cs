@@ -200,7 +200,7 @@ namespace cmpctircd.Packets
                 throw new IrcErrNotEnoughParametersException(args.Client, "USERHOST");
             }
 
-            var replyBase = $":{args.IRCd.Host} {IrcNumeric.RPL_USERHOST.Printable()} :";
+            var replyBase = $":{args.IRCd.Host} {IrcNumeric.RPL_USERHOST.Printable()} {args.Client.Nick} :";
             var replyBuilder = new StringBuilder(replyBase);
             for (int i = 0; i < items.Length; i++) {
                 // <nick>['*'] '=' <'+'|'-'><hostname>

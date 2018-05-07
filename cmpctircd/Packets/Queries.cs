@@ -204,15 +204,19 @@ namespace cmpctircd.Packets
             var replyBuilder = new StringBuilder(replyBase);
             for (int i = 0; i < items.Length; i++) {
                 // <nick>['*'] '=' <'+'|'-'><hostname>
-                var userClient = args.IRCd.GetClientByNick(items[i]);
+                try {
+                    var userClient = args.IRCd.GetClientByNick(items[i]);
 
-                var isOp = userClient.Modes["o"].Enabled ? "*" : "";
-                var isAway = !string.IsNullOrEmpty(userClient.AwayMessage) ? "-" : "+";
+                    var isOp = userClient.Modes["o"].Enabled ? "*" : "";
+                    var isAway = !string.IsNullOrEmpty(userClient.AwayMessage) ? "-" : "+";
 
-                var replyItem = $"{userClient.Nick}{isOp}={isAway}{userClient.Ident}@{userClient.GetHost()}";
-                replyBuilder.Append(replyItem);
-                if (i != items.Length - 1) // if not last item
-                    replyBuilder.Append(" ");
+                    var replyItem = $"{userClient.Nick}{isOp}={isAway}{userClient.Ident}@{userClient.GetHost()}";
+                    replyBuilder.Append(replyItem);
+                    if (i != items.Length - 1) // if not last item
+                        replyBuilder.Append(" ");
+                } catch (InvalidOperationException) { // no user
+                    continue;
+                } 
             }
 
             args.Client.Write(replyBuilder.ToString());

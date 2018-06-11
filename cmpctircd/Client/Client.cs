@@ -449,21 +449,25 @@ namespace cmpctircd
         public new void Disconnect(bool graceful) => Disconnect("", graceful, graceful);
         public new void Disconnect(string quitReason = "", bool graceful = true, bool sendToSelf = true) {
             if(State.Equals(ClientState.Disconnected)) return;
-
-            if (graceful) {
-                // Inform all of the channels we're a member of that we are leaving
-                foreach (var channel in IRCd.ChannelManager.Channels) {
-                    if (channel.Value.Inhabits(this)) {
-                        channel.Value.Quit(this, quitReason);
-                        channel.Value.Remove(this, true);
+            try {
+                if(graceful) {
+                    // Inform all of the channels we're a member of that we are leaving
+                    foreach(var channel in IRCd.ChannelManager.Channels) {
+                        if(channel.Value.Inhabits(this)) {
+                            channel.Value.Quit(this, quitReason);
+                            channel.Value.Remove(this, true);
+                        }
                     }
                 }
-            }
 
-            if (sendToSelf) {
-                // Need this flag to prevent infinite loop of calls to Disconnect() upon IOException
-                // No need to guard the Channel quit because they do not send to the user leaving
-                Write($":{Mask} QUIT :{quitReason}");
+                if(sendToSelf) {
+                    // Need this flag to prevent infinite loop of calls to Disconnect() upon IOException
+                    // No need to guard the Channel quit because they do not send to the user leaving
+                    Write($":{Mask} QUIT :{quitReason}");
+                }
+            } catch(Exception e) when(e is ObjectDisposedException || e is SocketException) {
+                // The user has been disconnected but the server is still trying to call Disconnect on it
+                IRCd.Log.Debug($"Tried to disconnect a removed user: {e.ToString()}");
             }
 
             State = ClientState.Disconnected;

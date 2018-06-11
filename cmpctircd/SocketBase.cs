@@ -69,7 +69,9 @@ namespace cmpctircd {
 
         public void Disconnect(bool graceful = false) => Disconnect("", graceful, graceful);
         public void Disconnect(string reason = "", bool graceful = false, bool sendToSelf = false) {
-            Write(reason);
+            if(sendToSelf) {
+                Write(reason);
+            }
             if(TlsStream != null) {
                 TlsStream.Close();
             }

@@ -370,6 +370,7 @@ namespace cmpctircd
             // Has the user taken too long to reply with a PONG?
             if(WaitingForPong && (time > (LastPong + (IRCd.PingTimeout * 2)))) {
                 Disconnect("Ping timeout", true);
+                return;
             }
 
             Task.Delay((int) TimeSpan.FromMinutes(1).TotalMilliseconds).ContinueWith(t => CheckTimeout());

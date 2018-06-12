@@ -96,11 +96,17 @@ namespace cmpctircd
         }
 
         public new void BeginTasks() {
-            // Check for PING/PONG events due
-            CheckTimeout();
-            
-            if(IRCd.Config.ResolveHostnames)
-                Resolve();
+            try {
+                // Check for PING/PONG events due
+                CheckTimeout();
+
+                if(IRCd.Config.ResolveHostnames)
+                    Resolve();
+            } catch(Exception e) when (e is ObjectDisposedException || e is SocketException) {
+                IRCd.Log.Debug($"Failed to access client: {e.ToString()}");
+                Disconnect(false);
+                return;
+            }
         }
 
 

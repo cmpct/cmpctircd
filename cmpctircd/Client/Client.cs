@@ -333,7 +333,9 @@ namespace cmpctircd
                     channel.Value.Add(this, newNick);
                 }
 
-                Write(String.Format(":{0} NICK {1}", Mask, nick));
+                if(!String.IsNullOrEmpty(oldNick)) {
+                    Write(String.Format(":{0} NICK {1}", Mask, nick));
+                }
                 this.Nick = newNick;
 
                 SendWelcome();

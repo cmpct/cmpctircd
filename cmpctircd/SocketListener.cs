@@ -139,10 +139,14 @@ namespace cmpctircd {
                         line = await reader.ReadLineAsync();
                     }
                 } catch(Exception) {
-                    client.Disconnect("Connection reset by host", true, false);
+                    if(client != null) {
+                        client.Disconnect("Connection reset by host", true, false);
+                    }
+
                     if(reader != null) {
                         reader.Dispose();
                     }
+
                     break;
                 };
             }

@@ -63,8 +63,8 @@ namespace cmpctircd {
             Write($":{SID} FJOIN {channel.Name} {channel.CreationTime} {modeString} :{nicks}");
         }
 
-        public void Disconnect(bool graceful = false) => Disconnect("", graceful, graceful);
-        public void Disconnect(string reason = "", bool graceful = false, bool sendToSelf = false) {
+        public new void Disconnect(bool graceful = false) => Disconnect("", graceful, graceful);
+        public new void Disconnect(string reason = "", bool graceful = false, bool sendToSelf = false) {
             // TODO: ServerState.Disconnected?
             // TODO: Graceful, SQUIT-like?
             Write(reason);

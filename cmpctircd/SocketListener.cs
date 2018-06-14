@@ -92,16 +92,27 @@ namespace cmpctircd {
                 HandshakeTls(Info.Type == ListenerType.Client ? (SocketBase) client : (SocketBase) server);
             }
 
-            // Call the appropriate BeginTasks
-            // Must be AFTER TLS handshake because could send text
-            if(Info.Type == ListenerType.Client) {
-                client.BeginTasks();
-            } else {
-                server.BeginTasks();
-            }
-
             StreamReader reader = null;
+
             try {
+                // Call the appropriate BeginTasks
+                // Must be AFTER TLS handshake because could send text
+
+                // XXX: Regarding the CanRead checks:
+                // XXX: Temporary fix for http://bugs.cmpct.info/show_bug.cgi?id=253
+                // XXX: May need deeper changes(?)
+                if(Info.Type == ListenerType.Client) {
+                    if((Info.TLS && !client.TlsStream.CanRead) || (!Info.TLS && !client.Stream.CanRead))
+                        throw new InvalidOperationException("Can't read on this socket");
+
+                    client.BeginTasks();
+                } else {
+                    if((Info.TLS && !server.TlsStream.CanRead) || (!Info.TLS && !server.Stream.CanRead))
+                        throw new InvalidOperationException("Can't read on this socket");
+
+                    server.BeginTasks();
+                }
+
                 string line;
                     
                 // Need to supply a different stream for TLS

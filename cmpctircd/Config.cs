@@ -87,9 +87,9 @@ namespace cmpctircd {
                 readerSettings.IgnoreComments = true;
                 XmlReader reader = XmlReader.Create(FileName, readerSettings);
                 Xml.Load(reader);
-            } catch(System.IO.IOException e) {
+            } catch(System.IO.IOException) {
                 _Log.Error($"Unable to open the configuration file: {FileName}. Exiting.");
-                throw e;
+                throw;
             } catch(XmlException) {
                 _Log.Error($"Invalid XML syntax! Exiting.");
                 throw;

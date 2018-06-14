@@ -11,8 +11,9 @@ namespace cmpctircd {
 
         override public void Create(Dictionary<string, string> arguments) {
             var path  = arguments["path"];
-            writer    = new StreamWriter(path, true);
-            writer.AutoFlush = true;
+            writer    = new StreamWriter(path, true) {
+                AutoFlush = true
+            };
         }
 
         override public void Close() {

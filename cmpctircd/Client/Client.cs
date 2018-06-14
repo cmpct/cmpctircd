@@ -50,8 +50,6 @@ namespace cmpctircd
         public readonly static object nickLock = new object();
 
         public Client(IRCd ircd, TcpClient tc, SocketListener sl, String UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl) {
-            Buffer = new byte[1024];
-
             if(ircd.Config.ResolveHostnames)
                 ResolvingHost = true;
 

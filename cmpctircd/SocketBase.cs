@@ -19,7 +19,6 @@ namespace cmpctircd {
         // TODO: make these protected set?
         public NetworkStream Stream { get; set; }
         public SocketListener Listener { get; set; }
-        public byte[] Buffer { get; set; } = new byte[1024];
 
         // TODO: do constructor too
 

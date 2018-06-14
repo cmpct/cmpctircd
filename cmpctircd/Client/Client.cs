@@ -137,8 +137,9 @@ namespace cmpctircd
 
             // Not in the cache, look up the IP
             // XXX: mono won't resolve IPs -> hostnames at present
-            // XXX: this code seems to only run on windows
-            // XXX: https://bugzilla.xamarin.com/show_bug.cgi?id=29279
+            // XXX: so this code seems to only run on the MS .NET runtime (i.e. Windows)
+            // XXX: it is now fixed in upstream mono, not yet in a release (see bug below)
+            // XXX: http://bugs.cmpct.info/show_bug.cgi?id=246
             try {
                 var resolver = await Dns.GetHostEntryAsync(IP);
 

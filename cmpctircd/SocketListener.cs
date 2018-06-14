@@ -100,55 +100,51 @@ namespace cmpctircd {
                 server.BeginTasks();
             }
 
-            while (true) {
-                StreamReader reader = null;
-                try {
-                    string line;
+            StreamReader reader = null;
+            try {
+                string line;
                     
-                    // Need to supply a different stream for TLS
-                    if(Info.TLS) {
-                        reader = new StreamReader(Info.Type == ListenerType.Client ? client.TlsStream : server.TlsStream);
-                    } else {
-                        // TODO: need outbound server support
-                        reader = new StreamReader(Info.Type == ListenerType.Client ? client.Stream : server.Stream);
-                    }
+                // Need to supply a different stream for TLS
+                if(Info.TLS) {
+                    reader = new StreamReader(Info.Type == ListenerType.Client ? client.TlsStream : server.TlsStream);
+                } else {
+                    // TODO: need outbound server support
+                    reader = new StreamReader(Info.Type == ListenerType.Client ? client.Stream : server.Stream);
+                }
 
-                    line = await reader.ReadLineAsync();
+                line = await reader.ReadLineAsync();
 
-                    while(line != null) {
-                        // Read until there's no more left
-                        var parts = Regex.Split(line, " ");
+                while(line != null) {
+                    // Read until there's no more left
+                    var parts = Regex.Split(line, " ");
 
-                        HandlerArgs args;
-                        switch(Info.Type) {
-                            case ListenerType.Server:
-                                args = new HandlerArgs(_ircd, server, line, false);
-                                break;
+                    HandlerArgs args;
+                    switch(Info.Type) {
+                        case ListenerType.Server:
+                            args = new HandlerArgs(_ircd, server, line, false);
+                            break;
  
-                            case ListenerType.Client:
-                            default:
-                                args = new HandlerArgs(_ircd, client, line, false);
-                                break;
-                        }
-
-                        // For ListenerType.Client, search for parts[0]
-                        // But for ListenerType.Server, packets are prefixed with :SID
-                        _ircd.PacketManager.FindHandler(Info.Type == ListenerType.Client ? parts[0] : parts[1], args, Info.Type);
-
-                        // Grab another line
-                        line = await reader.ReadLineAsync();
-                    }
-                } catch(Exception) {
-                    if(client != null) {
-                        client.Disconnect("Connection reset by host", true, false);
+                        case ListenerType.Client:
+                        default:
+                            args = new HandlerArgs(_ircd, client, line, false);
+                            break;
                     }
 
-                    if(reader != null) {
-                        reader.Dispose();
-                    }
+                    // For ListenerType.Client, search for parts[0]
+                    // But for ListenerType.Server, packets are prefixed with :SID
+                    _ircd.PacketManager.FindHandler(Info.Type == ListenerType.Client ? parts[0] : parts[1], args, Info.Type);
 
-                    break;
-                };
+                    // Grab another line
+                    line = await reader.ReadLineAsync();
+                }
+            } catch(Exception) {
+                if(client != null) {
+                    client.Disconnect("Connection reset by host", true, false);
+                }
+
+                if(reader != null) {
+                    reader.Dispose();
+                }
             }
         }
 

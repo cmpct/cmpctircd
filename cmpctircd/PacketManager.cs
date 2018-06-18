@@ -79,6 +79,7 @@ namespace cmpctircd {
                     }
                 } catch(Exception e) {
                     ircd.Log.Debug($"Exception (client): {e.ToString()}");
+                    return false;
                 }
             } else {
                 // Server

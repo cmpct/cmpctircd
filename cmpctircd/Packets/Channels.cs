@@ -215,34 +215,33 @@ namespace cmpctircd.Packets {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
             Client targetClient = null;
-            String rawLine = args.Line;
-            String[] rawSplit;
+
+            var spaceSplit = args.SpacedArgs;
             String target;
             String message;
             String command;
 
-            rawSplit = rawLine.Split(' ');
-            command = rawSplit[0].ToUpper();
+            command = args.SpacedArgs[0].ToUpper();
+            target  = spaceSplit[0];
 
-            if(rawSplit.Count() >= 2) {
-                target = rawSplit[1];
-                if(!target.StartsWith("#")) {
-                    try {
-                        targetClient = ircd.GetClientByNick(target);
-                    } catch(InvalidOperationException) {
-                        throw new IrcErrNoSuchTargetNickException(client, target);
-                    }
+            if(!target.StartsWith("#")) {
+                try {
+                    targetClient = ircd.GetClientByNick(target);
+                } catch(InvalidOperationException) {
+                    throw new IrcErrNoSuchTargetNickException(client, target);
                 }
             }
 
-            switch(rawSplit.Count()) {
-                case 1:
+            if (String.IsNullOrEmpty(args.Trailer)) {
                     throw new IrcErrNoRecipientException(client, "PRIVMSG");
-                case 2:
-                    throw new IrcErrNoTextToSendException(client);
             }
-            target = rawSplit[1];
-            message = rawLine.Split(new string[] { ":" }, 2, StringSplitOptions.None)[1];
+
+            if (String.IsNullOrEmpty(args.Trailer)) {
+                throw new IrcErrNoTextToSendException(client);
+            }
+
+            target  = spaceSplit[0];
+            message = args.Trailer;
 
             if (target.StartsWith("#")) {
                 // PRIVMSG a channel
@@ -296,20 +295,17 @@ namespace cmpctircd.Packets {
         public bool noticeHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
-            String rawLine = args.Line;
-
             Client targetClient = null;
+
+            var spaceSplit = args.SpacedArgs;
             String target;
             String message;
             String fmtMessage;
-            String[] rawSplit;
-            bool userExists = false;
 
-            rawSplit = rawLine.Split(' ');
-            target = rawSplit[1];
+            target = spaceSplit[1];
 
             // Check the client has sent the expected amount of params (3)
-            if (rawSplit.Count() >= 2) {
+            if (spaceSplit.Count() >= 2) {
                 // Check the target exists
                 if(target.StartsWith("#")) {
                     // The target is a channel
@@ -318,33 +314,24 @@ namespace cmpctircd.Packets {
                     }
                 } else {
                     // The target is a user
-                    foreach (var clientList in ircd.ClientLists) {
-                        foreach (var clientSearch in clientList) {
-                            if (clientSearch.Nick.Equals(target, StringComparison.OrdinalIgnoreCase)) {
-                                targetClient = clientSearch;
-                                userExists = true;
-                            }
-                        }
-                    }
-
-                    if (!userExists) {
+                    try {
+                        targetClient = ircd.GetClientByNick(target);
+                    } catch (InvalidOperationException) {
                         throw new IrcErrNoSuchTargetNickException(client, target);
                     }
                 }
 
-
-                if (rawSplit.Count() < 3) {
-                    switch (rawSplit.Count()) {
-                        case 1:
-                            // Client has only sent "NOTICE", nothing to respond
-                            return false;
-                        case 2:
-                            // Client has provided a target but no message
-                            throw new IrcErrNoTextToSendException(client);
-                    }
+                if (spaceSplit.Count() == 1) {
+                    // Client has only sent "NOTICE", nothing to respond
+                    return false;
                 }
 
-                message = rawSplit[2];
+                if (String.IsNullOrEmpty(args.Trailer)) {
+                    // Client has provided a target but no message
+                    throw new IrcErrNoTextToSendException(client);
+                }
+
+                message    = args.Trailer;
                 fmtMessage = String.Format(":{0} NOTICE {1} {2}", client.Mask, target, message);
                 if (target.StartsWith("#")) {
                     bool NoExternal = false;

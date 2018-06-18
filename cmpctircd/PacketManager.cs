@@ -94,6 +94,7 @@ namespace cmpctircd {
                     }
                 } catch(Exception e) {
                     ircd.Log.Debug($"Exception (server): ${e.ToString()}");
+                    return false;
                 }
             }
 
@@ -111,6 +112,7 @@ namespace cmpctircd {
                 }
             } catch(Exception e) {
                 ircd.Log.Debug("Exception: " + e.ToString());
+                return false;
             }
 
             if(args.Server != null)

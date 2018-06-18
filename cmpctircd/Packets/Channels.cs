@@ -226,7 +226,7 @@ namespace cmpctircd.Packets {
 
             if(!target.StartsWith("#")) {
                 try {
-                    targetClient = ircd.GetClientByNick(target);
+                    targetClient = ircd.IsUUID(target) ? ircd.GetClientByUUID(target) : ircd.GetClientByNick(target);
                 } catch(InvalidOperationException) {
                     throw new IrcErrNoSuchTargetNickException(client, target);
                 }
@@ -315,7 +315,7 @@ namespace cmpctircd.Packets {
                 } else {
                     // The target is a user
                     try {
-                        targetClient = ircd.GetClientByNick(target);
+                        targetClient = ircd.IsUUID(target) ? ircd.GetClientByUUID(target) : ircd.GetClientByNick(target);
                     } catch (InvalidOperationException) {
                         throw new IrcErrNoSuchTargetNickException(client, target);
                     }

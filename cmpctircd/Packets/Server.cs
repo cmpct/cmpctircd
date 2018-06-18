@@ -26,7 +26,7 @@ namespace cmpctircd.Packets {
                 Type    = ListenerType.Server
             });
 
-            /*ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
+            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
                 Packet  = "PRIVMSG",
                 Handler = PrivmsgHandler,
                 Type    = ListenerType.Server
@@ -36,7 +36,7 @@ namespace cmpctircd.Packets {
                 Packet  = "NOTICE",
                 Handler = NoticeHandler,
                 Type    = ListenerType.Server
-            });*/
+            });
 
             // TODO: three CAPAB packets
         }
@@ -214,6 +214,14 @@ namespace cmpctircd.Packets {
                 
             }
             return true;
+        }
+
+        public bool PrivmsgHandler(HandlerArgs args) {
+            return args.IRCd.PacketManager.FindHandler("PRIVMSG", args, ListenerType.Client, true);
+        }
+
+        public bool NoticeHandler(HandlerArgs args) {
+            return args.IRCd.PacketManager.FindHandler("NOTICE", args, ListenerType.Client, true);
         }
     }
 }

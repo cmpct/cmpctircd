@@ -67,12 +67,15 @@ namespace cmpctircd {
         public new void Disconnect(string reason = "", bool graceful = false, bool sendToSelf = false) {
             // TODO: ServerState.Disconnected?
             // TODO: Graceful, SQUIT-like?
-            Write(reason);
-            Listener.Remove(this);
+            if(sendToSelf) {
+                Write(reason);
+            }
+
             if(TlsStream != null) {
                 TlsStream.Close();
             }
             TcpClient.Close();
+            Listener.Remove(this);
             // graceful means inform clients of departure
             // !graceful means kill the connection
         }

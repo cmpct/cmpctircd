@@ -479,11 +479,11 @@ namespace cmpctircd
             }
 
             State = ClientState.Disconnected;
-            Listener.Remove(this);
             if(TlsStream != null) {
                 TlsStream.Close();
             }
             TcpClient.Close();
+            Listener.Remove(this);
         }
 
     }

@@ -62,7 +62,7 @@ namespace cmpctircd {
                     Stream.Write(packetBytes, 0, packetBytes.Length);
                 }
             } catch(Exception) {
-                // XXX: Was {ObjectDisposed, Socket}Exception but got InvalidOperation from SslStream.Write()
+                // XXX: Was {ObjectDisposed, IO}Exception but got InvalidOperation from SslStream.Write()
                 // XXX: Not clear why given we check .CanWrite, etc
                 // XXX: See http://bugs.cmpct.info/show_bug.cgi?id=253
                 Disconnect("Connection reset by host", true, false);

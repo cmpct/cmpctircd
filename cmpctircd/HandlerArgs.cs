@@ -44,7 +44,7 @@ namespace cmpctircd
 
             // Check if there's :(U)UID in there, if so, strip it out
             // Those who need it can grab it from the raw Line
-            if(SpacedArgs[0].Contains(":")) {
+            if(SpacedArgs.Count() > 0 && SpacedArgs[0].Contains(":")) {
                 SpacedArgs.RemoveAt(0);
             }
 

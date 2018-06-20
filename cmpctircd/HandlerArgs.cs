@@ -17,8 +17,8 @@ namespace cmpctircd
         public string Line { get; set; }
         public bool Force { get; set; }
 
-        public List<string> SpacedArgs;
-        public string       Trailer;
+        public List<string> SpacedArgs { get; set; }
+        public string       Trailer { get; set; }
 
         public HandlerArgs(IRCd ircd, string line, bool force) {
             IRCd = ircd;
@@ -31,12 +31,12 @@ namespace cmpctircd
             // Trailing arguments
             // Denoted by a :, usually one continuous argument
             // Only interested in arguments not in the first chunk
-            List<string> ModifiedLine = SpacedArgs;
-            string       ModifiedLineJoined;
+            List<string> modifiedLine = SpacedArgs;
+            string       modifiedLineJoined;
 
-            ModifiedLine.RemoveAt(0);
-            ModifiedLineJoined = String.Join(" ", ModifiedLine);
-            Trailer            = ModifiedLineJoined.Contains(":") ? ModifiedLineJoined.Split(new char[] {':'})[1] : null;
+            modifiedLine.RemoveAt(0);
+            modifiedLineJoined = String.Join(" ", modifiedLine);
+            Trailer            = modifiedLineJoined.Contains(":") ? modifiedLineJoined.Split(new char[] {':'}, 2)[1] : null;
 
             // Spaced arguments
             // Make a list of the spaced arguments up until we see a colon (:)

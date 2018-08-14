@@ -446,6 +446,8 @@ namespace cmpctircd
         }
 
         public void Write(String packet, bool transformIfServer = true) {
+            if(State.Equals(ClientState.Disconnected)) return;
+
             try {
                 if(RemoteClient && transformIfServer) {
                     // Need to translate any nicks into UIDs

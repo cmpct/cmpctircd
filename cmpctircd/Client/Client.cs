@@ -48,6 +48,7 @@ namespace cmpctircd
         public void SendVersion() => Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.Host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.Version));
 
         public readonly static object nickLock = new object();
+        private readonly static object _disconnectLock = new object();
 
         public Client(IRCd ircd, TcpClient tc, SocketListener sl, String UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl) {
             if(ircd.Config.ResolveHostnames)
@@ -444,47 +445,54 @@ namespace cmpctircd
         }
 
         public void Write(String packet, bool transformIfServer = true) {
-            if(RemoteClient && transformIfServer) {
-                // Need to translate any nicks into UIDs
-                packet = IRCd.ReplaceNickWithUUID(packet);
-                // TODO sock changes? (TLS?)
-                base.Write(packet, OriginServer.Stream);
-            } else {
-                base.Write(packet);
+            try {
+                if(RemoteClient && transformIfServer) {
+                    // Need to translate any nicks into UIDs
+                    packet = IRCd.ReplaceNickWithUUID(packet);
+                    // TODO sock changes? (TLS?)
+                    base.Write(packet, OriginServer.Stream);
+                } else {
+                    base.Write(packet);
+                }
+            } catch(Exception e) {
+                // XXX: Was {ObjectDisposed, IO}Exception but got InvalidOperation from SslStream.Write()
+                // XXX: Not clear why given we check .CanWrite, etc
+                // XXX: See http://bugs.cmpct.info/show_bug.cgi?id=253
+                Disconnect("Connection reset by host", true, false);
             }
         }
 
         public new void Disconnect(bool graceful) => Disconnect("", graceful, graceful);
         public new void Disconnect(string quitReason = "", bool graceful = true, bool sendToSelf = true) {
-            if(State.Equals(ClientState.Disconnected)) return;
-            try {
-                if(graceful) {
-                    // Inform all of the channels we're a member of that we are leaving
-                    foreach(var channel in IRCd.ChannelManager.Channels) {
-                        if(channel.Value.Inhabits(this)) {
-                            channel.Value.Quit(this, quitReason);
-                            channel.Value.Remove(this, true);
+            lock(_disconnectLock) {
+                if(State.Equals(ClientState.Disconnected)) return;
+                try {
+                    if(graceful) {
+                        // Inform all of the channels we're a member of that we are leaving
+                        foreach(var channel in IRCd.ChannelManager.Channels) {
+                            if(channel.Value.Inhabits(this)) {
+                                channel.Value.Quit(this, quitReason);
+                            }
                         }
                     }
+
+                    if(sendToSelf) {
+                        // Need this flag to prevent infinite loop of calls to Disconnect() upon IOException
+                        // No need to guard the Channel quit because they do not send to the user leaving
+                        Write($":{Mask} QUIT :{quitReason}");
+                    }
+                } catch(Exception e) when(e is ObjectDisposedException || e is SocketException) {
+                    // The user has been disconnected but the server is still trying to call Disconnect on it
+                    IRCd.Log.Debug($"Tried to disconnect a removed user: {e.ToString()}");
                 }
 
-                if(sendToSelf) {
-                    // Need this flag to prevent infinite loop of calls to Disconnect() upon IOException
-                    // No need to guard the Channel quit because they do not send to the user leaving
-                    Write($":{Mask} QUIT :{quitReason}");
+                State = ClientState.Disconnected;
+                if(TlsStream != null) {
+                    TlsStream.Close();
                 }
-            } catch(Exception e) when(e is ObjectDisposedException || e is SocketException) {
-                // The user has been disconnected but the server is still trying to call Disconnect on it
-                IRCd.Log.Debug($"Tried to disconnect a removed user: {e.ToString()}");
+                TcpClient.Close();
+                Listener.Remove(this);
             }
-
-            State = ClientState.Disconnected;
-            if(TlsStream != null) {
-                TlsStream.Close();
-            }
-            TcpClient.Close();
-            Listener.Remove(this);
-        }
-
+         }
     }
 }

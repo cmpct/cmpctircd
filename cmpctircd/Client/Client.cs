@@ -109,11 +109,12 @@ namespace cmpctircd
         }
 
 
-        public async void Resolve() {
+        public void Resolve() {
             // Don't resolve a user's IP twice
             if(DNSHost != null) return;
 
             bool failedResolve = false;
+            var  ip            = IP.ToString();
             Write($":{IRCd.Host} NOTICE Auth :*** Looking up your hostname...");
 
             if(IRCd.DNSCache == null) {
@@ -121,10 +122,10 @@ namespace cmpctircd
                 IRCd.DNSCache = new ConcurrentDictionary<string, string>();
             } else {
                 // Check if this IP is in the cache
-                if(IRCd.DNSCache.ContainsKey(IP.ToString())) {
-                    var cached = IRCd.DNSCache[IP.ToString()];
+                if(IRCd.DNSCache.ContainsKey(ip)) {
+                    var cached = IRCd.DNSCache[ip];
 
-                    if(cached == IP.ToString()) {
+                    if(cached == ip) {
                         // See below comment
                         failedResolve = true;
                     } else {
@@ -142,13 +143,13 @@ namespace cmpctircd
             // XXX: it is now fixed in upstream mono, not yet in a release (see bug below)
             // XXX: http://bugs.cmpct.info/show_bug.cgi?id=246
             try {
-                var resolver = await Dns.GetHostEntryAsync(IP);
+                var resolver = Dns.GetHostEntry(ip);
 
-                IRCd.Log.Debug($"IP: {IP.ToString()}");
+                IRCd.Log.Debug($"IP: {ip}");
                 IRCd.Log.Debug($"Host: {DNSHost}");
                 IRCd.Log.Debug($"Count: {resolver.Aliases.Count()}");
 
-                if(resolver.HostName == IP.ToString()) {
+                if(resolver.HostName == ip) {
                     // Don't set the DNSHost of the user if it's the same as the IP
                     // This is so the right cloaking is used etc
                     failedResolve = true;
@@ -166,14 +167,14 @@ namespace cmpctircd
             }
 
             if(failedResolve) {
-                Write($"*** Could not resolve your hostname; using your IP address ({IP.ToString()}) instead.");
+                Write($"*** Could not resolve your hostname; using your IP address ({ip}) instead.");
                 return;
             }
 
             Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({DNSHost})");
 
             // Cache it anyway even if the user's host resolved to the IP
-            IRCd.DNSCache[IP.ToString()] = DNSHost;
+            IRCd.DNSCache[ip] = DNSHost;
         }
 
         public void SendWelcome() {

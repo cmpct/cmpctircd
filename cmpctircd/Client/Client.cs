@@ -101,7 +101,7 @@ namespace cmpctircd
 
                 if(IRCd.Config.ResolveHostnames)
                     Resolve();
-            } catch(Exception e) when (e is ObjectDisposedException || e is SocketException) {
+            } catch(Exception e) {
                 IRCd.Log.Debug($"Failed to access client: {e.ToString()}");
                 Disconnect(false);
                 return;

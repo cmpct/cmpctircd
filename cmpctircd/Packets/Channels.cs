@@ -297,16 +297,15 @@ namespace cmpctircd.Packets {
             Client client = args.Client;
             Client targetClient = null;
 
-            var spaceSplit = args.SpacedArgs;
+            var commandArgs = args.SpacedArgs;
             String target;
             String message;
             String fmtMessage;
 
-            target = spaceSplit[1];
-
-            // Check the client has sent the expected amount of params (3)
-            if (spaceSplit.Count() >= 2) {
+            // Check the target has been sent
+            if (commandArgs.Count() >= 1) {
                 // Check the target exists
+                target = commandArgs[0];
                 if(target.StartsWith("#")) {
                     // The target is a channel
                     if(!ircd.ChannelManager.Exists(target)) {
@@ -319,11 +318,6 @@ namespace cmpctircd.Packets {
                     } catch (InvalidOperationException) {
                         throw new IrcErrNoSuchTargetNickException(client, target);
                     }
-                }
-
-                if (spaceSplit.Count() == 1) {
-                    // Client has only sent "NOTICE", nothing to respond
-                    return false;
                 }
 
                 if (String.IsNullOrEmpty(args.Trailer)) {

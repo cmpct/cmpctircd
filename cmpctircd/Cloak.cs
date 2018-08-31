@@ -111,7 +111,7 @@ namespace cmpctircd
 
                 // Last two dots, stop 
                 if (dot_count == 2) {
-                    trunc_host = host.Substring(0, i + 1);
+                    trunc_host = host.Substring(i);
                     break;
                 }
                 
@@ -123,7 +123,7 @@ namespace cmpctircd
                 cloak_s = string.Concat(cloak.Select(x => x.ToString("X2")));
             }
 
-            cloak_s = trunc_host + cloak_s;
+            cloak_s += trunc_host;
             return cloak_s;
         }
 

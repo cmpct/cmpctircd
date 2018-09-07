@@ -38,6 +38,12 @@ namespace cmpctircd.Packets {
                 Type    = ListenerType.Server
             });
 
+            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
+                Packet = "FMODE",
+                Handler = FmodeHandler,
+                Type = ListenerType.Server
+            });
+
             // TODO: three CAPAB packets
         }
 
@@ -222,6 +228,34 @@ namespace cmpctircd.Packets {
 
         public bool NoticeHandler(HandlerArgs args) {
             return args.IRCd.PacketManager.FindHandler("NOTICE", args, ListenerType.Client, true);
+        }
+
+        public bool FmodeHandler(HandlerArgs args) {
+            // Trust the server
+            args.Force = true;
+
+            // Hack to drop the TS for now
+            // TODO: Implement TS
+            args.SpacedArgs.RemoveAt(2);
+
+            // Convert all of the UUID args to nicks
+            // TODO: May be moved to individual modes
+            for(int i = 0; i < args.SpacedArgs.Count(); i++) {
+                var arg = args.SpacedArgs[i];
+
+                try {
+                    if(args.IRCd.IsUUID(arg)) {
+                        args.SpacedArgs[i] = args.IRCd.GetClientByUUID(arg).Nick;
+                    }
+                } catch(InvalidOperationException) {
+                    // We normally check if the user exists in the normal handler
+                    // But because MODE could have nicks at any point, the alternative is to check for UUIDs in individual MODEs
+                    throw new IrcErrNoSuchTargetNickException(args.Client, args.SpacedArgs[3]);
+                }
+            }
+
+            // Call the normal mode with the modified args
+            return args.IRCd.PacketManager.FindHandler("MODE", args, ListenerType.Client, true);
         }
     }
 }

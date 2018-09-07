@@ -45,7 +45,7 @@ namespace cmpctircd {
             var sCloakHost = client.GetHost(true);
             var sIP = client.IP;
             var sGECOS = client.RealName;
-            Write($":{SID} UID {sUUID} {sServiceStamp} {sNick} {sHost} {sCloakHost} {sUser} {sIP} {sTime} {sUmodes} :{sGECOS}");
+            Write($":{IRCd.SID} UID {sUUID} {sServiceStamp} {sNick} {sHost} {sCloakHost} {sUser} {sIP} {sTime} {sUmodes} :{sGECOS}");
         }
 
         public void SyncChannel(Channel channel) {
@@ -58,9 +58,10 @@ namespace cmpctircd {
             }
             nicks = nicks.TrimEnd(new char[] { ',' });
 
+            // TODO: Check but if necessary note that in insp, FJOIN is for both creation and joins?
             var modeStrings = channel.GetModeStrings("+");
             var modeString  = (modeStrings[0] + modeStrings[1]).TrimEnd();
-            Write($":{SID} FJOIN {channel.Name} {channel.CreationTime} {modeString} :{nicks}");
+            Write($":{IRCd.SID} FJOIN {channel.Name} {channel.CreationTime} {modeString} :{nicks}");
         }
 
         public new void Disconnect(bool graceful = false) => Disconnect("", graceful, graceful);

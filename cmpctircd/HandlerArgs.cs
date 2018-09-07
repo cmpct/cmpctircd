@@ -31,7 +31,7 @@ namespace cmpctircd
             // Trailing arguments
             // Denoted by a :, usually one continuous argument
             // Only interested in arguments not in the first chunk
-            List<string> modifiedLine = SpacedArgs;
+            List<string> modifiedLine = SpacedArgs.ToList();
             string       modifiedLineJoined;
 
             modifiedLine.RemoveAt(0);

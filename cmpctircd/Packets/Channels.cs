@@ -221,10 +221,16 @@ namespace cmpctircd.Packets {
             String message;
             String command;
 
-            command = args.SpacedArgs[0].ToUpper();
-            target  = spaceSplit[0];
+            command = spaceSplit[0].ToUpper();
 
-            if(!target.StartsWith("#")) {
+            // Catch both no parameter and whitespace
+            if (spaceSplit.Count < 2 || String.IsNullOrWhiteSpace(spaceSplit[1])) {
+                throw new IrcErrNoRecipientException(client, "PRIVMSG");
+            }
+
+            target = spaceSplit[1];
+
+            if (!target.StartsWith("#")) {
                 try {
                     targetClient = ircd.IsUUID(target) ? ircd.GetClientByUUID(target) : ircd.GetClientByNick(target);
                 } catch(InvalidOperationException) {
@@ -233,14 +239,9 @@ namespace cmpctircd.Packets {
             }
 
             if (String.IsNullOrEmpty(args.Trailer)) {
-                    throw new IrcErrNoRecipientException(client, "PRIVMSG");
-            }
-
-            if (String.IsNullOrEmpty(args.Trailer)) {
                 throw new IrcErrNoTextToSendException(client);
             }
 
-            target  = spaceSplit[0];
             message = args.Trailer;
 
             if (target.StartsWith("#")) {
@@ -305,7 +306,7 @@ namespace cmpctircd.Packets {
             // Check the target has been sent
             if (commandArgs.Count() >= 1) {
                 // Check the target exists
-                target = commandArgs[0];
+                target = commandArgs[1];
                 if(target.StartsWith("#")) {
                     // The target is a channel
                     if(!ircd.ChannelManager.Exists(target)) {
@@ -483,8 +484,7 @@ namespace cmpctircd.Packets {
         public bool ModeHandler(HandlerArgs args) {
             // This handler is for Channel requests (i.e. where the target begins with a # or &)
             // TODO: update with channel validation logic (in ChannelManager?)
-            string[] splitLine = args.Line.Split(new string[] { ":" }, 2, StringSplitOptions.None);
-            List<string> splitLineSpace = args.Line.Split(new string[] { " " }, 4, StringSplitOptions.RemoveEmptyEntries).ToList<string>();
+            var splitLineSpace = args.SpacedArgs;
             string target;
             Channel channel;
 

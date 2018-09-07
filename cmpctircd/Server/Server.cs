@@ -51,6 +51,12 @@ namespace cmpctircd {
         public void SyncChannel(Channel channel) {
             var nicks = "";
             foreach (var client in channel.Clients) {
+                if (client.Value.OriginServer == this) {
+                    // Don't tell them about a server about their own clients
+                    // TODO: Needs adjustment for hops > 0
+                    continue;
+                }
+
                 nicks += String.Join("", channel.Modes.Values.Where(mode => !mode.ChannelWide && mode.Has(client.Value)));
                 nicks += ",";
                 nicks += client.Value.UUID;

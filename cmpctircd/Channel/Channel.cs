@@ -67,9 +67,10 @@ namespace cmpctircd {
             if(!Clients.TryAdd(client.Nick, client)) { return; }
             client.IRCd.Log.Debug($"Added {client.Nick} to {Name}");
 
-            // Tell everyone we've joined
-            SendToRoom(client, String.Format(":{0} JOIN :{1}", client.Mask, this.Name));
+            // Tell everyone local we've joined
+            SendToRoom(client, String.Format(":{0} JOIN :{1}", client.Mask, this.Name), true, false);
 
+            // Newly created channel (this client is the founding user)
             if(Size == 1) {
                 Modes["o"].Grant(client, client.Nick, true, true);
                 foreach(var mode in client.IRCd.AutoModes) {
@@ -87,25 +88,30 @@ namespace cmpctircd {
                     }
                 }
             }
-            foreach(var room_client in Clients) {
-                var userPriv = Status(room_client.Value);
-                var userSymbol = GetUserSymbol(userPriv);
-                client.Write($":{client.IRCd.Host} {IrcNumeric.RPL_NAMREPLY.Printable()} {client.Nick} = {Name} :{userSymbol}{room_client.Value.Nick}");
+
+            if (!client.RemoteClient) {
+                foreach (var room_client in Clients) {
+                    var userPriv = Status(room_client.Value);
+                    var userSymbol = GetUserSymbol(userPriv);
+                    client.Write($":{client.IRCd.Host} {IrcNumeric.RPL_NAMREPLY.Printable()} {client.Nick} = {Name} :{userSymbol}{room_client.Value.Nick}");
+                }
+                client.Write(String.Format(":{0} {1} {2} {3} :End of /NAMES list.",
+                        client.IRCd.Host,
+                        IrcNumeric.RPL_ENDOFNAMES.Printable(),
+                        client.Nick,
+                        Name
+                ));
+
+                client.Write($":{client.IRCd.Host} {IrcNumeric.RPL_CREATIONTIME.Printable()} {client.Nick} {Name} {CreationTime}");
             }
-            client.Write(String.Format(":{0} {1} {2} {3} :End of /NAMES list.",
-                    client.IRCd.Host,
-                    IrcNumeric.RPL_ENDOFNAMES.Printable(),
-                    client.Nick,
-                    Name
-            ));
 
-            client.Write($":{client.IRCd.Host} {IrcNumeric.RPL_CREATIONTIME.Printable()} {client.Nick} {Name} {CreationTime}");
-
+            // TODO: Check if this works if a RemoteClient is non TLS
             if(Modes.ContainsKey("Z")) {
                 // Attempt to set +Z (only works if applicable)
                 Modes["Z"].Grant(client, client.Nick, false, true, true);
             }
 
+            // TODO: Don't send to the originating server
             client.IRCd.ServerLists.ForEach(serverList => serverList.ForEach(
                 server => server.SyncChannel(this)
             ));
@@ -192,13 +198,22 @@ namespace cmpctircd {
             // Default: assume send to everyone including the client
             SendToRoom(client, message, true);
         }
-        public void SendToRoom(Client client, String message, Boolean sendSelf) {
+
+        public void SendToRoom(Client client, String message, Boolean sendSelf, Boolean sendRemote = true) {
             Parallel.ForEach(Clients, (iClient) => {
                 if(client != null) {
                     if (!sendSelf && iClient.Value.Equals(client)) {
                         return;
                     }
                 }
+
+                // Don't send to remote clients
+                // NOTE: You can't sendSelf if remote client and this is false
+                if (!sendRemote && iClient.Value.RemoteClient) {
+                    return;
+                }
+
+
                 iClient.Value.Write(message);
             });
         }

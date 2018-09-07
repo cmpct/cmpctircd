@@ -111,7 +111,7 @@ namespace cmpctircd.Packets {
                 // Introduce ourselves...
                 // TODO: send password?
                 args.Server.SID = sid;
-                args.Server.Write($"SERVER {args.IRCd.Host} {password} 0 {args.Server.IRCd} :{args.IRCd.Desc}");
+                args.Server.Write($"SERVER {args.IRCd.Host} {password} 0 {args.IRCd.SID} :{args.IRCd.Desc}");
 
                 // CAPAB BEGIN
                 var version = 1202;

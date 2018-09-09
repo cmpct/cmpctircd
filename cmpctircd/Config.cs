@@ -34,6 +34,9 @@ namespace cmpctircd {
             public int PingTimeout;
             public int MaxTargets;
             public string CloakKey;
+            public string CloakPrefix;
+            public bool CloakFull;
+            public int CloakDomainParts;
             // mode => param
             public Dictionary<string, string> AutoModes;
             public Dictionary<string, string> AutoUModes;
@@ -181,12 +184,19 @@ namespace cmpctircd {
 
 
                     case "advanced":
-                        // <advanced> properties: resolve_hostnames, require_pong_cookie, ping_timeout, max_targets, cloak_key
+                        // <advanced> properties: resolve_hostnames, require_pong_cookie, ping_timeout, max_targets, cloak
                         data.ResolveHostnames  = Boolean.Parse(node["resolve_hostnames"].InnerText);
                         data.RequirePongCookie = Boolean.Parse(node["require_pong_cookie"].InnerText);
                         data.PingTimeout       = Int32.Parse(node["ping_timeout"].InnerText);
                         data.MaxTargets        = Int32.Parse(node["max_targets"].InnerText);
-                        data.CloakKey          = node["cloak_key"].InnerText;
+
+                        foreach (XmlElement cloakNode in node.GetElementsByTagName("cloak")) {
+                            data.CloakKey         = cloakNode.Attributes["key"].InnerText;
+                            data.CloakPrefix      = cloakNode.Attributes["prefix"].InnerText;
+                            data.CloakDomainParts = Int32.Parse(cloakNode.Attributes["domainparts"].InnerText);
+                            data.CloakFull        = cloakNode.Attributes["mode"].InnerText == "full" ? true : false;
+                        }
+
                         _Log.Info($"Configured with advanced options: RequirePongCookie={data.RequirePongCookie}, PingTimeout={data.PingTimeout}, MaxTargets={data.MaxTargets}, CloakKey={data.CloakKey}");
                         break;
 

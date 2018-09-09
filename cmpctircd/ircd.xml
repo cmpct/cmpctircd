@@ -45,8 +45,17 @@
         <require_pong_cookie>true</require_pong_cookie>
         <ping_timeout>120</ping_timeout>
         <max_targets>200</max_targets>
-        <!-- Change this to your own random string, please! -->
-        <cloak_key>Nael8aig</cloak_key>
+
+        <!-- Cloaking currently InspIRCd compatible.
+             Please change the key to your own unique, random string.
+             Prefix string used to mark cloaked hosts, can be anything.
+             Domain parts specify how many parts of a host string to leave
+             uncloaked.
+             Mode can be half or full. Half will cloak only the unique
+             portion of a host and leave parts of the domain or IP.
+             Full will cloak the users host/IP completely.
+             -->
+        <cloak key="cmpct" prefix="cmpct" domainparts="3" mode="half"/>
     </advanced>
 
     <cmodes>

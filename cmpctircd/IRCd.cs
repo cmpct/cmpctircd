@@ -34,6 +34,9 @@ namespace cmpctircd {
         public bool RequirePong { get; set; } = true;
         public int PingTimeout { get; set; } = 120;
         public string CloakKey { get; set;}
+        public bool CloakFull { get; set; }
+        public static string CloakPrefix { get; set; }
+        public static int CloakDomainParts { get; set; }
         public Dictionary<string, string> AutoModes;
         public Dictionary<string, string> AutoUModes;
         public List<Config.LoggerInfo> Loggers;
@@ -62,6 +65,9 @@ namespace cmpctircd {
 
             MaxTargets = config.MaxTargets;
             CloakKey = config.CloakKey;
+            CloakFull = config.CloakFull;
+            CloakPrefix = config.CloakPrefix;
+            CloakDomainParts = config.CloakDomainParts;
             AutoModes = config.AutoModes;
             AutoUModes = config.AutoUModes;
             Opers = config.Opers;

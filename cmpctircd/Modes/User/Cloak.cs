@@ -19,26 +19,7 @@ namespace cmpctircd.Modes {
             if (Enabled)
                 return false;
 
-            if (Subject.DNSHost == null) {
-               switch(Subject.IP.AddressFamily) {
-                    case System.Net.Sockets.AddressFamily.InterNetworkV6:
-                        // IPv6
-                        Subject.Cloak = Cloak.CmpctCloakIPv6(Subject.IP, Subject.IRCd.CloakKey);
-                        break;
-
-                    case System.Net.Sockets.AddressFamily.InterNetwork:
-                        // IPv4
-                        Subject.Cloak = Cloak.CmpctCloakIPv4(Subject.IP, Subject.IRCd.CloakKey);
-                        break;
-
-                    default:
-                        throw new NotSupportedException($"Unknown IP address type: {Subject.IP.AddressFamily}!");
-
-                }
-            } else {
-                // DNS cloaking
-                Subject.Cloak = Cloak.CmpctCloakHost(Subject.DNSHost, Subject.IRCd.CloakKey);
-            }
+            Subject.Cloak = Cloak.GetCloak(Subject.DNSHost, Subject.IP, Subject.IRCd.CloakKey, Subject.IRCd.CloakFull);
 
             Enabled = true;
             Subject.Write($":{Subject.IRCd.Host} {IrcNumeric.RPL_HOSTHIDDEN.Printable()} {Subject.Nick} {Subject.Cloak} :is now your displayed host");

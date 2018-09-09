@@ -10,7 +10,7 @@ namespace cmpctircd {
         public string TopicText { get; set; }
         public string Setter { get; set; }
         public Channel Channel { get; set; }
-        public Int32 Date { get; set; }
+        public long Date { get; set; }
 
         // TODO: Revise function definition (could be properties?)
         public void GetTopic(Client client, string target, bool onJoin = false) {
@@ -46,8 +46,7 @@ namespace cmpctircd {
                     throw new IrcErrNotEnoughParametersException(client, "TOPIC");
                 }
 
-                // TO DO: Change how we get the unix timestamp
-                Date = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                Date   = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 Setter = client.Nick;
                 Channel.SendToRoom(client, String.Format(":{0} TOPIC {1} :{2}", client.Mask, Channel.Name, TopicText), true);
             }

@@ -39,9 +39,8 @@ namespace cmpctircd.Modes {
             }
             // Create the ban
             Dictionary<string, string> mask = Ban.CreateMask(args);
-            // Get the unix timestamp - there is a better way to do this,
-            // my environment won't allow it - josh
-            int date = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            // Get the unix timestamp
+            var date = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             // Add the ban to the dict
             Bans.Add(mask["mask"], new Ban(mask["nick"], mask["user"], mask["host"], client.Nick, date));
 

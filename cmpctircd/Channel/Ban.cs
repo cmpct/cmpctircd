@@ -11,9 +11,9 @@ namespace cmpctircd {
         private string _user;
         private string _host;
         private string _setter;
-        private int   _date;
+        private long   _date;
 
-        public Ban(string Nick, string User, string Host, string Setter, int Date) {
+        public Ban(string Nick, string User, string Host, string Setter, long Date) {
             _nick   = Nick ?? "*";
             _user   = User ?? "*";
             _host   = Host ?? "*";

@@ -137,8 +137,17 @@ namespace cmpctircd {
             }
 
             client.IRCd.Log.Debug($"Removing {client.Nick} from {Name}");
+            // Need to remove them from the room, then SendToRoom (not the other way around)
+            // This is because if two clients have both disconnected, SendToRoom will have a failed Write on the other client
+            // And try to disconnect them - resulting in a SendToRoom from their perspective to tell the clients in this channel they are gone
+            // (which includes the user who was disconnecting first!)
+
+            // This way, we call Remove to remove them from the room
+            // Then we call Destroy() afterwards which will only destroy the room if conditions are met
+            Remove(client, false);
             SendToRoom(client, String.Format(":{0} QUIT {1}", client.Mask, reason), false);
-            Remove(client, true);
+            Destroy(); // if needed
+
         }
 
         public ChannelPrivilege Status(Client client) {

@@ -48,7 +48,7 @@ namespace cmpctircd
         public void SendVersion() => Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.Host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.Version));
 
         public readonly static object nickLock = new object();
-        private readonly static object _disconnectLock = new object();
+        private readonly object _disconnectLock = new object();
 
         public Client(IRCd ircd, TcpClient tc, SocketListener sl, String UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl) {
             if(ircd.Config.ResolveHostnames)

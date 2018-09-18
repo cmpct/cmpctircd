@@ -106,7 +106,7 @@ namespace cmpctircd.Packets {
 
             if(foundMatch) {
                 args.Server.State = ServerState.Auth;
-                args.IRCd.Log.Warn("[SERVER] got an authed server");
+                args.IRCd.Log.Warn("[SERVER] Got an authed server");
 
                 // Introduce ourselves...
                 // TODO: send password?

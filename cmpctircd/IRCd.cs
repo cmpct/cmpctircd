@@ -106,6 +106,7 @@ namespace cmpctircd {
                 // HACK: You can't use await in async
                 Listeners.ForEach(listener => listener.ListenToClients());
             } catch {
+                Log.Error("Got an exception: shutting down all listeners");
                 Listeners.ForEach(listener => listener.Stop());
             }
 

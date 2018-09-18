@@ -171,7 +171,7 @@ namespace cmpctircd {
                 X509Certificate serverCertificate = new X509Certificate2(_ircd.Config.TLS_PfxLocation, _ircd.Config.TLS_PfxPassword);
                 s.TlsStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls12, true);
             } catch(Exception e) {
-                _ircd.Log.Debug(e.ToString());
+                _ircd.Log.Debug($"Exception in HandshakeTls: {e.ToString()}");
                 s.Disconnect(false);
             }
         }

@@ -67,6 +67,7 @@ namespace cmpctircd {
             // TODO: Check but if necessary note that in insp, FJOIN is for both creation and joins?
             var modeStrings = channel.GetModeStrings("+");
             var modeString  = (modeStrings[0] + modeStrings[1]).TrimEnd();
+
             Write($":{IRCd.SID} FJOIN {channel.Name} {channel.CreationTime} {modeString} :{nicks}");
         }
 

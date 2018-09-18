@@ -201,6 +201,9 @@ namespace cmpctircd.Packets {
             lock(args.Server.Listener.Clients)
                 args.Server.Listener.Clients.Add(client);
 
+            System.Threading.Interlocked.Increment(ref args.Server.Listener.ClientCount);
+            System.Threading.Interlocked.Increment(ref args.Server.Listener.AuthClientCount);
+
             args.IRCd.Log.Debug($"[SERVER] got new client {nick}");
             return true;
         }

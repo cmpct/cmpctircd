@@ -75,7 +75,7 @@ namespace cmpctircd {
 
                     // Only certain commands should reset the idle clock
                     if(!idleCommands.Contains(packet.ToUpper())) {
-                        client.IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                        client.IdleTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                     }
                 } catch(Exception e) {
                     ircd.Log.Debug($"Exception (client): {e.ToString()}");

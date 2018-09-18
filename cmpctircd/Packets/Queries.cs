@@ -33,7 +33,7 @@ namespace cmpctircd.Packets
             String[] splitLineSpace = args.Line.Split(' ');
             String[] splitLineComma = args.Line.Split(',');
             Client targetClient;
-            int idleTime;
+            long idleTime;
 
             try {
                 splitLineComma = splitLineSpace[1].Split(new char[] { ','});
@@ -52,7 +52,7 @@ namespace cmpctircd.Packets
                     throw new IrcErrNoSuchTargetNickException(args.Client, target);
                 }
 
-                idleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds - targetClient.IdleTime;
+                idleTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - targetClient.IdleTime;
                 args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISUSER.Printable()} {args.Client.Nick} {targetClient.Nick} {targetClient.Ident} {targetClient.GetHost()} * :{targetClient.RealName}");
 
                 // Generate a list of all the channels inhabited by the target

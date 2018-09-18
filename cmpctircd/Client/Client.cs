@@ -29,14 +29,14 @@ namespace cmpctircd
         public bool RemoteClient { get; set; } = false;
         public string Cloak { get; set; }
         public String DNSHost { get; set; }
-        public int IdleTime { get; set; }
-        public int SignonTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+        public long IdleTime { get; set; }
+        public long SignonTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         public ClientState State { get; set; }
         public bool ResolvingHost { get; set; } = false;
 
         // Ping information
         public Boolean WaitingForPong { get; set; } = false;
-        public int LastPong { get; set; } = 0;
+        public long LastPong { get; set; } = 0;
         public String PingCookie { get; set; } = "";
 
         public ConcurrentDictionary<string, UserMode> Modes {
@@ -62,7 +62,7 @@ namespace cmpctircd
 
             UUID = (RemoteClient ? OriginServer.SID : IRCd.SID) + this.UID;
             State = ClientState.PreAuth;
-            IdleTime = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            IdleTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             // Initialise modes
             string[] badClasses = { "ChannelMode", "ChannelModeType" };
@@ -355,9 +355,9 @@ namespace cmpctircd
 
         public void CheckTimeout() {
             // By default, no pong cookie is required
-            Int32 time = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
-            Boolean requirePong = false;
-            int period = (LastPong) + (IRCd.PingTimeout);
+            var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var requirePong = false;
+            var period = (LastPong) + (IRCd.PingTimeout);
 
             requirePong = (IRCd.RequirePong) && (LastPong == 0);
 

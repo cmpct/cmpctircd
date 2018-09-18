@@ -86,7 +86,7 @@ namespace cmpctircd.Packets {
 
             if(client.PingCookie == cookie) {
                 client.WaitingForPong = false;
-                client.LastPong = (Int32)(DateTime.Now.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                client.LastPong = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             }
 
             return true;

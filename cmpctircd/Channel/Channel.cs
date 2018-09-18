@@ -23,7 +23,7 @@ namespace cmpctircd {
         } = new ConcurrentDictionary<string, ChannelMode>();
 
         public ConcurrentDictionary<Client, ChannelPrivilege> Privileges = new ConcurrentDictionary<Client, ChannelPrivilege>();
-        public int CreationTime { get; set; }
+        public long CreationTime { get; set; }
 
         // Used to prevent logging channels from being destroyed
         public bool CanDestroy = true;
@@ -54,7 +54,7 @@ namespace cmpctircd {
 
 
             DateTime date = DateTime.UtcNow;
-            CreationTime = (Int32)(date.Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+            CreationTime  = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         }
         public void AddClient(Client client) {
             if(Inhabits(client)) {

@@ -56,6 +56,12 @@ namespace cmpctircd.Packets {
                 Type = ListenerType.Server
             });
 
+            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
+                Packet  = "SVSNICK",
+                Handler = SvsnickHandler,
+                Type    = ListenerType.Server
+            });
+
             // TODO: three CAPAB packets
         }
 
@@ -284,6 +290,19 @@ namespace cmpctircd.Packets {
 
             // Call the normal mode with the modified args
             return args.IRCd.PacketManager.FindHandler("MODE", args, ListenerType.Client, true);
+        }
+
+        public bool SvsnickHandler(HandlerArgs args) {
+            // SVSMODE format: :SID SVSMODE TARGET_UUID NEW_NICK TS
+            // NICK    format: NICK NEW_NICK
+
+            var target   = args.Server.IRCd.GetClientByUUID(args.SpacedArgs[1]);
+            var new_nick = args.SpacedArgs[2];
+
+            args.Client = target;
+            args.Line   = $"NICK {new_nick}";
+
+            return args.IRCd.PacketManager.FindHandler("NICK", args, ListenerType.Client, false);
         }
     }
 }

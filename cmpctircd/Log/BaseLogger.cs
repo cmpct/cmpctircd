@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace cmpctircd {
@@ -19,7 +20,8 @@ namespace cmpctircd {
         abstract public void Close();
 
         virtual public string Prepare(string msg, LogType type) {
-            return $"[{type.ToString().ToUpper()}] {msg}";
+            var date = DateTime.Now.ToString();
+            return $"[{date}] [{type.ToString().ToUpper()}] {msg}";
         }
     }
 }

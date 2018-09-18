@@ -110,6 +110,7 @@ namespace cmpctircd.Packets {
 
                 // Introduce ourselves...
                 // TODO: send password?
+                args.Server.Name = hostname;
                 args.Server.SID = sid;
                 args.Server.Write($"SERVER {args.IRCd.Host} {password} 0 {args.IRCd.SID} :{args.IRCd.Desc}");
 

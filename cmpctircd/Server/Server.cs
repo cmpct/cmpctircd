@@ -9,6 +9,7 @@ namespace cmpctircd {
     public class Server : SocketBase {
         // Internals
         // TODO: Many of these look like they shouldn't be public or should be private set. Review?
+        public string Name { get; set; }
         public string SID { get; set; }
         public ServerState State { get; set; }
  

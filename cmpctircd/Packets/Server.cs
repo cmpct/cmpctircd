@@ -27,6 +27,18 @@ namespace cmpctircd.Packets {
             });
 
             ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
+                Packet  = "QUIT",
+                Handler = QuitHandler,
+                Type    = ListenerType.Server
+            });
+
+            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
+                Packet  = "SQUIT",
+                Handler = SquitHandler,
+                Type    = ListenerType.Server
+            });
+
+            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
                 Packet  = "PRIVMSG",
                 Handler = PrivmsgHandler,
                 Type    = ListenerType.Server
@@ -180,6 +192,7 @@ namespace cmpctircd.Packets {
                 OriginServer = args.Server,
                 State = ClientState.Auth,
                 ResolvingHost = false,
+                Listener = args.Server.Listener
                 // TODO IP
                 // client.IP = System.Net.IPAddress.Parse(ip)
             };
@@ -220,6 +233,17 @@ namespace cmpctircd.Packets {
 
                 
             }
+            return true;
+        }
+
+        public bool QuitHandler(HandlerArgs args) {
+            return args.IRCd.PacketManager.FindHandler("QUIT", args, ListenerType.Client, true);
+        }
+
+        public bool SquitHandler(HandlerArgs args) {
+            args.Server.IRCd.Log.Info($"Server {args.Server.Name} sent SQUIT; disconnecting");
+            args.Server.Disconnect(true);
+
             return true;
         }
 

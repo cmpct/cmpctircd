@@ -22,6 +22,10 @@ namespace cmpctircd.Modes {
                 if (announce) {
                     Subject.Write($":{Subject.Nick} MODE {Subject.Nick} :+z");
                 }
+
+                // TODO: Careful, is this Insp-compatible?
+                Subject.IRCd.WriteToAllServers($":{Subject.UUID} MODE {Subject.UUID} +{Character}");
+
                 return true;
             }
             return false;
@@ -35,6 +39,8 @@ namespace cmpctircd.Modes {
             if (announce) {
                 Subject.Write($":{Subject.Nick} MODE {Subject.Nick} :-z");
             }
+
+            Subject.IRCd.WriteToAllServers($":{Subject.UUID} MODE {Subject.UUID} -{Character}");
             return true;
         }
     }

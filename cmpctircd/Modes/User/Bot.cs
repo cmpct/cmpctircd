@@ -23,6 +23,9 @@ namespace cmpctircd.Modes {
             if(announce) {
                 Subject.Write($":{Subject.Mask} MODE {Subject.Nick} +B");
             }
+
+            Subject.IRCd.WriteToAllServers($":{Subject.UUID} MODE {Subject.UUID} +{Character}");
+
             return true;
         }
 
@@ -34,6 +37,9 @@ namespace cmpctircd.Modes {
             if(announce) {
                 Subject.Write($":{Subject.Mask} MODE {Subject.Nick} -B");
             }
+
+            Subject.IRCd.WriteToAllServers($":{Subject.UUID} MODE {Subject.UUID} -{Character}");
+
             return true;
         }
 

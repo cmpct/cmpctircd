@@ -139,6 +139,18 @@ namespace cmpctircd {
             }
         }
 
+        public void WriteToAllServers(string message, List<Server> except = null) {
+            foreach(List<Server> servers in ServerLists) {
+                foreach(Server server in servers) {
+                    if(except != null && except.Contains(server)) {
+                        // Skip a specified server
+                        continue;
+                    }
+                    server.Write(message + "\r\n");
+                }
+            }
+        }
+
         public Client GetClientByNick(String nick) {
             foreach (var clientList in ClientLists) {
                 foreach (var clientItem in clientList) {

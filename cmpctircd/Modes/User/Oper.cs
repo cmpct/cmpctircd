@@ -19,6 +19,12 @@ namespace cmpctircd.Modes {
             if (announce) {
                 Subject.Write($":{Subject.Nick} MODE {Subject.Nick} :+o");
             }
+
+            // Let the servers know too
+            // NOTE: InspIRCd only
+            // NOTE: We don't need to send MODE +o to servers here, just unset it if deoper
+            var type_name = "IRCop"; // TODO: Aesthetics only
+            Subject.IRCd.WriteToAllServers($":{Subject.UUID} OPERTYPE {type_name}");
             return true;
         }
 
@@ -30,6 +36,8 @@ namespace cmpctircd.Modes {
             if (announce) {
                 Subject.Write($":{Subject.Nick} MODE {Subject.Nick} :-o");
             }
+
+            Subject.IRCd.WriteToAllServers($":{Subject.UUID} MODE {Subject.UUID} -{Character}");
             return true;
         }
     }

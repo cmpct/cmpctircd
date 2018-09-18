@@ -39,6 +39,9 @@ namespace cmpctircd.Modes {
                     }
                 }
             }
+
+            Subject.IRCd.WriteToAllServers($":{Subject.UUID} MODE {Subject.UUID} +{Character}");
+
             return true;
         }
 
@@ -58,6 +61,8 @@ namespace cmpctircd.Modes {
                 chan.Value.Part(Subject, "Changing host", false);
                 chan.Value.AddClient(Subject);
             }
+
+            Subject.IRCd.WriteToAllServers($":{Subject.UUID} MODE {Subject.UUID} -{Character}");
             return true;
         }
 

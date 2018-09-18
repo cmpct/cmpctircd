@@ -339,6 +339,8 @@ namespace cmpctircd
                 }
                 this.Nick = newNick;
 
+                IRCd.WriteToAllServers($":{UUID} NICK {newNick} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}");
+
                 SendWelcome();
                 return true;
             }
@@ -479,6 +481,8 @@ namespace cmpctircd
                         }
                     }
 
+                    IRCd.WriteToAllServers($":{UUID} QUIT :{quitReason}", new List<Server>() { OriginServer } );
+
                     if(sendToSelf) {
                         // Need this flag to prevent infinite loop of calls to Disconnect() upon IOException
                         // No need to guard the Channel quit because they do not send to the user leaving
@@ -490,10 +494,14 @@ namespace cmpctircd
                 }
 
                 State = ClientState.Disconnected;
-                if(TlsStream != null) {
-                    TlsStream.Close();
+
+                if (!RemoteClient) {
+                    if (TlsStream != null) {
+                        TlsStream.Close();
+                    }
+                    TcpClient.Close();
                 }
-                TcpClient.Close();
+
                 Listener.Remove(this);
             }
          }

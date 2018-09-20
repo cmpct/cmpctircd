@@ -49,21 +49,27 @@ namespace cmpctircd {
             _started = true;
         }
         public void Stop() {
-            _listener.Stop();
-            _started = false;
+            if (_started) {
+                _ircd.Log.Debug($"Shutting down listener [IP: {Info.IP}, Port: {Info.Port}, TLS: {Info.TLS}]");
+                _listener.Stop();
+                _started = false;
+            }
         }
 
         // Accept + read from clients.
-        // This function should be called in a loop, and waited on
         public async Task ListenToClients() {
             if (!_started) {
                 throw new InvalidOperationException("Bind() not called or has been stopped.");
             }
 
             // TODO: Loop (should be done by caller instead)
-            while(true) {
-                TcpClient tc = await _listener.AcceptTcpClientAsync();
-                HandleClient(tc); // this should split off execution
+            while(_started) {
+                try {
+                    TcpClient tc = await _listener.AcceptTcpClientAsync();
+                    HandleClient(tc); // this should split off execution
+                } catch(Exception e) {
+                    _ircd.Log.Error($"Exception in ListenToClients(): {e.ToString()}");
+                }
             }
         }
 

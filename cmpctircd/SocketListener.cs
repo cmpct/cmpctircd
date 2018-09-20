@@ -139,6 +139,7 @@ namespace cmpctircd {
                     switch(Info.Type) {
                         case ListenerType.Server:
                             args = new HandlerArgs(_ircd, server, line, false);
+                            _ircd.Log.Debug("Got server line: " + line);
                             break;
  
                         case ListenerType.Client:

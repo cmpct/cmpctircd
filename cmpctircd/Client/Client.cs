@@ -418,6 +418,12 @@ namespace cmpctircd
             if (!String.IsNullOrEmpty(DNSHost))
                 hosts.Dns = DNSHost;
 
+            /*try {
+                hosts.Ip = IP;
+            } catch(Exception) {
+                Disconnect("Connection reset by host", true, false);
+            }*/
+
             hosts.Ip = IP;
 
             return hosts;

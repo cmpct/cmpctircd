@@ -148,6 +148,7 @@ namespace cmpctircd {
             SendToRoom(client, String.Format(":{0} QUIT {1}", client.Mask, reason), false);
             Destroy(); // if needed
 
+            // TODO: Do we need to tell servers about us quitting?
         }
 
         public ChannelPrivilege Status(Client client) {
@@ -222,8 +223,9 @@ namespace cmpctircd {
                     return;
                 }
 
-
-                iClient.Value.Write(message);
+                try {
+                    iClient.Value.Write(message);
+                } catch(System.IO.IOException) { }
             });
         }
 

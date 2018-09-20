@@ -63,6 +63,7 @@ namespace cmpctircd.Packets {
             });
 
             // TODO: three CAPAB packets
+            // TODO: Handle BURST, don't process until we get them all? Group the FJOINs
         }
 
         public bool ServerHandler(HandlerArgs args) {
@@ -143,7 +144,9 @@ namespace cmpctircd.Packets {
                 // TODO: Lie a bit for now
                 // TODO: Dynamic!
                 // https://pypkg.com/pypi/pylinkirc/f/protocols/inspircd.py
+                // https://github.com/jlu5/PyLink/blob/master/protocols/inspircd.py
                 // https://www.anope.org/doxy/2.0/d6/dd0/inspircd20_8cpp_source.html
+                // TODO: Make sure we actually do m_services_account, m_hidechans
                 args.Server.Write($"CAPAB MODULES m_services_account.so");
                 args.Server.Write($"CAPAB MODSUPPORT m_services_account.so");
                 args.Server.Write($"CAPAB USERMODES hidechans");
@@ -151,16 +154,24 @@ namespace cmpctircd.Packets {
 
                 // TODO: Make this dynamic
                 // TODO: Need to (elsewhere) look at the capabilities of the remote server!
+                // TODO: "CAPAB CAPABILITIES :NICKMAX=31 CHANMAX=64 MAXMODES=20 IDENTMAX=11 MAXQUIT=255 MAXTOPIC=307 MAXKICK=255 MAXGECOS=128 MAXAWAY=200 IP6SUPPORT=1 PROTOCOL=1202 PREFIX=(ov)@+ CHANMODES=b,k,l,MRimnprst USERMODES =,, s, IRiorwx GLOBOPS=0 SVSPART=1"
+                args.Server.Write($"CAPAB CHANMODES :ban=b inviteonly=i moderated=m noextmsg=n op=@o topiclock=t voice=+v");
+                args.Server.Write($"CAPAB USERMODES :cloak=x oper=o");
+
                 args.Server.Write($"CAPAB CAPABILITIES :CASEMAPPING=rfc1459 :PREFIX=({modes["Characters"]}){modes["Symbols"]}");
                 args.Server.Write($"CAPAB CAPABILITIES :CHANMODES={string.Join("", ModeTypes["A"])},{string.Join("", ModeTypes["B"])},{string.Join("", ModeTypes["C"])},{string.Join("", ModeTypes["D"])}");
                 args.Server.Write($"CAPAB END");
 
+                // Burst
+                // TODO: Implement INBOUND burst
+                // TODO: And queue up things during the BURST? (e.g. FJOINs)
+                var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                args.Server.Write($":{args.IRCd.SID} BURST {time}");
                 args.Server.Sync();
+                args.Server.Write($":{args.IRCd.SID} ENDBURST");
             } else {
-                args.IRCd.Log.Warn("[SERVER] got an unauthed server");
+                args.IRCd.Log.Warn("[SERVER] Got an unauthed server");
                 args.Server.Disconnect("ERROR: Invalid credentials", true);
-                // TODO: Send error?
-                // TODO: May send error above instead to be specific?
                 return false;
             }
             return true;
@@ -250,6 +261,7 @@ namespace cmpctircd.Packets {
         }
 
         public bool SquitHandler(HandlerArgs args) {
+            // TODO: reason?
             args.Server.IRCd.Log.Info($"Server {args.Server.Name} sent SQUIT; disconnecting");
             args.Server.Disconnect(true);
 

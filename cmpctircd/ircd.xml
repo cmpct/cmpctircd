@@ -10,10 +10,8 @@
 
     <server>
         <listener type='client' ip='127.0.0.1' port='6667' tls='false'/>
-        <!--
-            <listener ip='127.0.0.1' port='6697' tls='true'/>
-        -->
-
+        <listener type='server' ip='127.0.0.1' port='9000' tls='false'/>
+        <listener type='client' ip='127.0.0.1' port='6697' tls='true'/>
         <!--
             <listener type='server' ip='127.0.0.1' port='9000' tls='false'/>
             <listener type='server' ip='127.0.0.1' port='9001' tls='true'/>
@@ -29,7 +27,7 @@
     <log>
         <!-- 'type' is for where the output should be directed: Stdout, File, IRC -->
         <!-- 'level' is minimum level of message to be output: Debug, Info, Warn, Error -->
-        <logger type="Stdout" level="Info"/>
+        <logger type="Stdout" level="Debug"/>
         <logger type="File" level="Warn" path="ircd.log"/>
 		
         <!-- For IRC logs... -->
@@ -56,6 +54,7 @@
              Full will cloak the users host/IP completely.
              -->
         <cloak key="cmpct" prefix="cmpct" domainparts="3" mode="half"/>
+
     </advanced>
 
     <cmodes>

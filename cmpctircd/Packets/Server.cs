@@ -159,7 +159,13 @@ namespace cmpctircd.Packets {
                 args.Server.Write($"CAPAB CAPABILITIES :CHANMODES={string.Join("", ModeTypes["A"])},{string.Join("", ModeTypes["B"])},{string.Join("", ModeTypes["C"])},{string.Join("", ModeTypes["D"])}");
                 args.Server.Write($"CAPAB END");
 
+                // Burst
+                // TODO: Implement INBOUND burst
+                // TODO: And queue up things during the BURST? (e.g. FJOINs)
+                var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+                args.Server.Write($":{args.IRCd.SID} BURST {time}");
                 args.Server.Sync();
+                args.Server.Write($":{args.IRCd.SID} ENDBURST");
             } else {
                 args.IRCd.Log.Warn("[SERVER] got an unauthed server");
                 args.Server.Disconnect("ERROR: Invalid credentials", true);

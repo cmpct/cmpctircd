@@ -74,6 +74,15 @@ namespace cmpctircd {
             Write($":{IRCd.SID} FJOIN {channel.Name} {channel.CreationTime} {modeString} :{nicks}");
         }
 
+        public new void Write(string message) {
+            try {
+                base.Write(message);
+            } catch {
+                IRCd.Log.Info($"Disconnecting server: {Name}");
+                Disconnect("Connection reset by peer", true, false);
+            }
+        }
+
         public new void Disconnect(bool graceful = false) => Disconnect("", graceful, graceful);
         public new void Disconnect(string reason = "", bool graceful = false, bool sendToSelf = false) {
             // TODO: ServerState.Disconnected?

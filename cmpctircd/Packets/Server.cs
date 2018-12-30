@@ -170,10 +170,8 @@ namespace cmpctircd.Packets {
                 args.Server.Sync();
                 args.Server.Write($":{args.IRCd.SID} ENDBURST");
             } else {
-                args.IRCd.Log.Warn("[SERVER] got an unauthed server");
+                args.IRCd.Log.Warn("[SERVER] Got an unauthed server");
                 args.Server.Disconnect("ERROR: Invalid credentials", true);
-                // TODO: Send error?
-                // TODO: May send error above instead to be specific?
                 return false;
             }
             return true;

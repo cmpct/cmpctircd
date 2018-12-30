@@ -223,8 +223,9 @@ namespace cmpctircd {
                     return;
                 }
 
-
-                iClient.Value.Write(message);
+                try {
+                    iClient.Value.Write(message);
+                } catch(System.IO.IOException) { }
             });
         }
 

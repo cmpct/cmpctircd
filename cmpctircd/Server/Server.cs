@@ -50,6 +50,8 @@ namespace cmpctircd {
         }
 
         public void SyncChannel(Channel channel) {
+            // TODO: Don't tell the same server about a client repeatedly (check OriginServer somewhere? In Channels? obviously may need changes for hops > 0)
+            // TODO: Same for PRIVMSG? We want to send it remote possibly, just not to the server it came from
             var nicks = "";
             foreach (var client in channel.Clients) {
                 if (client.Value.OriginServer == this) {
@@ -75,7 +77,8 @@ namespace cmpctircd {
         public new void Disconnect(bool graceful = false) => Disconnect("", graceful, graceful);
         public new void Disconnect(string reason = "", bool graceful = false, bool sendToSelf = false) {
             // TODO: ServerState.Disconnected?
-            // TODO: Graceful, SQUIT-like?
+            // TODO: Graceful? Tell everyone we're going if they didn't send QUITs for all clients like they should?
+            // TODO: Ping timeouts?
             if(sendToSelf) {
                 Write(reason);
             }

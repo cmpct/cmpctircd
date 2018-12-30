@@ -63,6 +63,7 @@ namespace cmpctircd.Packets {
             });
 
             // TODO: three CAPAB packets
+            // TODO: Handle BURST, don't process until we get them all? Group the FJOINs
         }
 
         public bool ServerHandler(HandlerArgs args) {
@@ -143,7 +144,9 @@ namespace cmpctircd.Packets {
                 // TODO: Lie a bit for now
                 // TODO: Dynamic!
                 // https://pypkg.com/pypi/pylinkirc/f/protocols/inspircd.py
+                // https://github.com/jlu5/PyLink/blob/master/protocols/inspircd.py
                 // https://www.anope.org/doxy/2.0/d6/dd0/inspircd20_8cpp_source.html
+                // TODO: Make sure we actually do m_services_account, m_hidechans
                 args.Server.Write($"CAPAB MODULES m_services_account.so");
                 args.Server.Write($"CAPAB MODSUPPORT m_services_account.so");
                 args.Server.Write($"CAPAB USERMODES hidechans");
@@ -260,6 +263,7 @@ namespace cmpctircd.Packets {
         }
 
         public bool SquitHandler(HandlerArgs args) {
+            // TODO: reason?
             args.Server.IRCd.Log.Info($"Server {args.Server.Name} sent SQUIT; disconnecting");
             args.Server.Disconnect(true);
 

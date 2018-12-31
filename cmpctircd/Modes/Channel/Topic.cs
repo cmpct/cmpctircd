@@ -1,7 +1,7 @@
 namespace cmpctircd.Modes {
     public class TopicMode : ChannelMode {
 
-        override public string Name { get; } = "topic";
+        override public string Name { get; } = "topiclock";
         override public string Description { get; } = "Provides +t/-t for locking or unlocking topic set";
         override public string Character { get; } = "t";
         override public string Symbol { get; } = "";

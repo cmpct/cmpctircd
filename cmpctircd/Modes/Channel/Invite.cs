@@ -1,7 +1,7 @@
 namespace cmpctircd.Modes {
     public class InviteMode : ChannelMode {
 
-        override public string Name { get; } = "invite";
+        override public string Name { get; } = "inviteonly";
         override public string Description { get; } = "Provides the +i (invite) mode for invite-only channels";
         override public string Character { get; } = "i";
         override public string Symbol { get; } = "";

@@ -1,7 +1,7 @@
 namespace cmpctircd.Modes {
     public class NoExternalMode : ChannelMode {
 
-        override public string Name { get; } = "noexternal";
+        override public string Name { get; } = "noextmsg";
         override public string Description { get; } = "Provides the +n (no external messages) mode.";
         override public string Character { get; } = "n";
         override public string Symbol { get; } = "";

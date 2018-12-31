@@ -150,12 +150,31 @@ namespace cmpctircd.Packets {
                 args.Server.Write($"CAPAB MODULES m_services_account.so");
                 args.Server.Write($"CAPAB MODSUPPORT m_services_account.so");
                 args.Server.Write($"CAPAB USERMODES hidechans");
-                args.Server.Write($"CAPAB CHANMODES op=@o");
+
+                StringBuilder sb = new StringBuilder();
+                sb.Append("CAPAB CHANMODES :");
+                var ModeDict = new Dictionary<string, string>();
+
+                var chan = new Channel(args.IRCd.ChannelManager, args.IRCd);
+                foreach(var modeList in ModeTypes) {
+                    foreach(var m in modeList.Value) {
+                        var mode = chan.Modes[m];
+                        var modeName = mode.Name;
+                        var modeSymbol = "";
+                        var modeCharacter = mode.Character;
+
+                        if(mode.Symbol != "") {
+                            modeSymbol = mode.Symbol;
+                        }
+
+                        sb.Append($"{modeName}={modeSymbol}{modeCharacter} ");
+                    }
+                }
+                args.Server.Write(sb.ToString());
 
                 // TODO: Make this dynamic
                 // TODO: Need to (elsewhere) look at the capabilities of the remote server!
                 // TODO: "CAPAB CAPABILITIES :NICKMAX=31 CHANMAX=64 MAXMODES=20 IDENTMAX=11 MAXQUIT=255 MAXTOPIC=307 MAXKICK=255 MAXGECOS=128 MAXAWAY=200 IP6SUPPORT=1 PROTOCOL=1202 PREFIX=(ov)@+ CHANMODES=b,k,l,MRimnprst USERMODES =,, s, IRiorwx GLOBOPS=0 SVSPART=1"
-                args.Server.Write($"CAPAB CHANMODES :ban=b inviteonly=i moderated=m noextmsg=n op=@o topiclock=t voice=+v");
                 args.Server.Write($"CAPAB USERMODES :cloak=x oper=o");
 
                 args.Server.Write($"CAPAB CAPABILITIES :CASEMAPPING=rfc1459 :PREFIX=({modes["Characters"]}){modes["Symbols"]}");

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -210,23 +211,45 @@ namespace cmpctircd {
         }
 
         public void SendToRoom(Client client, String message, Boolean sendSelf, Boolean sendRemote = true) {
-            Parallel.ForEach(Clients, (iClient) => {
+            var RecipientServers = new HashSet<string>();
+
+            foreach (var recipientClient in Clients.Values) {
                 if(client != null) {
-                    if (!sendSelf && iClient.Value.Equals(client)) {
-                        return;
+                    if (!sendSelf && recipientClient.Equals(client)) {
+                        continue;
                     }
+                }
+
+                if(recipientClient.RemoteClient) {
+                    // Don't send this message to the same server twice
+                    if (RecipientServers.Contains(recipientClient.OriginServer.Name)) {
+                        continue;
+                    }
+
+                    // Don't send to users on the same server
+                    // TODO: Logic may need updating for hops > 1
+                    if (client.RemoteClient && client.OriginServer == recipientClient.OriginServer) {
+                        continue;
+                    }
+
                 }
 
                 // Don't send to remote clients
                 // NOTE: You can't sendSelf if remote client and this is false
-                if (!sendRemote && iClient.Value.RemoteClient) {
-                    return;
+                if (!sendRemote && recipientClient.RemoteClient) {
+                    continue;
                 }
 
                 try {
-                    iClient.Value.Write(message);
-                } catch(System.IO.IOException) { }
-            });
+                    recipientClient.Write(message);
+                } catch(System.IO.IOException) { continue; }
+
+                // Note: we do this after the write, so server doesn't miss out next time if there was an exception this time around
+                if (recipientClient.RemoteClient) {
+                    // Keep a list of servers who have been sent this message, so we don't redundantly send
+                    RecipientServers.Add(recipientClient.OriginServer.Name);
+                }
+            };
         }
 
         public bool Inhabits(Client client) {

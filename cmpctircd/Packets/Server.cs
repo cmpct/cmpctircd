@@ -83,7 +83,7 @@ namespace cmpctircd.Packets {
             var desc     = parts[6].Substring(1);
 
             // Compare with config
-            bool foundMatch = true;
+            bool foundMatch = true && args.IRCd.Config.ServerLinks.Count() > 0;
             for(int i = 0; i < args.IRCd.Config.ServerLinks.Count(); i++) {
                 var link = args.IRCd.Config.ServerLinks[i];
 

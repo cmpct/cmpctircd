@@ -4,7 +4,7 @@ using System.Net;
 namespace cmpctircd.Modes {
     public class TLSMode : UserMode {
 
-        override public string Name { get; } = "TLS";
+        override public string Name { get; } = "tls";
         override public string Description { get; } = "Provides the +z (TLS) mode for users connecting via TLS";
         override public string Character { get; }  = "z";
         override public bool HasParameters { get; } = false;

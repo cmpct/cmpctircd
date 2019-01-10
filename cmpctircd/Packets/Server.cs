@@ -151,9 +151,10 @@ namespace cmpctircd.Packets {
                 args.Server.Write($"CAPAB MODSUPPORT m_services_account.so");
                 args.Server.Write($"CAPAB USERMODES hidechans");
 
-                StringBuilder sb = new StringBuilder();
-                sb.Append("CAPAB CHANMODES :");
-                var ModeDict = new Dictionary<string, string>();
+                // Create a list of chanmodes based on the available modes locally
+                // e.g. CAPAB CHANMODES :op=o ...
+                var ChannelModeString = new StringBuilder();
+                ChannelModeString.Append("CAPAB CHANMODES :");
 
                 var chan = new Channel(args.IRCd.ChannelManager, args.IRCd);
                 foreach(var modeList in ModeTypes) {
@@ -167,15 +168,23 @@ namespace cmpctircd.Packets {
                             modeSymbol = mode.Symbol;
                         }
 
-                        sb.Append($"{modeName}={modeSymbol}{modeCharacter} ");
+                        ChannelModeString.Append($"{modeName}={modeSymbol}{modeCharacter} ");
                     }
                 }
-                args.Server.Write(sb.ToString());
+                args.Server.Write(ChannelModeString.ToString());
 
                 // TODO: Make this dynamic
                 // TODO: Need to (elsewhere) look at the capabilities of the remote server!
                 // TODO: "CAPAB CAPABILITIES :NICKMAX=31 CHANMAX=64 MAXMODES=20 IDENTMAX=11 MAXQUIT=255 MAXTOPIC=307 MAXKICK=255 MAXGECOS=128 MAXAWAY=200 IP6SUPPORT=1 PROTOCOL=1202 PREFIX=(ov)@+ CHANMODES=b,k,l,MRimnprst USERMODES =,, s, IRiorwx GLOBOPS=0 SVSPART=1"
-                args.Server.Write($"CAPAB USERMODES :cloak=x oper=o");
+                var UserModeString = new StringBuilder();
+                UserModeString.Append("CAPAB USERMODES :");
+
+                var client = new Client(args.IRCd, null, null);
+                foreach(var mode in client.Modes.Values) {
+                    UserModeString.Append($"{mode.Name}={mode.Character} ");
+                }
+                args.Server.Write(UserModeString.ToString());
+
 
                 args.Server.Write($"CAPAB CAPABILITIES :CASEMAPPING=rfc1459 :PREFIX=({modes["Characters"]}){modes["Symbols"]}");
                 args.Server.Write($"CAPAB CAPABILITIES :CHANMODES={string.Join("", ModeTypes["A"])},{string.Join("", ModeTypes["B"])},{string.Join("", ModeTypes["C"])},{string.Join("", ModeTypes["D"])}");

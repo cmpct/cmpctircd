@@ -1,6 +1,6 @@
 namespace cmpctircd.Modes {
     public class OperMode : UserMode {
-        override public string Name { get; }  = "Oper";
+        override public string Name { get; }  = "oper";
         override public string Description { get; } = "Provides the +o (Oper) mode grant irc operator status";
         override public string Character { get; }  = "o";
         override public bool HasParameters { get; } = false;

@@ -46,6 +46,7 @@ namespace cmpctircd
         // TODO will this work for multiple hops? think so but it's something to bare in mind
         public string UUID;
         public void SendVersion() => Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.Host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.Version));
+        public string OriginServerName() => RemoteClient ? OriginServer.Name : IRCd.Host;
 
         public readonly static object nickLock = new object();
         private readonly object _disconnectLock = new object();

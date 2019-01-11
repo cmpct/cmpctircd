@@ -87,7 +87,13 @@ namespace cmpctircd.Packets
                     args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISCHANNELS.Printable()} {args.Client.Nick} {targetClient.Nick} :{string.Join(" ", inhabitedChannels)}");
                 }
 
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISSERVER.Printable()} {args.Client.Nick} {targetClient.Nick} {args.IRCd.Host} :{args.IRCd.Desc}");
+                // Deal with the remote case
+                var targetServerDesc = args.IRCd.Desc;
+                if (targetClient.RemoteClient) {
+                    targetServerDesc = targetClient.OriginServer.Desc;
+                }
+
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISSERVER.Printable()} {args.Client.Nick} {targetClient.Nick} {targetClient.OriginServerName()} :{targetServerDesc}");
 
                 if (targetClient.Modes["o"].Enabled) {
                     args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISOPERATOR.Printable()} {args.Client.Nick} {targetClient.Nick} :is an IRC Operator on {args.IRCd.Network}");
@@ -133,7 +139,7 @@ namespace cmpctircd.Packets
                         mask = mask.Replace("*", ".*?");
 
                         // host, server, real name, nickname
-                        var criteria = new string[] { client.GetHost(), args.IRCd.Host, client.RealName, client.Nick };
+                        var criteria = new string[] { client.GetHost(), client.OriginServerName(), client.RealName, client.Nick };
                         foreach (var criterion in criteria) {
                             if (Regex.IsMatch(criterion, mask)) {
                                 metCriteria = true;
@@ -157,7 +163,7 @@ namespace cmpctircd.Packets
 
                     var away = String.IsNullOrEmpty(client.AwayMessage) ? "H" : "G";
                     var ircopSymbol = client.Modes["o"].Enabled ? "*" : "";
-                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {client.Nick} {client.Ident} {client.GetHost()} {args.IRCd.Host} {client.Nick} {away}{ircopSymbol} :{hopCount} {client.RealName}");
+                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {client.Nick} {client.Ident} {client.GetHost()} {client.OriginServerName()} {client.Nick} {away}{ircopSymbol} :{hopCount} {client.RealName}");
                 }
             }
 

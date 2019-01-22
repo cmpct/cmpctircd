@@ -157,6 +157,8 @@ namespace cmpctircd {
             } catch(Exception) {
                 if(client != null) {
                     client.Disconnect("Connection reset by host", true, false);
+                } else if (server != null) {
+                    server.Disconnect("Connection reset by host", true, false);
                 }
 
                 if(reader != null) {

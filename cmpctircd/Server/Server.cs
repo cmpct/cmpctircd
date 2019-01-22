@@ -78,7 +78,7 @@ namespace cmpctircd {
             try {
                 base.Write(message);
             } catch {
-                IRCd.Log.Info($"Disconnecting server: {Name}");
+                IRCd.Log.Info($"Disconnecting server due to write fail: {Name}");
                 Disconnect("Connection reset by peer", true, false);
             }
         }
@@ -86,8 +86,9 @@ namespace cmpctircd {
         public new void Disconnect(bool graceful = false) => Disconnect("", graceful, graceful);
         public new void Disconnect(string reason = "", bool graceful = false, bool sendToSelf = false) {
             // TODO: ServerState.Disconnected?
-            // TODO: Graceful? Tell everyone we're going if they didn't send QUITs for all clients like they should?
             // TODO: Ping timeouts?
+            IRCd.Log.Debug($"Disconnecting server: {Name}");
+
             if(sendToSelf) {
                 Write(reason);
             }
@@ -96,9 +97,17 @@ namespace cmpctircd {
                 TlsStream.Close();
             }
             TcpClient.Close();
+
+            // Tell everyone we're going if they didn't send QUITs for all clients like they should
+            // TODO: Make dependent on if(graceful)?
+            foreach(var clientList in IRCd.ClientLists) {
+                foreach(var serverClient in clientList.Where(client => client.OriginServer == this)) {
+                    // These are clients which were on our server
+                    serverClient.Disconnect("Server gone", true, false);
+                }
+            }
+
             Listener.Remove(this);
-            // graceful means inform clients of departure
-            // !graceful means kill the connection
         }
 
 

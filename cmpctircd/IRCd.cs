@@ -323,13 +323,26 @@ namespace cmpctircd {
                         // We need to increment every index, starting at UID[5] (6) until it reaches Z
                         // Once it reaches Z (this will depend on subsequent UIDs), hop to the next column and repeat
 
-                        // Skip this column because it's a Z
-                        if (lastUID[i] == zCharacter)
+                        // If this column of the old UID was a Z, don't increment it
+                        // Copy it over and work on the next column
+                        if (lastUID[i] == zCharacter) {
+                            UID[i] = lastUID[i];
                             continue;
+                        }
 
-                        // Add one to the column if the previous column is Z or we're at the start
-                        if (i == UID.Length - 1 || lastUID[i + 1] == zCharacter) {
+                        // Add one to the column if we're at the start
+                        if (i == UID.Length - 1) {
                             UID[i] = Convert.ToChar(lastUID[i] + 1);
+                        } else if(lastUID[i + 1] == zCharacter) {
+                            // Add one to the column if the previous column is Z
+                            UID[i] = Convert.ToChar(lastUID[i] + 1);
+
+                            // Once we've added one to THIS column, reset the one over to an A
+                            if (lastUID[i + 1] == zCharacter) {
+                                // If the next character over is a Z, change it to an A when we bump the next column
+                                // e.g. if lastUID is AAAAAZ, make next AAAABA
+                                UID[i + 1] = Convert.ToChar(aCharacter);
+                            }
                         } else {
                             // Otherwise just copy that value
                             // e.g. with AAAAAB -> AAAAAC, only the B -> C has changed, so rest can be copied

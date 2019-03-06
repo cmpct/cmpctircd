@@ -9,6 +9,12 @@ namespace cmpctircd.Packets {
 
         public Server(IRCd ircd) {
             ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
+                Packet = "PING",
+                Handler = PingHandler,
+                Type    = ListenerType.Server
+            });
+
+            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
                 Packet  = "SERVER",
                 Handler = ServerHandler,
                 Type    = ListenerType.Server
@@ -64,6 +70,13 @@ namespace cmpctircd.Packets {
 
             // TODO: three CAPAB packets
             // TODO: Handle BURST, don't process until we get them all? Group the FJOINs
+        }
+
+        public bool PingHandler(HandlerArgs args) {
+            // TODO: implement for hops > 1
+            // TODO: could use args.Server.SID instead of SpacedArgs?
+            args.Server.Write($":{args.IRCd.SID} PONG {args.IRCd.SID} {args.SpacedArgs[1]}");
+            return true;
         }
 
         public bool ServerHandler(HandlerArgs args) {

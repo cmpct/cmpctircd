@@ -106,11 +106,18 @@ namespace cmpctircd.Packets {
                         break;
                     }
                 }
-                foundMatch = foundHostMatch;
+                foundMatch = foundMatch && foundHostMatch;
 
+                // Check if the server is already connected
+                // [Important that this is after all authentication checks because it has a conditional on whether server is authed]
                 try {
-                    args.IRCd.GetServerBySID(sid);
-                    foundMatch = false; // If we get to here, no match.
+                    var foundServer = args.IRCd.GetServerBySID(sid);
+
+                    if(foundMatch) {
+                        // If the incoming server is authenticated, disconnect the old one (saves time waiting for ping timeouts, etc)
+                        args.IRCd.Log.Warn($"[SERVER] Ejecting server (SID: {sid}, name: {hostname}) for new connection");
+                        foundServer.Disconnect("ERROR: Replaced by a new connection", true);
+                    }
                 } catch (InvalidOperationException) {}
 
                 if(foundMatch) {

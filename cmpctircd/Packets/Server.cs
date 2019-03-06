@@ -15,6 +15,12 @@ namespace cmpctircd.Packets {
             });
 
             ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
+                Packet = "CAPAB",
+                Handler = CapabHandler,
+                Type    = ListenerType.Server
+            });
+
+            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
                 Packet  = "SERVER",
                 Handler = ServerHandler,
                 Type    = ListenerType.Server
@@ -79,21 +85,34 @@ namespace cmpctircd.Packets {
             return true;
         }
 
+        public bool CapabHandler(HandlerArgs args) {
+            // TODO: checked if already sent capab?
+            if (args.SpacedArgs.Count > 0 && args.SpacedArgs[1] == "START") {
+                args.Server.SendCapab();
+            }
+            return true;
+        }
+
         public bool ServerHandler(HandlerArgs args) {
             // TODO: introduce some ServerState magic
-            var parts = args.Line.Split(new char[] { ' ' }, 7);
+            var parts = args.Line.Split(new char[] { ' ' }, 7).ToList();
+
+            // Drop :SID at the beginning (Anope does this, InspIRCd doesn't)
+            if(parts[0].StartsWith(":")) {
+                parts.RemoveAt(0);
+            }
 
             // Check there are enough parameters
-            if(parts.Count() != 7) {
+            if (parts.Count() != 6) {
                 // TODO: send an error
                 return false;
             }
 
             // Parse out some values
-            var hostname = parts[2];
-            var password = parts[3];
-            var sid      = parts[5];
-            var desc     = parts[6].Substring(1);
+            var hostname = parts[1];
+            var password = parts[2];
+            var sid      = parts[4];
+            var desc     = parts[5].Substring(1);
 
             // Compare with config
             bool foundMatch = true && args.IRCd.Config.ServerLinks.Count() > 0;
@@ -145,70 +164,14 @@ namespace cmpctircd.Packets {
 
             if(foundMatch) {
                 args.Server.State = ServerState.Auth;
-                args.IRCd.Log.Warn("[SERVER] Got an authed server");
+                args.IRCd.Log.Warn("[SERVER] Got an authed server"); // TODO: Change to Info?
 
                 // Introduce ourselves...
                 // TODO: send password?
                 args.Server.Name = hostname;
                 args.Server.SID = sid;
+                args.Server.Desc = desc;
                 args.Server.Write($"SERVER {args.IRCd.Host} {password} 0 {args.IRCd.SID} :{args.IRCd.Desc}");
-
-                // CAPAB BEGIN
-                var version = 1202;
-                args.Server.Write($"CAPAB START {version}");
-                // TODO: Can this be de-duplicated with Client.SendWelcome()?
-                var UModeTypes = args.IRCd.GetSupportedUModes(new Client(args.IRCd, null, args.Server.Listener));
-                var ModeTypes  = args.IRCd.GetSupportedModesByType();
-                var modes      = args.IRCd.GetSupportedModes(true);
-
-                // TODO: Lie a bit for now
-                // TODO: Dynamic!
-                // https://pypkg.com/pypi/pylinkirc/f/protocols/inspircd.py
-                // https://github.com/jlu5/PyLink/blob/master/protocols/inspircd.py
-                // https://www.anope.org/doxy/2.0/d6/dd0/inspircd20_8cpp_source.html
-                // TODO: Make sure we actually do m_services_account, m_hidechans
-                args.Server.Write($"CAPAB MODULES m_services_account.so");
-                args.Server.Write($"CAPAB MODSUPPORT m_services_account.so");
-                args.Server.Write($"CAPAB USERMODES hidechans");
-
-                // Create a list of chanmodes based on the available modes locally
-                // e.g. CAPAB CHANMODES :op=o ...
-                var ChannelModeString = new StringBuilder();
-                ChannelModeString.Append("CAPAB CHANMODES :");
-
-                var chan = new Channel(args.IRCd.ChannelManager, args.IRCd);
-                foreach(var modeList in ModeTypes) {
-                    foreach(var m in modeList.Value) {
-                        var mode = chan.Modes[m];
-                        var modeName = mode.Name;
-                        var modeSymbol = "";
-                        var modeCharacter = mode.Character;
-
-                        if(mode.Symbol != "") {
-                            modeSymbol = mode.Symbol;
-                        }
-
-                        ChannelModeString.Append($"{modeName}={modeSymbol}{modeCharacter} ");
-                    }
-                }
-                args.Server.Write(ChannelModeString.ToString());
-
-                // TODO: Make this dynamic
-                // TODO: Need to (elsewhere) look at the capabilities of the remote server!
-                // TODO: "CAPAB CAPABILITIES :NICKMAX=31 CHANMAX=64 MAXMODES=20 IDENTMAX=11 MAXQUIT=255 MAXTOPIC=307 MAXKICK=255 MAXGECOS=128 MAXAWAY=200 IP6SUPPORT=1 PROTOCOL=1202 PREFIX=(ov)@+ CHANMODES=b,k,l,MRimnprst USERMODES =,, s, IRiorwx GLOBOPS=0 SVSPART=1"
-                var UserModeString = new StringBuilder();
-                UserModeString.Append("CAPAB USERMODES :");
-
-                var client = new Client(args.IRCd, null, null);
-                foreach(var mode in client.Modes.Values) {
-                    UserModeString.Append($"{mode.Name}={mode.Character} ");
-                }
-                args.Server.Write(UserModeString.ToString());
-
-
-                args.Server.Write($"CAPAB CAPABILITIES :CASEMAPPING=rfc1459 :PREFIX=({modes["Characters"]}){modes["Symbols"]}");
-                args.Server.Write($"CAPAB CAPABILITIES :CHANMODES={string.Join("", ModeTypes["A"])},{string.Join("", ModeTypes["B"])},{string.Join("", ModeTypes["C"])},{string.Join("", ModeTypes["D"])}");
-                args.Server.Write($"CAPAB END");
 
                 // Burst
                 // TODO: Implement INBOUND burst

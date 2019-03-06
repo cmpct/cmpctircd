@@ -11,6 +11,7 @@ namespace cmpctircd {
         // TODO: Many of these look like they shouldn't be public or should be private set. Review?
         public string Name { get; set; }
         public string SID { get; set; }
+        public string Desc { get; set; }
         public ServerState State { get; set; }
  
         public Server(IRCd ircd, TcpClient tc, SocketListener sl) : base(ircd, tc, sl) {
@@ -72,6 +73,84 @@ namespace cmpctircd {
             var modeString  = (modeStrings[0] + modeStrings[1]).TrimEnd();
 
             Write($":{IRCd.SID} FJOIN {channel.Name} {channel.CreationTime} {modeString} :{nicks}");
+        }
+
+        public void SendCapab() {
+            // CAPAB BEGIN
+            var version = 1202;
+            Write($"CAPAB START {version}");
+
+            // TODO: Can this be de-duplicated with Client.SendWelcome()?
+            var UModeTypes = IRCd.GetSupportedUModes(new Client(IRCd, null, Listener));
+            var ModeTypes = IRCd.GetSupportedModesByType();
+            var modes = IRCd.GetSupportedModes(true);
+
+            // TODO: Lie a bit for now
+            // TODO: Dynamic!
+            // https://pypkg.com/pypi/pylinkirc/f/protocols/inspircd.py
+            // https://github.com/jlu5/PyLink/blob/master/protocols/inspircd.py
+            // https://www.anope.org/doxy/2.0/d6/dd0/inspircd20_8cpp_source.html
+            // TODO: Make sure we actually do m_services_account, m_hidechans
+            // TODO: Readd m_services_account.so below!
+            Write($"CAPAB MODULES :m_cloaking.so={IRCd.CloakPrefix}-{Cloak.InspCloakHost((char) 3, IRCd.CloakKey, "*", 8)}.IP");
+            Write($"CAPAB MODSUPPORT m_services_account.so"); // TODO: this is a requirement for services, not insp (obviously)
+            Write($"CAPAB USERMODES hidechans");
+
+            // Create a list of chanmodes based on the available modes locally
+            // e.g. CAPAB CHANMODES :op=o ...
+            var ChannelModeString = new StringBuilder();
+            ChannelModeString.Append("CAPAB CHANMODES :");
+
+            var chan = new Channel(IRCd.ChannelManager, IRCd);
+            foreach (var modeList in ModeTypes) {
+                foreach (var m in modeList.Value) {
+                    var mode = chan.Modes[m];
+                    var modeName = mode.Name;
+                    var modeSymbol = "";
+                    var modeCharacter = mode.Character;
+
+                    // Don't tell the remote server about it for now
+                    // TODO: Need to figure out how this will affect desyncs etc
+                    if (!mode.InspircdCompatible)
+                        continue;
+
+                    if (mode.Symbol != "") {
+                        modeSymbol = mode.Symbol;
+                    }
+
+                    ChannelModeString.Append($"{modeName}={modeSymbol}{modeCharacter} ");
+                }
+            }
+            // TODO: Stop lying to InspIRCd
+            ChannelModeString.Append("c_registered=r key=k limit=l private=p reginvite=R regmoderated=M secret=s");
+            Write(ChannelModeString.ToString());
+
+            // TODO: Need to (elsewhere) look at the capabilities of the remote server!
+            var UserModeString = new StringBuilder();
+            UserModeString.Append("CAPAB USERMODES :");
+
+            var client = new Client(IRCd, null, null);
+            foreach (var mode in client.Modes.Values) {
+                // Don't tell the remote server about it for now
+                // TODO: Need to figure out how this will affect desyncs etc
+                if (!mode.InspircdCompatible)
+                    continue;
+
+                UserModeString.Append($"{mode.Name}={mode.Character} ");
+            }
+
+            // TODO: Stop lying to to InspIRCd
+            UserModeString.Append("regdeaf=R snomask=s u_registered=r wallops=w");
+            // TODO: Stop lying to Anope
+            UserModeString.Append(" hidechans=I");
+            Write(UserModeString.ToString());
+
+            // TODO: Make this dynamic
+            Write($"CAPAB CAPABILITIES :NICKMAX=31 CHANMAX=64 MAXMODES=20 IDENTMAX=11 MAXQUIT=255 MAXTOPIC=307 MAXKICK=255 MAXGECOS=128 MAXAWAY=200 IP6SUPPORT=1 PROTOCOL=1202 USERMODES=,, s, IRiorwx GLOBOPS=0 SVSPART=1");
+            Write($"CAPAB CAPABILITIES :CASEMAPPING=rfc1459 :PREFIX=({modes["Characters"]}){modes["Symbols"]}");
+            Write($"CAPAB CAPABILITIES :CHANMODES={string.Join("", ModeTypes["A"])},{string.Join("", ModeTypes["B"])},{string.Join("", ModeTypes["C"])},{string.Join("", ModeTypes["D"])}");
+            Write($"CAPAB END");
+
         }
 
         public new void Write(string message) {

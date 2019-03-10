@@ -34,11 +34,6 @@ namespace cmpctircd
         public ClientState State { get; set; }
         public bool ResolvingHost { get; set; } = false;
 
-        // Ping information
-        public Boolean WaitingForPong { get; set; } = false;
-        public long LastPong { get; set; } = 0;
-        public String PingCookie { get; set; } = "";
-
         public ConcurrentDictionary<string, UserMode> Modes {
             get; set;
         } = new ConcurrentDictionary<string, UserMode>();
@@ -356,34 +351,6 @@ namespace cmpctircd
             return true;
         }
 
-        public void CheckTimeout() {
-            // By default, no pong cookie is required
-            var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            var requirePong = false;
-            var period = (LastPong) + (IRCd.PingTimeout);
-
-            requirePong = (IRCd.RequirePong) && (LastPong == 0);
-
-            // Is the user due a PING?
-            if((requirePong) || (time > period && !WaitingForPong)) {
-                PingCookie = CreatePingCookie();
-                LastPong = time;
-                WaitingForPong = true;
-
-                Write(String.Format("PING :{0}", PingCookie));
-            }
-
-            // Has the user taken too long to reply with a PONG?
-            if(WaitingForPong && (time > (LastPong + (IRCd.PingTimeout * 2)))) {
-                Disconnect("Ping timeout", true);
-                return;
-            }
-
-            Task.Delay((int) TimeSpan.FromMinutes(1).TotalMilliseconds).ContinueWith(t => CheckTimeout());
-        }
-
-        public static String CreatePingCookie() => System.IO.Path.GetRandomFileName().Substring(0, 7);
-
         // Returns the user's mask
         public String Mask
         {
@@ -469,7 +436,7 @@ namespace cmpctircd
         }
 
         public new void Disconnect(bool graceful) => Disconnect("", graceful, graceful);
-        public new void Disconnect(string quitReason = "", bool graceful = true, bool sendToSelf = true) {
+        public override void Disconnect(string quitReason = "", bool graceful = true, bool sendToSelf = true) {
             lock(_disconnectLock) {
                 if(State.Equals(ClientState.Disconnected)) return;
                 try {

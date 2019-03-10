@@ -20,6 +20,11 @@ namespace cmpctircd {
         public NetworkStream Stream { get; set; }
         public SocketListener Listener { get; set; }
 
+        // Ping information
+        public bool WaitingForPong { get; set; } = false;
+        public long LastPong { get; set; } = 0;
+        public string PingCookie { get; set; } = "";
+
         // TODO: do constructor too
 
         public SocketBase(IRCd ircd, TcpClient tc, SocketListener sl) {
@@ -33,6 +38,51 @@ namespace cmpctircd {
             // Base tasks such as DNS or connections
             // noop in base
         }
+
+        public void CheckTimeout(bool server = false) {
+            // By default, no pong cookie is required
+            var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            var requirePong = false;
+            var SendPing = false;
+            var period = (LastPong) + (IRCd.PingTimeout);
+            var PingString = "";
+
+            // This is a flag to check whether an initial pong cookie is needed
+            requirePong = !server && IRCd.RequirePong && (LastPong == 0);
+
+            // Is the socket due a PING?
+            if ((requirePong) || (time > period && !WaitingForPong)) {
+                if (server && !string.IsNullOrEmpty(PingCookie)) {
+                    // Here, PingCookie is the SID of the server being pinged
+                    // The server has authenticated (SID is empty if they haven't yet)
+                    PingString = $":{IRCd.SID} PING {IRCd.SID} {PingCookie}";
+                    SendPing = true;
+                    Write(PingString);
+                } else {
+                    PingCookie = CreatePingCookie();
+                    PingString = $"PING :{PingCookie}";
+                    SendPing   = true;
+                    Write(PingString);
+                }
+
+                if (SendPing) {
+                    // Start the clock if we're sending a ping this time
+                    LastPong = time;
+                    WaitingForPong = true;
+                    Write(PingString);
+                }
+            }
+
+            // Has the user taken too long to reply with a PONG?
+            if (WaitingForPong && (time > (LastPong + (IRCd.PingTimeout * 2)))) {
+                Disconnect("Ping timeout", true, true);
+                return;
+            }
+
+            Task.Delay((int)TimeSpan.FromMinutes(1).TotalMilliseconds).ContinueWith(t => CheckTimeout(server));
+        }
+
+        public static String CreatePingCookie() => System.IO.Path.GetRandomFileName().Substring(0, 7);
 
         // Returns the socket's raw IP
         public IPAddress IP {
@@ -63,7 +113,7 @@ namespace cmpctircd {
         }
 
         public void Disconnect(bool graceful = false) => Disconnect("", graceful, graceful);
-        public void Disconnect(string reason = "", bool graceful = false, bool sendToSelf = false) {
+        public virtual void Disconnect(string reason = "", bool graceful = false, bool sendToSelf = false) {
             if(sendToSelf) {
                 Write(reason);
             }

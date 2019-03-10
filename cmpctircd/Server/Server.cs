@@ -18,6 +18,17 @@ namespace cmpctircd {
             State = ServerState.PreAuth;
         }
 
+        public new void BeginTasks() {
+            try {
+                // Check for PING/PONG events due
+                CheckTimeout(true);
+            } catch (Exception e) {
+                IRCd.Log.Debug($"Failed to access server: {e.ToString()}");
+                Disconnect("Server gone", true);
+                return;
+            }
+        }
+
         public void Sync() {
             // This sends the server a copy of all of the clients and channels known to the server
             // 'Bursts'

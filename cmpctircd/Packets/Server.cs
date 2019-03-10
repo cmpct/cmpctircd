@@ -15,6 +15,12 @@ namespace cmpctircd.Packets {
             });
 
             ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
+                Packet  = "PONG",
+                Handler = PongHandler,
+                Type    = ListenerType.Server
+            });
+
+            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
                 Packet = "CAPAB",
                 Handler = CapabHandler,
                 Type    = ListenerType.Server
@@ -82,6 +88,12 @@ namespace cmpctircd.Packets {
             // TODO: implement for hops > 1
             // TODO: could use args.Server.SID instead of SpacedArgs?
             args.Server.Write($":{args.IRCd.SID} PONG {args.IRCd.SID} {args.SpacedArgs[1]}");
+            return true;
+        }
+
+        public bool PongHandler(HandlerArgs args) {
+            args.Server.WaitingForPong = false;
+            args.Server.LastPong       = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             return true;
         }
 
@@ -172,6 +184,9 @@ namespace cmpctircd.Packets {
                 args.Server.SID = sid;
                 args.Server.Desc = desc;
                 args.Server.Write($"SERVER {args.IRCd.Host} {password} 0 {args.IRCd.SID} :{args.IRCd.Desc}");
+
+                // Set the ping cookie to be the SID, so we start pinging them (see CheckTimeout)
+                args.Server.PingCookie = args.Server.SID;
 
                 // Burst
                 // TODO: Implement INBOUND burst

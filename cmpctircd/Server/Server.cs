@@ -13,7 +13,9 @@ namespace cmpctircd {
         public string SID { get; set; }
         public string Desc { get; set; }
         public ServerState State { get; set; }
- 
+
+        private readonly object _disconnectLock = new object();
+
         public Server(IRCd ircd, TcpClient tc, SocketListener sl) : base(ircd, tc, sl) {
             State = ServerState.PreAuth;
         }
@@ -165,6 +167,8 @@ namespace cmpctircd {
         }
 
         public new void Write(string message) {
+            if (State.Equals(ServerState.Disconnected)) return;
+
             try {
                 base.Write(message);
             } catch {
@@ -174,30 +178,32 @@ namespace cmpctircd {
         }
 
         public new void Disconnect(bool graceful = false) => Disconnect("", graceful, graceful);
-        public new void Disconnect(string reason = "", bool graceful = false, bool sendToSelf = false) {
-            // TODO: ServerState.Disconnected?
-            // TODO: Ping timeouts?
-            IRCd.Log.Debug($"Disconnecting server: {Name}");
+        public override void Disconnect(string reason = "", bool graceful = false, bool sendToSelf = false) {
+            lock (_disconnectLock) {
+                if (State.Equals(ServerState.Disconnected)) return;
 
-            if(sendToSelf) {
-                Write(reason);
-            }
+                IRCd.Log.Debug($"Disconnecting server: {Name}");
 
-            if(TlsStream != null) {
-                TlsStream.Close();
-            }
-            TcpClient.Close();
-
-            // Tell everyone we're going if they didn't send QUITs for all clients like they should
-            // TODO: Make dependent on if(graceful)?
-            foreach(var clientList in IRCd.ClientLists) {
-                foreach(var serverClient in clientList.Where(client => client.OriginServer == this)) {
-                    // These are clients which were on our server
-                    serverClient.Disconnect("Server gone", true, false);
+                if (sendToSelf) {
+                    Write(reason);
                 }
-            }
 
-            Listener.Remove(this);
+                if (TlsStream != null) {
+                    TlsStream.Close();
+                }
+                TcpClient.Close();
+
+                // TODO: Graceful? Tell everyone we're going if they didn't send QUITs for all clients like they should?
+                foreach (var clientList in IRCd.ClientLists) {
+                    foreach (var serverClient in clientList.Where(client => client.OriginServer == this)) {
+                        // These are clients which were on our server
+                        serverClient.Disconnect("Server gone", true, false);
+                    }
+                }
+
+                State = ServerState.Disconnected;
+                Listener.Remove(this);
+            }
         }
 
 

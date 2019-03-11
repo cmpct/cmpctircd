@@ -132,25 +132,39 @@ namespace cmpctircd {
                 line = await reader.ReadLineAsync();
 
                 while(line != null) {
-                    // Read until there's no more left
-                    var parts = Regex.Split(line, " ");
+                    if (!string.IsNullOrWhiteSpace(line)) {
+                        // Read until there's no more left
+                        var parts = Regex.Split(line, " ");
 
-                    HandlerArgs args;
-                    switch(Info.Type) {
-                        case ListenerType.Server:
-                            args = new HandlerArgs(_ircd, server, line, false);
-                            break;
- 
-                        case ListenerType.Client:
-                        default:
-                            args = new HandlerArgs(_ircd, client, line, false);
-                            break;
+                        HandlerArgs args;
+                        switch (Info.Type) {
+                            case ListenerType.Server:
+                                args = new HandlerArgs(_ircd, server, line, false);
+                                break;
+
+                            case ListenerType.Client:
+                            default:
+                                args = new HandlerArgs(_ircd, client, line, false);
+                                break;
+                        }
+
+                        // For ListenerType.Client, search for parts[0]
+                        // But for ListenerType.Server, packets post-authentication are prefixed with :SID
+                        var search_prefix = parts[0];
+                        if (Info.Type == ListenerType.Server) {
+                            // Did check for ServerState.Auth before but no need
+                            if (parts[0].StartsWith(":") && parts.Count() > 1) {
+                                // (typically) authenticated server or they start their packets with their SID
+                                search_prefix = parts[1];
+                            } else {
+                                // (typically) unauthenticated server
+                                // (e.g. CAPAB ...)
+                                search_prefix = parts[0];
+                            }
+                        }
+
+                        _ircd.PacketManager.FindHandler(search_prefix, args, Info.Type);
                     }
-
-                    // For ListenerType.Client, search for parts[0]
-                    // But for ListenerType.Server, packets are prefixed with :SID
-                    _ircd.PacketManager.FindHandler(Info.Type == ListenerType.Client ? parts[0] : parts[1], args, Info.Type);
-
                     // Grab another line
                     line = await reader.ReadLineAsync();
                 }

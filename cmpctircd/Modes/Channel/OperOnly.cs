@@ -1,7 +1,7 @@
 namespace cmpctircd.Modes {
     public class OperOnlyMode : ChannelMode {
 
-        override public string Name { get; } = "OperOnly";
+        override public string Name { get; } = "operonly";
         override public string Description { get; } = "Provides +O for making a channel oper-only";
         override public string Character { get; } = "O";
         override public string Symbol { get; } = "";

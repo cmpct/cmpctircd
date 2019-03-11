@@ -13,6 +13,8 @@ namespace cmpctircd.Modes {
         override public bool Stackable { get; } = true;
         override public bool AllowAutoSet { get; } = false;
 
+        override public bool InspircdCompatible { get; }  = false;
+
         public AllTlsMode(Channel channel) : base(channel) {}
         private bool Enabled { get; set; }
 

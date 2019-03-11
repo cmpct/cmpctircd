@@ -12,6 +12,8 @@ namespace cmpctircd.Modes {
         override public bool Enabled { get; set; } = false;
         override public bool AllowAutoSet { get; } = false;
 
+        public override bool InspircdCompatible { get; } = false;
+
         public TLSMode(Client subject) : base(subject) {}
 
         override public bool Grant(string args, bool forceSet = false, bool announce = false, bool sendSelf = true) {

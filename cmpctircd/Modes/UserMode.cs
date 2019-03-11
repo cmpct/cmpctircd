@@ -11,6 +11,8 @@ namespace cmpctircd.Modes {
         abstract public bool Stackable { get; }
         abstract public bool AllowAutoSet { get; }
         abstract public bool Enabled { get; set; }
+
+        virtual public bool InspircdCompatible { get; } = true;
         public Client Subject;
 
         public UserMode(Client subject) {

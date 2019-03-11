@@ -15,6 +15,8 @@ namespace cmpctircd.Modes {
         abstract public bool ChannelWide { get; }
         abstract public bool Stackable { get; }
         abstract public bool AllowAutoSet { get; }
+
+        virtual public bool InspircdCompatible { get; } = true;
         public List<Client> Affects = new List<Client>();
 
         // Minimum level to use the command

@@ -399,9 +399,9 @@ namespace cmpctircd
             foreach (var mode in Modes) {
                 provides = mode.Value.Character;
                 try {
-                    value = mode.Value.GetValue();
-                    if (!String.IsNullOrWhiteSpace(value)) {
+                    if (mode.Value.Enabled) {
                         characters += provides;
+                        value = mode.Value.GetValue();
                         if (mode.Value.HasParameters) {
                             args += $"{value} ";
                         }

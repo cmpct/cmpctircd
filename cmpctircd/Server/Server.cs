@@ -55,11 +55,20 @@ namespace cmpctircd {
             var sHost = client.GetHost(false);
             var sUUID = client.UUID;
             var sServiceStamp = client.SignonTime; // TODO ?
-            var sUmodes = "+i"; // TODO make this dynamic
+
+            var modeString      = client.GetModeStrings("+");
+            var modeString_chrs = modeString[0];
+            var modeString_args = modeString[1];
+            var sUmodes         = modeString_chrs;
+            if (!string.IsNullOrEmpty(modeString_args)) {
+                sUmodes += $" {modeString_args}";
+            }
+
             var sVirtHost = client.IP;
             var sCloakHost = client.GetHost(true);
             var sIP = client.IP;
             var sGECOS = client.RealName;
+
             Write($":{IRCd.SID} UID {sUUID} {sServiceStamp} {sNick} {sHost} {sCloakHost} {sUser} {sIP} {sTime} {sUmodes} :{sGECOS}");
         }
 

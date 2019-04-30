@@ -111,15 +111,15 @@ namespace cmpctircd {
         }
 
         // TODO rework these? (for TLS links especially?)
-        public void Write(string packet) {
-            Write(packet, Stream);
+        public Task Write(string packet) {
+            return Write(packet, Stream);
         }
 
-        public void Write(string packet, Stream stream) {
+        public Task Write(string packet, Stream stream) {
             if(stream == null)
                 throw new ArgumentNullException(nameof(stream));
             byte[] packetBytes = Encoding.UTF8.GetBytes(packet + "\r\n");
-            stream.Write(packetBytes, 0, packetBytes.Length);
+            return stream.WriteAsync(packetBytes, 0, packetBytes.Length);
         }
 
         public void Disconnect(bool graceful = false) => Disconnect("", graceful, graceful);

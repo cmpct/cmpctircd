@@ -3,11 +3,11 @@ using System.Threading;
 using System.Collections.Concurrent;
 
 namespace cmpctircd.Threading {
-    public class QueuedSynchronizationContext : SynchronizationContext {
+    public class QueuedSynchronizationContext : SynchronizationContext, IDisposable {
         // Message queue
-        private BlockingCollection<CallbackStatePair> _queue = new BlockingCollection<CallbackStatePair>();
+        private readonly BlockingCollection<CallbackStatePair> _queue = new BlockingCollection<CallbackStatePair>();
         // Queue lock (many producers, one consumer with "write" lock when completing adding)
-        private ReaderWriterLockSlim _locker = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim _locker = new ReaderWriterLockSlim();
 
         /// <summary>
         /// Adds a message to the queue.
@@ -25,6 +25,8 @@ namespace cmpctircd.Threading {
         /// <param name="d">The SendOrPostCallback delegate to call.</param>
         /// <param name="state">The object passed to the delegate.</param>
         public override void Post(SendOrPostCallback d, object state) {
+            if(d == null)
+                throw new ArgumentNullException(nameof(d));
             Add(new CallbackStatePair(d, state));
         }
 
@@ -34,6 +36,8 @@ namespace cmpctircd.Threading {
         /// <param name="d">The SendOrPostCallback delegate to call.</param>
         /// <param name="state">The object passed to the delegate.</param>
         public override void Send(SendOrPostCallback d, object state) {
+            if(d == null)
+                throw new ArgumentNullException(nameof(d));
             ManualResetEventSlim reset = new ManualResetEventSlim();
             Add(new CallbackStatePair(d, state, reset));
             reset.Wait();
@@ -43,34 +47,39 @@ namespace cmpctircd.Threading {
         /// Processes the message queue.
         /// </summary>
         /// <param name="predicate">Predicate function which determines whether the processing should continue (true) or not (false).</param>
-        private void Process(Func<bool> predicate) {
-            while(predicate()) { // While the predicate returns true
+        private void Process() {
+            while(!_queue.IsCompleted) { // While the queue is not completed
                 CallbackStatePair pair = _queue.Take(); // Take the next message
-                pair.Delegate(pair.State); // Run the message
-                pair.Reset?.Set(); // Set the event, if it exists
+                if(pair.Delegate == null) { // If the delegate is null, complete adding
+                    _locker.EnterWriteLock(); // Lock to suspend producers
+                    _queue.CompleteAdding(); // Notify adding completed
+                    _locker.ExitWriteLock(); // Unlock
+                } else {
+                    pair.Delegate(pair.State); // Run the message
+                    pair.Reset?.Set(); // Set the event, if it exists
+                }
             }
         }
 
         /// <summary>
         /// Run the consumer of the message queue.
         /// </summary>
-        /// <param name="predicate">Predicate function which determines whether the processing should continue (true) or not (false).</param>
         /// <returns>True if the consumer was run, False otherwise.</returns>
-        public bool Run(Func<bool> predicate) {
+        public bool Run() {
             if(Monitor.TryEnter(_queue)) { // Mutual exclusion for only one processor
-                if(_queue.IsAddingCompleted) { // If queue has already been completed and is unusuable
+                if(_queue.IsCompleted) { // If queue has already been completed and is unusuable
                     Monitor.Exit(_queue); // Unlock
                     return false;
                 }
-                Process(predicate); // Process the message queue until the predicate determines the stop
-                _locker.EnterWriteLock(); // Lock to stop producers
-                _queue.CompleteAdding(); // Notify adding completed
-                _locker.ExitWriteLock(); // Unlock
-                Process(() => !(_queue.IsCompleted)); // Process the message queue until it is empty
+                Process(); // Process the message queue until the predicate determines the stop
                 Monitor.Exit(_queue); // Unlock
                 return true;
             }
             return false;
+        }
+
+        public void Stop() {
+            Add(new CallbackStatePair(null, null));
         }
 
         private struct CallbackStatePair {
@@ -99,5 +108,26 @@ namespace cmpctircd.Threading {
                 Reset = reset;
             }
         }
+
+        #region IDisposable Support
+        private bool disposed = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing) {
+            if (!disposed) {
+                if (disposing) {
+                    _locker.Dispose();
+                    _queue.Dispose();
+                }
+                disposed = true;
+            }
+        }
+
+        /// <summary>
+        /// Dispose of the object, releasing resources.
+        /// </summary>
+        public void Dispose() {
+            Dispose(true);
+        }
+        #endregion
     }
 }

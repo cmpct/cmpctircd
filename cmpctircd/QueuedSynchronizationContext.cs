@@ -3,7 +3,7 @@ using System.Threading;
 using System.Collections.Concurrent;
 
 namespace cmpctircd.Threading {
-    public class SynchronizationContext : System.Threading.SynchronizationContext {
+    public class QueuedSynchronizationContext : SynchronizationContext {
         // Message queue
         private BlockingCollection<CallbackStatePair> _queue = new BlockingCollection<CallbackStatePair>();
         // Queue lock (many producers, one consumer with "write" lock when completing adding)

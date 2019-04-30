@@ -132,11 +132,6 @@ namespace cmpctircd {
                 };
                 statTimer.Start();
             }
-
-
-            while (true) {
-                System.Threading.Thread.Sleep(10);
-            }
         }
 
         public void WriteToAllServers(string message, List<Server> except = null) {

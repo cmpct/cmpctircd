@@ -6,17 +6,13 @@ namespace cmpctircd.Threading {
     public class QueuedSynchronizationContext : SynchronizationContext, IDisposable {
         // Message queue
         private readonly BlockingCollection<CallbackStatePair> _queue = new BlockingCollection<CallbackStatePair>();
-        // Queue lock (many producers, one consumer with "write" lock when completing adding)
-        private readonly ReaderWriterLockSlim _locker = new ReaderWriterLockSlim();
 
         /// <summary>
         /// Adds a message to the queue.
         /// </summary>
         /// <param name="pair">Callback and state pair message.</param>
         private void Add(CallbackStatePair pair) {
-            _locker.EnterReadLock();
             _queue.Add(pair);
-            _locker.ExitReadLock();
         }
 
         /// <summary>
@@ -51,9 +47,7 @@ namespace cmpctircd.Threading {
             while(!_queue.IsCompleted) { // While the queue is not completed
                 CallbackStatePair pair = _queue.Take(); // Take the next message
                 if(pair.Delegate == null) { // If the delegate is null, complete adding
-                    _locker.EnterWriteLock(); // Lock to suspend producers
                     _queue.CompleteAdding(); // Notify adding completed
-                    _locker.ExitWriteLock(); // Unlock
                 } else {
                     pair.Delegate(pair.State); // Run the message
                     pair.Reset?.Set(); // Set the event, if it exists
@@ -115,7 +109,6 @@ namespace cmpctircd.Threading {
         protected virtual void Dispose(bool disposing) {
             if (!disposed) {
                 if (disposing) {
-                    _locker.Dispose();
                     _queue.Dispose();
                 }
                 disposed = true;

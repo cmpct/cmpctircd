@@ -241,11 +241,10 @@ namespace cmpctircd.Packets {
             };
 
             // TODO modes
-            lock(args.Server.Listener.Clients)
-                args.Server.Listener.Clients.Add(client);
+            args.Server.Listener.Clients.Add(client);
 
-            System.Threading.Interlocked.Increment(ref args.Server.Listener.ClientCount);
-            System.Threading.Interlocked.Increment(ref args.Server.Listener.AuthClientCount);
+            ++args.Server.Listener.ClientCount;
+            ++args.Server.Listener.AuthClientCount;
 
             args.IRCd.Log.Debug($"[SERVER] got new client {nick}");
             return true;

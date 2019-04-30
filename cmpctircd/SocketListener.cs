@@ -32,12 +32,8 @@ namespace cmpctircd {
             this._ircd = ircd;
             this.Info = info;
             _listener = new TcpListener(info.IP, info.Port);
-            lock(_ircd.ClientLists) {
-                _ircd.ClientLists.Add(Clients);
-            }
-            lock(_ircd.ServerLists) {
-                _ircd.ServerLists.Add(_servers);
-            }
+            _ircd.ClientLists.Add(Clients);
+            _ircd.ServerLists.Add(_servers);
         }
         ~SocketListener() {
             Stop();
@@ -90,18 +86,16 @@ namespace cmpctircd {
 
             if (Info.Type == ListenerType.Client) {
                 client = new Client(_ircd, tc, this, stream);
-                lock (Clients)
-                    Clients.Add(client);
+                Clients.Add(client);
 
                 // Increment the client count
-                System.Threading.Interlocked.Increment(ref ClientCount);
+                ++ClientCount;
             } else {
                 server = new Server(_ircd, tc, this, stream);
-                lock (_servers)
-                    _servers.Add(server);
+                _servers.Add(server);
 
                 // Increment the server count
-                System.Threading.Interlocked.Increment(ref ServerCount);
+                ++ServerCount;
             }
 
             StreamReader reader = null;
@@ -192,15 +186,11 @@ namespace cmpctircd {
         }
 
         public void Remove(Client client) {
-            lock (Clients) {
-                Clients.Remove(client);
-            }
+            Clients.Remove(client);
         }
 
         public void Remove(Server server) {
-            lock (_servers) {
-                _servers.Remove(server);
-            }
+            _servers.Remove(server);
         }
     }
 }

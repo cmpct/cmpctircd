@@ -76,26 +76,32 @@ namespace cmpctircd {
         async Task HandleClient(TcpClient tc) {
             Client client = null;
             Server server = null;
+            Stream stream = tc.GetStream();
+
+            // Handshake with TLS if they're from a TLS port
+            if (Info.TLS) {
+                try {
+                    stream = HandshakeTls(tc);
+                } catch (Exception e) {
+                    _ircd.Log.Debug($"Exception in HandshakeTls: {e.ToString()}");
+                    tc.Close();
+                }
+            }
 
             if (Info.Type == ListenerType.Client) {
-                client = new Client(_ircd, tc, this);
+                client = new Client(_ircd, tc, this, stream);
                 lock (Clients)
                     Clients.Add(client);
 
                 // Increment the client count
                 System.Threading.Interlocked.Increment(ref ClientCount);
             } else {
-                server = new Server(_ircd, tc, this);
+                server = new Server(_ircd, tc, this, stream);
                 lock (_servers)
                     _servers.Add(server);
 
                 // Increment the server count
                 System.Threading.Interlocked.Increment(ref ServerCount);
-            }
-
-            // Handshake with TLS if they're from a TLS port
-            if(Info.TLS) {
-                HandshakeTls(Info.Type == ListenerType.Client ? (SocketBase) client : (SocketBase) server);
             }
 
             StreamReader reader = null;
@@ -108,26 +114,18 @@ namespace cmpctircd {
                 // XXX: Temporary fix for http://bugs.cmpct.info/show_bug.cgi?id=253
                 // XXX: May need deeper changes(?)
                 if(Info.Type == ListenerType.Client) {
-                    if((Info.TLS && !client.TlsStream.CanRead) || (!Info.TLS && !client.Stream.CanRead))
+                    if(!client.Stream.CanRead)
                         throw new InvalidOperationException("Can't read on this socket");
-
                     client.BeginTasks();
                 } else {
-                    if((Info.TLS && !server.TlsStream.CanRead) || (!Info.TLS && !server.Stream.CanRead))
+                    if(!server.Stream.CanRead)
                         throw new InvalidOperationException("Can't read on this socket");
-
                     server.BeginTasks();
                 }
 
                 string line;
                     
-                // Need to supply a different stream for TLS
-                if(Info.TLS) {
-                    reader = new StreamReader(Info.Type == ListenerType.Client ? client.TlsStream : server.TlsStream);
-                } else {
-                    // TODO: need outbound server support
-                    reader = new StreamReader(Info.Type == ListenerType.Client ? client.Stream : server.Stream);
-                }
+                reader = new StreamReader(Info.Type == ListenerType.Client ? client.Stream : server.Stream);
 
                 line = await reader.ReadLineAsync();
 
@@ -181,21 +179,16 @@ namespace cmpctircd {
             }
         }
 
-        public void HandshakeTls(SocketBase s) {
-            try {
-                s.TlsStream = new SslStream(s.TcpClient.GetStream(), true);
-
-                // NOTE: Must use carefully constructed cert in PKCS12 format (.pfx)
-                // NOTE: https://security.stackexchange.com/a/29428
-                // NOTE: You will get a NotSupportedException otherwise
-                // NOTE: Create a TLS certificate using openssl (or $TOOL), then:
-                // NOTE:    openssl pkcs12 -export -in tls_cert.pem -inkey tls_key.pem -out server.pfx
-                X509Certificate serverCertificate = new X509Certificate2(_ircd.Config.TLS_PfxLocation, _ircd.Config.TLS_PfxPassword);
-                s.TlsStream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls12, true);
-            } catch(Exception e) {
-                _ircd.Log.Debug($"Exception in HandshakeTls: {e.ToString()}");
-                s.Disconnect(false);
-            }
+        public SslStream HandshakeTls(TcpClient tc) {
+            SslStream stream = new SslStream(tc.GetStream(), true);
+            // NOTE: Must use carefully constructed cert in PKCS12 format (.pfx)
+            // NOTE: https://security.stackexchange.com/a/29428
+            // NOTE: You will get a NotSupportedException otherwise
+            // NOTE: Create a TLS certificate using openssl (or $TOOL), then:
+            // NOTE:    openssl pkcs12 -export -in tls_cert.pem -inkey tls_key.pem -out server.pfx
+            X509Certificate serverCertificate = new X509Certificate2(_ircd.Config.TLS_PfxLocation, _ircd.Config.TLS_PfxPassword);
+            stream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls12, true);
+            return stream;
         }
 
         public void Remove(Client client) {

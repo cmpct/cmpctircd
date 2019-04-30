@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Net.Security;
 using System.Net;
+using System.IO;
 
 namespace cmpctircd {
     public class SocketBase {
@@ -15,9 +16,9 @@ namespace cmpctircd {
         // TODO: Many of these look like they shouldn't be public or should be private set. Review?
         public IRCd IRCd { get; set; }
         public TcpClient TcpClient { get; set; }
-        public SslStream TlsStream { get; set; }
+        public Stream Stream { get; private set; }
+        public bool IsTlsEnabled { get; private set; }
         // TODO: make these protected set?
-        public NetworkStream Stream { get; set; }
         public SocketListener Listener { get; set; }
 
         // Ping information
@@ -27,11 +28,12 @@ namespace cmpctircd {
 
         // TODO: do constructor too
 
-        public SocketBase(IRCd ircd, TcpClient tc, SocketListener sl) {
+        public SocketBase(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream) {
             IRCd = ircd;
             TcpClient = tc;
             Listener = sl;
-            Stream = TcpClient?.GetStream();
+            Stream = stream;
+            IsTlsEnabled = stream is SslStream;
         }
 
         public void BeginTasks() {
@@ -113,23 +115,18 @@ namespace cmpctircd {
             Write(packet, Stream);
         }
 
-        public void Write(string packet, NetworkStream Stream) {
+        public void Write(string packet, Stream stream) {
+            if(stream == null)
+                throw new ArgumentNullException(nameof(stream));
             byte[] packetBytes = Encoding.UTF8.GetBytes(packet + "\r\n");
-            if(TlsStream != null && TlsStream.CanWrite) {
-                TlsStream.Write(packetBytes, 0, packetBytes.Length);
-            } else if(Stream != null && Stream.CanWrite) {
-                Stream.Write(packetBytes, 0, packetBytes.Length);
-            }
+            stream.Write(packetBytes, 0, packetBytes.Length);
         }
 
         public void Disconnect(bool graceful = false) => Disconnect("", graceful, graceful);
         public virtual void Disconnect(string reason = "", bool graceful = false, bool sendToSelf = false) {
-            if(sendToSelf) {
+            if(sendToSelf)
                 Write(reason);
-            }
-            if(TlsStream != null) {
-                TlsStream.Close();
-            }
+            Stream?.Close();
             TcpClient.Close();
             // graceful means inform clients of departure
             // !graceful means kill the connection

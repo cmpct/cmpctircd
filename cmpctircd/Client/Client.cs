@@ -11,6 +11,7 @@ using System.Net.Security;
 
 using cmpctircd.Modes;
 using System.Net;
+using System.IO;
 
 namespace cmpctircd
 {
@@ -46,7 +47,7 @@ namespace cmpctircd
         public readonly static object nickLock = new object();
         private readonly object _disconnectLock = new object();
 
-        public Client(IRCd ircd, TcpClient tc, SocketListener sl, String UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl) {
+        public Client(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream, String UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl, stream) {
             if(ircd.Config.ResolveHostnames)
                 ResolvingHost = true;
 
@@ -205,9 +206,8 @@ namespace cmpctircd
         }
 
         public void SetModes() {
-            if (TlsStream != null) {
+            if(IsTlsEnabled)
                 Modes["z"].Grant("", true, true);
-            }
             foreach(var mode in IRCd.AutoUModes) {
                 if(Modes.ContainsKey(mode.Key)) {
                     var modeObject = Modes[mode.Key];
@@ -464,9 +464,7 @@ namespace cmpctircd
                 State = ClientState.Disconnected;
 
                 if (!RemoteClient) {
-                    if (TlsStream != null) {
-                        TlsStream.Close();
-                    }
+                    Stream?.Close();
                     TcpClient.Close();
                 }
 

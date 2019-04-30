@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
@@ -16,7 +17,7 @@ namespace cmpctircd {
 
         private readonly object _disconnectLock = new object();
 
-        public Server(IRCd ircd, TcpClient tc, SocketListener sl) : base(ircd, tc, sl) {
+        public Server(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream) : base(ircd, tc, sl, stream) {
             State = ServerState.PreAuth;
         }
 
@@ -103,7 +104,7 @@ namespace cmpctircd {
             Write($"CAPAB START {version}");
 
             // TODO: Can this be de-duplicated with Client.SendWelcome()?
-            var UModeTypes = IRCd.GetSupportedUModes(new Client(IRCd, null, Listener));
+            var UModeTypes = IRCd.GetSupportedUModes(new Client(IRCd, null, Listener, null));
             var ModeTypes = IRCd.GetSupportedModesByType();
             var modes = IRCd.GetSupportedModes(true);
 
@@ -151,7 +152,7 @@ namespace cmpctircd {
             var UserModeString = new StringBuilder();
             UserModeString.Append("CAPAB USERMODES :");
 
-            var client = new Client(IRCd, null, null);
+            var client = new Client(IRCd, null, null, null);
             foreach (var mode in client.Modes.Values) {
                 // Don't tell the remote server about it for now
                 // TODO: Need to figure out how this will affect desyncs etc
@@ -197,9 +198,7 @@ namespace cmpctircd {
                     Write(reason);
                 }
 
-                if (TlsStream != null) {
-                    TlsStream.Close();
-                }
+                Stream?.Close();
                 TcpClient.Close();
 
                 // TODO: Graceful? Tell everyone we're going if they didn't send QUITs for all clients like they should?

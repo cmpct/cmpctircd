@@ -42,7 +42,6 @@ namespace cmpctircd.Threading {
         /// <summary>
         /// Processes the message queue.
         /// </summary>
-        /// <param name="predicate">Predicate function which determines whether the processing should continue (true) or not (false).</param>
         private void Process() {
             while(!_queue.IsCompleted) { // While the queue is not completed
                 CallbackStatePair pair = _queue.Take(); // Take the next message
@@ -51,6 +50,7 @@ namespace cmpctircd.Threading {
                 } else {
                     pair.Delegate(pair.State); // Run the message
                     pair.Reset?.Set(); // Set the event, if it exists
+                    pair.Dispose();
                 }
             }
         }
@@ -76,7 +76,7 @@ namespace cmpctircd.Threading {
             Add(new CallbackStatePair(null, null));
         }
 
-        private struct CallbackStatePair {
+        private struct CallbackStatePair : IDisposable {
             /// <summary>
             /// The SendOrPostCallback delegate to call.
             /// </summary>
@@ -100,6 +100,13 @@ namespace cmpctircd.Threading {
                 Delegate = d;
                 State = state;
                 Reset = reset;
+            }
+
+            /// <summary>
+            /// Dispose of the object, releasing resources.
+            /// </summary>
+            public void Dispose() {
+                Reset?.Dispose();
             }
         }
 

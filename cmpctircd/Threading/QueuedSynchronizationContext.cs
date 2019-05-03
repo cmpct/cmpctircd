@@ -34,9 +34,10 @@ namespace cmpctircd.Threading {
         public override void Send(SendOrPostCallback d, object state) {
             if(d == null)
                 throw new ArgumentNullException(nameof(d));
-            ManualResetEventSlim reset = new ManualResetEventSlim();
-            Add(new CallbackStatePair(d, state, reset));
-            reset.Wait();
+            using (ManualResetEventSlim reset = new ManualResetEventSlim()) {
+                Add(new CallbackStatePair(d, state, reset));
+                reset.Wait();
+            }
         }
 
         /// <summary>
@@ -50,7 +51,6 @@ namespace cmpctircd.Threading {
                 } else {
                     pair.Delegate(pair.State); // Run the message
                     pair.Reset?.Set(); // Set the event, if it exists
-                    pair.Dispose();
                 }
             }
         }
@@ -76,7 +76,7 @@ namespace cmpctircd.Threading {
             Add(new CallbackStatePair(null, null));
         }
 
-        private struct CallbackStatePair : IDisposable {
+        private struct CallbackStatePair {
             /// <summary>
             /// The SendOrPostCallback delegate to call.
             /// </summary>
@@ -100,13 +100,6 @@ namespace cmpctircd.Threading {
                 Delegate = d;
                 State = state;
                 Reset = reset;
-            }
-
-            /// <summary>
-            /// Dispose of the object, releasing resources.
-            /// </summary>
-            public void Dispose() {
-                Reset?.Dispose();
             }
         }
 

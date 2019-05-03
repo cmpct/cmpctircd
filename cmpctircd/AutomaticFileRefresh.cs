@@ -10,7 +10,7 @@ namespace cmpctircd {
     public class AutomaticFileRefresh {
         private readonly FileInfo _target; // Target file
         private readonly FileSystemWatcher _watcher; // File watcher
-        private string[] _cache = new string[0]; // File contents cache
+        private byte[] _cache = new byte[0]; // File contents cache
         private bool _reload = true; // Whether the file needs to be reloaded or not
         private int _retries; // File lock retries
         private int _delay; // File lock wait delay
@@ -48,8 +48,8 @@ namespace cmpctircd {
             int attempts = 0;
             while(true) {
                 try {
-                    using(StreamReader reader = _target.OpenText()) {
-                        _cache = (await reader.ReadToEndAsync()).Split(new[] { Environment.NewLine }, StringSplitOptions.None);
+                    using(FileStream stream = _target.OpenRead()) {
+                        await stream.ReadAsync(_cache = new byte[(int) stream.Length], 0, (int) stream.Length); // int will support up to 3GB
                         _reload = false;
                         break;
                     }
@@ -67,19 +67,15 @@ namespace cmpctircd {
             }
         }
 
-        /// <summary>
-        /// Gets all lines of the file, in a string array, asynchronously.
-        /// </summary>
-        /// <returns>A Task tracking the completion of the operation, resulting in a string array of file lines.</returns>
-        public async Task<string[]> GetAllLinesAsync() {
+        public async Task<Stream> GetStreamAsync() {
             await _semaphore.WaitAsync();
-            if(_reload == false) {
+            if (_reload == false) {
                 _semaphore.Release();
-                return _cache;
+                return new MemoryStream(_cache, 0, _cache.Length, false, false);
             } else {
                 await Reload();
                 _semaphore.Release();
-                return _cache;
+                return new MemoryStream(_cache, 0, _cache.Length, false, false);
             }
         }
 

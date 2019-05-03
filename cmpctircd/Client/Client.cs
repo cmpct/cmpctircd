@@ -260,14 +260,18 @@ namespace cmpctircd
         }
         public async Task SendMotd() {
             try {
-                string[] motd = await IRCd.MOTD.GetAllLinesAsync();
-                Write(String.Format(":{0} {1} {2} : - {3} Message of the Day -", IRCd.Host, IrcNumeric.RPL_MOTDSTART.Printable(), Nick, IRCd.Host));
-                for (int i = 0; i < motd.Length; i++) {
-                    if ((i == motd.Length - 1) && motd[i].Length == 0) // If end of the file and a new line, don't print.
-                        break;
-                    Write(String.Format(":{0} {1} {2} : - {3}", IRCd.Host, IrcNumeric.RPL_MOTD.Printable(), Nick, motd[i]));
+                using(Stream motd = await IRCd.MOTD.GetStreamAsync()) {
+                    Write(String.Format(":{0} {1} {2} : - {3} Message of the Day -", IRCd.Host, IrcNumeric.RPL_MOTDSTART.Printable(), Nick, IRCd.Host));
+                    using(StreamReader reader = new StreamReader(motd)) {
+                        string line;
+                        while(!reader.EndOfStream) {
+                            line = reader.ReadLine();
+                            if(!(String.IsNullOrEmpty(line) && reader.EndOfStream))
+                                Write(String.Format(":{0} {1} {2} : - {3}", IRCd.Host, IrcNumeric.RPL_MOTD.Printable(), Nick, line));
+                        }
+                    }
+                    Write(String.Format(":{0} {1} {2} :End of /MOTD command.", IRCd.Host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
                 }
-                Write(String.Format(":{0} {1} {2} :End of /MOTD command.", IRCd.Host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
             } catch(IOException e) {
                 IRCd.Log.Error(e.Message);
             }

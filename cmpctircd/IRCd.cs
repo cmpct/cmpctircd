@@ -48,8 +48,7 @@ namespace cmpctircd {
         public DateTime CreateTime { get; private set; }
         public static char[] lastUID = new char[] { };
 
-        public string[] MOTD { get; private set; } = new string[0];
-        private readonly FileSystemWatcher _watcher = new FileSystemWatcher(Directory.GetCurrentDirectory(), "ircd.motd");
+        public AutomaticFileRefresh MOTD { get; private set; } = new AutomaticFileRefresh(new FileInfo("ircd.motd"));
 
         public IRCd(Log log, Config.ConfigData config) {
             this.Log = log;
@@ -85,17 +84,6 @@ namespace cmpctircd {
                 Log.Info("===> Please report any bugs or feedback to the developers via the bugtracker at https://bugs.cmpct.info/");
             }
             Log.Info($"==> Host: {Host}");
-
-            // Initialise MOTD and its watcher
-            RefreshMOTD();
-            // When the file is created or changed, update
-            _watcher.Created += (sender, e) => RefreshMOTD();
-            _watcher.Changed += (sender, e) => RefreshMOTD();
-            // If the file is deleted or removed, allow reading to fail (resulting in no MOTD)
-            _watcher.Deleted += (sender, e) => RefreshMOTD();
-            _watcher.Renamed += (sender, e) => RefreshMOTD();
-            // We want events!
-            _watcher.EnableRaisingEvents = true;
 
             Listeners   = new List<SocketListener>();
             ClientLists = new List<List<Client>>();
@@ -145,28 +133,6 @@ namespace cmpctircd {
                     }
                 };
                 statTimer.Start();
-            }
-        }
-
-        private async Task RefreshMOTD() {
-            Log.Info("Updating message of the day.");
-            // Lord forgive me for the hacks I am about to commit.
-            while (true) {
-                try {
-                    using (var reader = System.IO.File.OpenText("ircd.motd")) {
-                        MOTD = (await reader.ReadToEndAsync()).Split(new[] { Environment.NewLine }, StringSplitOptions.None);
-                        break;
-                    }
-                } catch(IOException e) {
-                    int code = System.Runtime.InteropServices.Marshal.GetHRForException(e) & ((1 << 16) - 1);
-                    if (code == 32 || code == 33) {
-                        await Task.Delay(100); // So we don't spam the OS with read requests.
-                    } else {
-                        MOTD = new string[0];
-                        Log.Error(e.Message);
-                        break;
-                    }
-                }
             }
         }
 

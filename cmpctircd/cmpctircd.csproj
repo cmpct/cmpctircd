@@ -44,6 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutomaticFileRefresh.cs" />
     <Compile Include="Channel\Ban.cs" />
     <Compile Include="Channel\Channel.cs" />
     <Compile Include="Channel\ChannelManager.cs" />

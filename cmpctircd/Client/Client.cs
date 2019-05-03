@@ -258,18 +258,20 @@ namespace cmpctircd
             // TODO: Adjust this with linking
             Write($":{IRCd.Host} {IrcNumeric.RPL_GLOBALUSERS.Printable()} {Nick} :Current Global Users: {users} Max: {IRCd.MaxSeen}");
         }
-        public void SendMotd() {
-            Write(String.Format(":{0} {1} {2} : - {3} Message of the Day -", IRCd.Host, IrcNumeric.RPL_MOTDSTART.Printable(), Nick, IRCd.Host));
-            for(int i = 0; i < IRCd.MOTD.Length; i++) {
-                if((i == IRCd.MOTD.Length) && String.IsNullOrEmpty(IRCd.MOTD[i])) {
-                    // If end of the file and a new line, don't print.
-                    break;
+        public async Task SendMotd() {
+            try {
+                string[] motd = await IRCd.MOTD.GetAllLinesAsync();
+                Write(String.Format(":{0} {1} {2} : - {3} Message of the Day -", IRCd.Host, IrcNumeric.RPL_MOTDSTART.Printable(), Nick, IRCd.Host));
+                for (int i = 0; i < motd.Length; i++) {
+                    if ((i == motd.Length - 1) && motd[i].Length == 0) // If end of the file and a new line, don't print.
+                        break;
+                    Write(String.Format(":{0} {1} {2} : - {3}", IRCd.Host, IrcNumeric.RPL_MOTD.Printable(), Nick, motd[i]));
                 }
-                Write(String.Format(":{0} {1} {2} : - {3}", IRCd.Host, IrcNumeric.RPL_MOTD.Printable(), Nick, IRCd.MOTD[i]));
+                Write(String.Format(":{0} {1} {2} :End of /MOTD command.", IRCd.Host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
+            } catch(IOException e) {
+                IRCd.Log.Error(e.Message);
             }
-            Write(String.Format(":{0} {1} {2} :End of /MOTD command.", IRCd.Host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
         }
-
 
         public void SendRules() {
             try {

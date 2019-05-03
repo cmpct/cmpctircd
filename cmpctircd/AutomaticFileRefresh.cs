@@ -7,7 +7,7 @@ namespace cmpctircd {
     /// <summary>
     /// Watches a specified file for changes and provides up-to-date contents with caching.
     /// </summary>
-    public class AutomaticFileRefresh {
+    public class AutomaticFileRefresh : IDisposable {
         private readonly FileInfo _target; // Target file
         private readonly FileSystemWatcher _watcher; // File watcher
         private byte[] _cache = new byte[0]; // File contents cache
@@ -54,9 +54,11 @@ namespace cmpctircd {
                         break;
                     }
                 } catch(IOException e) {
-                    // See <https://docs.microsoft.com/en-us/windows/desktop/Debug/system-error-codes--0-499->
-                    // Error 32 and 33 are file lock errors.
-                    int code = System.Runtime.InteropServices.Marshal.GetHRForException(e) & ((1 << 16) - 1);
+                    // IOException.HResult used for cross-platform compatibility. This field is unprotected in .NET 4.5+
+                    // <https://github.com/dotnet/corefx/issues/11144>
+                    // Error 32 and 33 are file lock errors, see below:
+                    // <https://docs.microsoft.com/en-us/windows/desktop/Debug/system-error-codes--0-499->
+                    int code = e.HResult & ((1 << 16) - 1);
                     if(code == 32 || code == 33) { // 
                         if(_retries >= 0 && attempts++ >= _retries) throw;
                         await Task.Delay(_delay); // So we don't spam the OS with read requests.
@@ -67,17 +69,35 @@ namespace cmpctircd {
             }
         }
 
+        /// <summary>
+        /// Gets a Stream of the file contents.
+        /// </summary>
+        /// <returns>Stream of the file contents.</returns>
         public async Task<Stream> GetStreamAsync() {
             await _semaphore.WaitAsync();
-            if (_reload == false) {
-                _semaphore.Release();
-                return new MemoryStream(_cache, 0, _cache.Length, false, false);
-            } else {
-                await Reload();
-                _semaphore.Release();
-                return new MemoryStream(_cache, 0, _cache.Length, false, false);
+            if(_reload) await Reload();
+            _semaphore.Release();
+            return new MemoryStream(_cache, 0, _cache.Length, false, false); // No writing or byte array access.
+        }
+
+        #region IDisposable Support
+        private bool disposed = false; // To detect redundant calls
+
+        protected virtual void Dispose(bool disposing) {
+            if (!disposed) {
+                if (disposing) {
+                    _semaphore.Dispose();
+                    _watcher.Dispose();
+                }
+                disposed = true;
             }
         }
+
+        // This code added to correctly implement the disposable pattern.
+        public void Dispose() {
+            Dispose(true);
+        }
+        #endregion
 
     }
 }

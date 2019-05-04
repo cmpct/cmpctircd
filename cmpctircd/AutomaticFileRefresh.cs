@@ -12,9 +12,9 @@ namespace cmpctircd {
         private readonly FileSystemWatcher _watcher; // File watcher
         private byte[] _cache = new byte[0]; // File contents cache
         private bool _reload = true; // Whether the file needs to be reloaded or not
-        private int _retries; // File lock retries
-        private int _delay; // File lock wait delay
-        private SemaphoreSlim _semaphore = new SemaphoreSlim(1); // Reading semaphore (to prevent two refresh requests)
+        private readonly int _retries; // File lock retries
+        private readonly int _delay; // File lock wait delay
+        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1); // Reading semaphore (to prevent two refresh requests)
 
         /// <summary>
         /// Constructor for AutomaticFileRefresh

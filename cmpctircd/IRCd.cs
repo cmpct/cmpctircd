@@ -48,7 +48,8 @@ namespace cmpctircd {
         public DateTime CreateTime { get; private set; }
         public static char[] lastUID = new char[] { };
 
-        public AutomaticFileRefresh MOTD { get; private set; } = new AutomaticFileRefresh(new FileInfo("ircd.motd"));
+        public AutomaticFileRefresh MOTD { get; } = new AutomaticFileRefresh(new FileInfo("ircd.motd"));
+        public AutomaticFileRefresh Rules { get; } = new AutomaticFileRefresh(new FileInfo("ircd.rules"));
 
         public IRCd(Log log, Config.ConfigData config) {
             this.Log = log;

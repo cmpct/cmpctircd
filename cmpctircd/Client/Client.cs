@@ -261,13 +261,13 @@ namespace cmpctircd
         public async Task SendMotd() {
             try {
                 using(Stream motd = await IRCd.MOTD.GetStreamAsync()) {
-                    Write(String.Format(":{0} {1} {2} : - {3} Message of the Day -", IRCd.Host, IrcNumeric.RPL_MOTDSTART.Printable(), Nick, IRCd.Host));
+                    Write(String.Format(":{0} {1} {2} :- {3} Message of the Day -", IRCd.Host, IrcNumeric.RPL_MOTDSTART.Printable(), Nick, IRCd.Host));
                     using(StreamReader reader = new StreamReader(motd)) {
                         string line;
                         while(!reader.EndOfStream) {
                             line = reader.ReadLine();
                             if(!(String.IsNullOrEmpty(line) && reader.EndOfStream))
-                                Write(String.Format(":{0} {1} {2} : - {3}", IRCd.Host, IrcNumeric.RPL_MOTD.Printable(), Nick, line));
+                                Write(String.Format(":{0} {1} {2} :- {3}", IRCd.Host, IrcNumeric.RPL_MOTD.Printable(), Nick, line));
                         }
                     }
                     Write(String.Format(":{0} {1} {2} :End of /MOTD command.", IRCd.Host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
@@ -277,20 +277,22 @@ namespace cmpctircd
             }
         }
 
-        public void SendRules() {
+        public async Task SendRules() {
             try {
-                string[] rules = System.IO.File.ReadAllLines("ircd.rules");
-                Write(String.Format(":{0} {1} {2} :- {3} server rules -", IRCd.Host, IrcNumeric.RPL_MOTDSTART.Printable(), Nick, IRCd.Host));
-                for(int i = 0; i < rules.Length; i++) {
-                    if((i == rules.Length) && String.IsNullOrEmpty(rules[i])) {
-                        // If end of the file and a new line, don't print.
-                        break;
+                using(Stream rules = await IRCd.Rules.GetStreamAsync()) {
+                    Write(String.Format(":{0} {1} {2} :- {3} Server Rules -", IRCd.Host, IrcNumeric.RPL_MOTDSTART.Printable(), Nick, IRCd.Host));
+                    using(StreamReader reader = new StreamReader(rules)) {
+                        string line;
+                        while(!reader.EndOfStream) {
+                            line = reader.ReadLine();
+                            if(!(String.IsNullOrEmpty(line) && reader.EndOfStream))
+                                Write(String.Format(":{0} {1} {2} :- {3}", IRCd.Host, IrcNumeric.RPL_MOTD.Printable(), Nick, line));
+                        }
                     }
-                    Write(String.Format(":{0} {1} {2} : - {3}", IRCd.Host, IrcNumeric.RPL_MOTD.Printable(), Nick, rules[i]));
+                    Write(String.Format(":{0} {1} {2} :End of /RULES command.", IRCd.Host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
                 }
-                Write(String.Format(":{0} {1} {2} :End of RULES command.", IRCd.Host, IrcNumeric.RPL_ENDOFMOTD.Printable(), Nick));
-            } catch(System.IO.FileNotFoundException) {
-                IRCd.Log.Error("ircd.rules doesn't exist!");
+            } catch(IOException e) {
+                IRCd.Log.Error(e.Message);
             }
         }
 

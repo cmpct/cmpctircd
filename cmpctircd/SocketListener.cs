@@ -77,7 +77,7 @@ namespace cmpctircd {
             // Handshake with TLS if they're from a TLS port
             if (Info.TLS) {
                 try {
-                    stream = HandshakeTls(tc);
+                    stream = await HandshakeTls(tc);
                 } catch (Exception e) {
                     _ircd.Log.Debug($"Exception in HandshakeTls: {e.ToString()}");
                     tc.Close();
@@ -173,15 +173,14 @@ namespace cmpctircd {
             }
         }
 
-        public SslStream HandshakeTls(TcpClient tc) {
+        public async Task<SslStream> HandshakeTls(TcpClient tc) {
             SslStream stream = new SslStream(tc.GetStream(), true);
             // NOTE: Must use carefully constructed cert in PKCS12 format (.pfx)
             // NOTE: https://security.stackexchange.com/a/29428
             // NOTE: You will get a NotSupportedException otherwise
             // NOTE: Create a TLS certificate using openssl (or $TOOL), then:
             // NOTE:    openssl pkcs12 -export -in tls_cert.pem -inkey tls_key.pem -out server.pfx
-            X509Certificate serverCertificate = new X509Certificate2(_ircd.Config.TLS_PfxLocation, _ircd.Config.TLS_PfxPassword);
-            stream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls12, true);
+            stream.AuthenticateAsServer(await _ircd.Certificate.GetCertificateAsync(), false, SslProtocols.Tls12, true);
             return stream;
         }
 

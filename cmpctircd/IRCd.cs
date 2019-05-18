@@ -48,8 +48,9 @@ namespace cmpctircd {
         public DateTime CreateTime { get; private set; }
         public static char[] lastUID = new char[] { };
 
-        public AutomaticFileRefresh MOTD { get; } = new AutomaticFileRefresh(new FileInfo("ircd.motd"));
-        public AutomaticFileRefresh Rules { get; } = new AutomaticFileRefresh(new FileInfo("ircd.rules"));
+        public AutomaticFileCacheRefresh MOTD { get; } = new AutomaticFileCacheRefresh(new FileInfo("ircd.motd"));
+        public AutomaticFileCacheRefresh Rules { get; } = new AutomaticFileCacheRefresh(new FileInfo("ircd.rules"));
+        public AutomaticCertificateCacheRefresh Certificate { get; }
 
         public IRCd(Log log, Config.ConfigData config) {
             this.Log = log;
@@ -75,6 +76,9 @@ namespace cmpctircd {
             AutoUModes = config.AutoUModes;
             Opers = config.Opers;
             OperChan = config.OperChan;
+
+            // Create certificate refresh
+            Certificate = new AutomaticCertificateCacheRefresh(new FileInfo(Config.TLS_PfxLocation), password: Config.TLS_PfxPassword);
         }
 
         public void Run() {

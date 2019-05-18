@@ -1,20 +1,17 @@
 ﻿using System;
 using System.IO;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace cmpctircd {
-    /// <summary>
-    /// Watches a specified file for changes and provides up-to-date contents with caching.
-    /// </summary>
-    public class AutomaticFileRefresh : IDisposable {
+    public abstract class AutomaticFileRefresh : IDisposable {
         private readonly FileInfo _target; // Target file
         private readonly FileSystemWatcher _watcher; // File watcher
-        private byte[] _cache = new byte[0]; // File contents cache
-        private bool _reload = true; // Whether the file needs to be reloaded or not
+        protected bool Reload { get; private set; } = true; // Whether the file needs to be reloaded or not
         private readonly int _retries; // File lock retries
         private readonly int _delay; // File lock wait delay
-        private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1); // Reading semaphore (to prevent two refresh requests)
+        protected readonly SemaphoreSlim semaphore = new SemaphoreSlim(1); // Reading semaphore (to prevent two refresh requests)
 
         /// <summary>
         /// Constructor for AutomaticFileRefresh
@@ -23,7 +20,7 @@ namespace cmpctircd {
         /// <param name="retries">Number of retries to read a lockes file.</param>
         /// <param name="delay">Time to wait between attempts.</param>
         public AutomaticFileRefresh(FileInfo target, int retries = -1, int delay = 100) {
-            _target = target;
+            _target = target ?? throw new ArgumentNullException(nameof(target));
             _retries = retries;
             _delay = delay;
             // Setup file watch
@@ -37,21 +34,22 @@ namespace cmpctircd {
 
         private void Handler(object sender, FileSystemEventArgs e) {
             // Set reload value to true, reading will occur on request to avoid file lock.
-            _reload = true;
+            Reload = true;
         }
 
         /// <summary>
         /// Reloads the file cache.
         /// </summary>
         /// <returns>Task indicating the completion of the operation.</returns>
-        private async Task Reload() {
+        protected async Task<byte[]> Read() {
             int attempts = 0;
+            byte[] contents;
             while(true) {
                 try {
                     using(FileStream stream = _target.OpenRead()) {
-                        await stream.ReadAsync(_cache = new byte[(int) stream.Length], 0, (int) stream.Length); // int will support up to 3GB
-                        _reload = false;
-                        break;
+                        await stream.ReadAsync(contents = new byte[(int)stream.Length], 0, (int) stream.Length); // int will support up to 3GB
+                        Reload = false;
+                        return contents;
                     }
                 } catch(IOException e) {
                     // IOException.HResult used for cross-platform compatibility. This field is unprotected in .NET 4.5+
@@ -69,27 +67,16 @@ namespace cmpctircd {
             }
         }
 
-        /// <summary>
-        /// Gets a Stream of the file contents.
-        /// </summary>
-        /// <returns>Stream of the file contents.</returns>
-        public async Task<Stream> GetStreamAsync() {
-            await _semaphore.WaitAsync();
-            if(_reload) await Reload();
-            _semaphore.Release();
-            return new MemoryStream(_cache, 0, _cache.Length, false, false); // No writing or byte array access.
-        }
-
         #region IDisposable Support
-        private bool disposed = false; // To detect redundant calls
+        protected bool Disposed { get; private set; } = false; // To detect redundant calls
 
         protected virtual void Dispose(bool disposing) {
-            if (!disposed) {
+            if (!Disposed) {
                 if (disposing) {
-                    _semaphore.Dispose();
+                    semaphore.Dispose();
                     _watcher.Dispose();
                 }
-                disposed = true;
+                Disposed = true;
             }
         }
 
@@ -99,5 +86,70 @@ namespace cmpctircd {
         }
         #endregion
 
+    }
+
+    /// <summary>
+    /// Watches a specified file for changes and provides up-to-date contents with caching.
+    /// </summary>
+    public sealed class AutomaticFileCacheRefresh : AutomaticFileRefresh {
+        private byte[] _cache = new byte[0]; // File contents cache
+
+        /// <summary>
+        /// Constructor for AutomaticFileCacheRefresh
+        /// </summary>
+        /// <param name="target">Target file.</param>
+        /// <param name="retries">Number of retries to read a lockes file.</param>
+        /// <param name="delay">Time to wait between attempts.</param>
+        public AutomaticFileCacheRefresh(FileInfo target, int retries = -1, int delay = 100) : base(target, retries, delay) { }
+
+        /// <summary>
+        /// Gets a Stream of the file contents.
+        /// </summary>
+        /// <returns>Stream of the file contents.</returns>
+        public async Task<Stream> GetStreamAsync() {
+            await semaphore.WaitAsync();
+            if(Reload) _cache = await Read();
+            semaphore.Release();
+            return new MemoryStream(_cache, 0, _cache.Length, false, false); // No writing or byte array access.
+        }
+    }
+
+    /// <summary>
+    /// Watches a specified certificate file for changes and provides up-to-date contents with caching.
+    /// </summary>
+    public sealed class AutomaticCertificateCacheRefresh : AutomaticFileRefresh {
+        private X509Certificate2 _certificate = new X509Certificate2(); // Certificate cache
+        private readonly string _password = "";
+
+        /// <summary>
+        /// Constructor for AutomaticCertificateCacheRefresh
+        /// </summary>
+        /// <param name="target">Target file.</param>
+        /// <param name="retries">Number of retries to read a lockes file.</param>
+        /// <param name="delay">Time to wait between attempts.</param>
+        /// <param name="password">Password for the certificate file.</param>
+        public AutomaticCertificateCacheRefresh(FileInfo target, int retries = -1, int delay = 100, string password = "") : base(target, retries, delay) {
+            _password = password ?? throw new ArgumentNullException(nameof(password));
+        }
+
+        /// <summary>
+        /// Gets a X509Certificate2 of the current certificate file contents.
+        /// </summary>
+        /// <returns>The certificate as an X509Certificate2.</returns>
+        public async Task<X509Certificate2> GetCertificateAsync() {
+            await semaphore.WaitAsync();
+            if(Reload) {
+                _certificate.Reset();
+                _certificate.Import(await Read(), _password, X509KeyStorageFlags.DefaultKeySet);
+            }
+            semaphore.Release();
+            return _certificate;
+        }
+
+        protected override void Dispose(bool disposing) {
+            if(!Disposed && disposing)
+                _certificate.Dispose();
+            base.Dispose(disposing);
+        }
     }
 }

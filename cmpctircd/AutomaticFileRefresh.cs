@@ -58,7 +58,7 @@ namespace cmpctircd {
                     // <https://docs.microsoft.com/en-us/windows/desktop/Debug/system-error-codes--0-499->
                     int code = e.HResult & ((1 << 16) - 1);
                     if(code == 32 || code == 33) { // 
-                        if(_retries >= 0 && attempts++ >= _retries) throw;
+                        if(_retries > 0 && attempts++ >= _retries) throw;
                         await Task.Delay(_delay); // So we don't spam the OS with read requests.
                     } else {
                         throw;

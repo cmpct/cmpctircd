@@ -1,12 +1,13 @@
 ﻿using System.Configuration;
 using System.Net;
+using System.Xml;
 
 namespace cmpctircd.Configuration {
     public class SocketElement : ConfigurationElement {
         [ConfigurationProperty("listener", IsRequired = false, DefaultValue = "true")]
         public bool IsListener {
             get { return bool.Parse((string) this["listener"]); }
-            set { this["listener"] = value ? "true" : "false"; }
+            set { this["listener"] = XmlConvert.ToString(value); }
         }
 
         [ConfigurationProperty("host", IsRequired = true)]
@@ -19,7 +20,7 @@ namespace cmpctircd.Configuration {
         [IntegerValidator(MinValue = 0, MaxValue = 65535, ExcludeRange = false)]
         public int Port {
             get { return int.Parse((string) this["port"]); }
-            set { this["port"] = value.ToString(); }
+            set { this["port"] = XmlConvert.ToString(value); }
         }
 
         public IPEndPoint EndPoint {
@@ -29,7 +30,7 @@ namespace cmpctircd.Configuration {
         [ConfigurationProperty("tls", IsRequired = false, DefaultValue = "false")]
         public bool IsTls {
             get { return bool.Parse((string) this["tls"]); }
-            set { this["tls"] = value ? "true" : "false"; }
+            set { this["tls"] = XmlConvert.ToString(value); }
         }
     }
 }

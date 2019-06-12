@@ -35,6 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -53,6 +54,12 @@
     <Compile Include="Client\ClientState.cs" />
     <Compile Include="Cloak.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="Configuration\CmpctConfigurationSection.cs" />
+    <Compile Include="Configuration\LoggerElement.cs" />
+    <Compile Include="Configuration\LoggerElementCollection.cs" />
+    <Compile Include="Configuration\SocketElement.cs" />
+    <Compile Include="Configuration\SocketElementCollection.cs" />
+    <Compile Include="Configuration\TlsElement.cs" />
     <Compile Include="Errors.cs" />
     <Compile Include="HandlerArgs.cs" />
     <Compile Include="Client\HostInfo.cs" />

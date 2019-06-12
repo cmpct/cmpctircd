@@ -30,12 +30,37 @@ namespace cmpctircd.Configuration {
             set { this["description"] = value; }
         }
 
-        [ConfigurationProperty("sockets")]
+        [ConfigurationProperty("sockets", IsRequired = true)]
         [ConfigurationCollection(typeof(SocketElement), AddItemName = "socket")]
         public SocketElementCollection Sockets {
             get {
                 return this["sockets"] as SocketElementCollection;
             }
         }
+
+        [ConfigurationProperty("advanced", IsRequired = true)]
+        public AdvancedElement Advanced {
+            get {
+                return this["advanced"] as AdvancedElement;
+            }
+        }
+
+        [ConfigurationProperty("cmodes")]
+        [ConfigurationCollection(typeof(ModeElement), AddItemName = "mode")]
+        public ModeElementCollection ChannelModes {
+            get {
+                return this["cmodes"] as ModeElementCollection;
+            }
+        }
+
+        [ConfigurationProperty("umodes")]
+        [ConfigurationCollection(typeof(ModeElement), AddItemName = "mode")]
+        public ModeElementCollection UserModes {
+            get {
+                return this["umodes"] as ModeElementCollection;
+            }
+        }
+
+
     }
 }

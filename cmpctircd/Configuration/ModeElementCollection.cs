@@ -1,19 +1,19 @@
 ﻿using System.Configuration;
 
 namespace cmpctircd.Configuration {
-    public class SocketElementCollection : ConfigurationElementCollection {
-        public SocketElement this[int i] {
+    public class ModeElementCollection : ConfigurationElementCollection {
+        public ModeElement this[int i] {
             get {
-                return (SocketElement) BaseGet(i);
+                return (ModeElement) BaseGet(i);
             }
         }
 
         protected override ConfigurationElement CreateNewElement() {
-            return new SocketElement();
+            return new ModeElement();
         }
 
         protected override object GetElementKey(ConfigurationElement element) {
-            return ((SocketElement) element).EndPoint;
+            return ((ModeElement) element).Name;
         }
     }
 }

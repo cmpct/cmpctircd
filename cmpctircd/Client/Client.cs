@@ -45,7 +45,7 @@ namespace cmpctircd
         public string OriginServerName() => RemoteClient ? OriginServer.Name : IRCd.Host;
 
         public Client(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream, String UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl, stream) {
-            if(ircd.Config.ResolveHostnames)
+            if(ircd.Config.Advanced.ResolveHostnames)
                 ResolvingHost = true;
 
             this.UID = UID;
@@ -93,7 +93,7 @@ namespace cmpctircd
                 // Check for PING/PONG events due
                 CheckTimeout();
 
-                if(IRCd.Config.ResolveHostnames)
+                if(IRCd.Config.Advanced.ResolveHostnames)
                     Resolve();
             } catch(Exception e) {
                 IRCd.Log.Debug($"Failed to access client: {e.ToString()}");

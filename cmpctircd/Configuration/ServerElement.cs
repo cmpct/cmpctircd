@@ -1,4 +1,6 @@
-﻿using System.Configuration;
+﻿using System.Collections.Generic;
+using System.Configuration;
+using System.Linq;
 using System.Xml;
 
 namespace cmpctircd.Configuration {
@@ -10,9 +12,9 @@ namespace cmpctircd.Configuration {
         }
 
         [ConfigurationProperty("masks", IsRequired = true)]
-        public string Masks {
-            get { return (string)this["masks"]; }
-            set { this["masks"] = value; }
+        public List<string> Masks {
+            get { return ((string)this["masks"]).Split(' ').ToList(); }
+            set { this["masks"] = string.Join(" ", value); }
         }
 
         [ConfigurationProperty("port", IsRequired = true)]

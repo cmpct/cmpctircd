@@ -6,7 +6,7 @@ namespace cmpctircd {
 
         public Stdout(IRCd ircd, LogType type) : base(ircd, type) {}
 
-        override public void Create(Dictionary<string, string> arguments) {}
+        override public void Create(IReadOnlyDictionary<string, string> arguments) {}
 
         override public void Close() {}
 

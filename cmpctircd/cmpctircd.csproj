@@ -54,9 +54,17 @@
     <Compile Include="Client\ClientState.cs" />
     <Compile Include="Cloak.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="Configuration\AdvancedElement.cs" />
+    <Compile Include="Configuration\CloakElement.cs" />
     <Compile Include="Configuration\CmpctConfigurationSection.cs" />
     <Compile Include="Configuration\LoggerElement.cs" />
     <Compile Include="Configuration\LoggerElementCollection.cs" />
+    <Compile Include="Configuration\ModeElement.cs" />
+    <Compile Include="Configuration\ModeElementCollection.cs" />
+    <Compile Include="Configuration\OperatorElement.cs" />
+    <Compile Include="Configuration\OperatorElementCollection.cs" />
+    <Compile Include="Configuration\ServerElement.cs" />
+    <Compile Include="Configuration\ServerElementCollection.cs" />
     <Compile Include="Configuration\SocketElement.cs" />
     <Compile Include="Configuration\SocketElementCollection.cs" />
     <Compile Include="Configuration\TlsElement.cs" />

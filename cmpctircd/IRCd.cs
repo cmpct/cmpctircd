@@ -11,6 +11,7 @@ using cmpctircd.Packets;
 using cmpctircd.Modes;
 using System.Text.RegularExpressions;
 using System.IO;
+using cmpctircd.Configuration;
 
 namespace cmpctircd {
     public class IRCd {
@@ -24,7 +25,7 @@ namespace cmpctircd {
         private List<string> UserModes { get; set; }
 
         public Log Log;
-        public Config.ConfigData Config;
+        public CmpctConfigurationSection Config;
         public string SID;
         public string Host;
         public string Desc;
@@ -40,10 +41,10 @@ namespace cmpctircd {
         public static int CloakDomainParts { get; set; }
         public Dictionary<string, string> AutoModes;
         public Dictionary<string, string> AutoUModes;
-        public List<Config.LoggerInfo> Loggers;
+        public List<LoggerElement> Loggers;
         public ConcurrentDictionary<string, string> DNSCache;
 
-        public List<Config.Oper> Opers;
+        public List<OperatorElement> Opers;
         public List<string> OperChan;
         public DateTime CreateTime { get; private set; }
         public static char[] lastUID = new char[] { };
@@ -52,7 +53,7 @@ namespace cmpctircd {
         public AutomaticFileCacheRefresh Rules { get; } = new AutomaticFileCacheRefresh(new FileInfo("ircd.rules"));
         public AutomaticCertificateCacheRefresh Certificate { get; }
 
-        public IRCd(Log log, Config.ConfigData config) {
+        public IRCd(Log log, CmpctConfigurationSection config) {
             this.Log = log;
             this.Config = config;
 
@@ -62,23 +63,24 @@ namespace cmpctircd {
             Desc    = config.Description;
             Network = config.Network;
 
-            PingTimeout = config.PingTimeout;
-            RequirePong = config.RequirePongCookie;
+            PingTimeout = config.Advanced.PingTimeout;
+            RequirePong = config.Advanced.RequirePongCookie;
 
-            Loggers = config.Loggers;
+            Loggers = config.Loggers.OfType<LoggerElement>().ToList();
 
-            MaxTargets = config.MaxTargets;
-            CloakKey = config.CloakKey;
-            CloakFull = config.CloakFull;
-            CloakPrefix = config.CloakPrefix;
-            CloakDomainParts = config.CloakDomainParts;
-            AutoModes = config.AutoModes;
-            AutoUModes = config.AutoUModes;
-            Opers = config.Opers;
-            OperChan = config.OperChan;
+            MaxTargets = config.Advanced.MaxTargets;
+            CloakKey = config.Advanced.Cloak.Key;
+            CloakFull = config.Advanced.Cloak.Full;
+            CloakPrefix = config.Advanced.Cloak.Prefix;
+            CloakDomainParts = config.Advanced.Cloak.DomainParts;
+            AutoModes = config.AutomaticModes.OfType<ModeElement>().ToDictionary(m => m.Name, m => m.Param);
+            AutoUModes = config.AutomaticUserModes.OfType<ModeElement>().ToDictionary(m => m.Name, m => m.Param);
+            Opers = config.Operators.OfType<OperatorElement>().ToList();
+            OperChan = config.Operators.Channels;
 
             // Create certificate refresh
-            Certificate = new AutomaticCertificateCacheRefresh(new FileInfo(Config.TLS_PfxLocation), password: Config.TLS_PfxPassword);
+            if(config.Tls != null)
+                Certificate = new AutomaticCertificateCacheRefresh(config.Tls.File, password: Config.Tls.Password);
         }
 
         public void Run() {
@@ -94,9 +96,9 @@ namespace cmpctircd {
             ClientLists = new List<List<Client>>();
             ServerLists = new List<List<Server>>();
 
-            foreach(var listener in Config.Listeners) {
+            foreach(var listener in Config.Sockets.OfType<SocketElement>()) {
                 SocketListener sl = new SocketListener(this, listener);
-                Log.Info($"==> Listening on: {listener.IP}:{listener.Port} ({listener.Type}) ({(listener.TLS ? "SSL/TLS" : "Plain" )})");
+                Log.Info($"==> Listening on: {listener.Host}:{listener.Port} ({listener.Type}) ({(listener.IsTls ? "SSL/TLS" : "Plain" )})");
                 Listeners.Add(sl);
             }
 
@@ -132,7 +134,7 @@ namespace cmpctircd {
                         var authRatio   = decimal.Round(((decimal) listener.AuthClientCount / (decimal) listener.ClientCount) * 100);
                         var unauthCount = listener.ClientCount - listener.AuthClientCount;
                         var unauthRatio = decimal.Round(((decimal) unauthCount / (decimal) listener.ClientCount) * 100);
-                        var prefixLine  = $"[{listener.Info.IP}:{listener.Info.Port} ({listener.Info.Type}) ({(listener.Info.TLS ? "SSL/TLS" : "Plain" )})]";
+                        var prefixLine  = $"[{listener.Info.Host}:{listener.Info.Port} ({listener.Info.Type}) ({(listener.Info.IsTls ? "SSL/TLS" : "Plain" )})]";
 
                         Log.Debug($"==> {prefixLine} Authed: {listener.AuthClientCount} ({authRatio}%). Unauthed: {unauthCount} ({unauthRatio}%). Total: {listener.ClientCount}.");
                     }

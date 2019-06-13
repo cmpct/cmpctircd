@@ -1,13 +1,14 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Configuration;
 using System.Net;
 using System.Xml;
 
 namespace cmpctircd.Configuration {
     public class SocketElement : ConfigurationElement {
-        [ConfigurationProperty("listener", IsRequired = false, DefaultValue = "true")]
-        public bool IsListener {
-            get { return bool.Parse((string) this["listener"]); }
-            set { this["listener"] = XmlConvert.ToString(value); }
+        [ConfigurationProperty("type", IsRequired = true)]
+        public ListenerType Type {
+            get { return (ListenerType) Enum.Parse(typeof(ListenerType), (string) this["type"], true); }
+            set { this["type"] = value.ToString(); }
         }
 
         [ConfigurationProperty("host", IsRequired = true)]

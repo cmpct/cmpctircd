@@ -1,3 +1,4 @@
+using cmpctircd.Configuration;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,12 +28,12 @@ namespace cmpctircd {
         public void Warn(string msg) => Write(LogType.Warn, msg);
         public void Error(string msg) => Write(LogType.Error, msg);
 
-        public void Initialise(IRCd ircd, List<Config.LoggerInfo> loggers) {
+        public void Initialise(IRCd ircd, List<LoggerElement> loggers) {
             _IRCd = ircd;
 
             // Setup the loggers if applicable?
             foreach(var cLogger in loggers) {
-                Debug($"Initialised logger: Type={cLogger.Type.ToString()} Args={string.Join(";", cLogger.Settings)}");
+                Debug($"Initialised logger: Type={cLogger.Type.ToString()} Args={string.Join(";", cLogger.Attributes)}");
 
                 BaseLogger log = null;
                 switch(cLogger.Type) {
@@ -53,7 +54,7 @@ namespace cmpctircd {
                 }
 
                 if(log != null) {
-                    log.Create(cLogger.Settings);
+                    log.Create(cLogger.Attributes);
                     _Loggers.Add(log);
                 }
             }

@@ -3,7 +3,7 @@
 namespace cmpctircd.Configuration {
     public class CmpctConfigurationSection : ConfigurationSection {
         public static CmpctConfigurationSection GetConfiguration() {
-            return (CmpctConfigurationSection) ConfigurationManager.GetSection("cmpctircd") ?? new CmpctConfigurationSection();
+            return (CmpctConfigurationSection) ConfigurationManager.GetSection("ircd") ?? new CmpctConfigurationSection();
         }
 
         [ConfigurationProperty("sid", DefaultValue = "auto", IsRequired = false)]
@@ -38,6 +38,21 @@ namespace cmpctircd.Configuration {
             }
         }
 
+        [ConfigurationProperty("tls", IsRequired = false, DefaultValue = null)]
+        public TlsElement Tls {
+            get {
+                return this["tls"] as TlsElement;
+            }
+        }
+
+        [ConfigurationProperty("log", IsRequired = true)]
+        [ConfigurationCollection(typeof(LoggerElement), AddItemName = "logger")]
+        public LoggerElementCollection Loggers {
+            get {
+                return this["log"] as LoggerElementCollection;
+            }
+        }
+
         [ConfigurationProperty("advanced", IsRequired = true)]
         public AdvancedElement Advanced {
             get {
@@ -47,7 +62,7 @@ namespace cmpctircd.Configuration {
 
         [ConfigurationProperty("cmodes")]
         [ConfigurationCollection(typeof(ModeElement), AddItemName = "mode")]
-        public ModeElementCollection ChannelModes {
+        public ModeElementCollection AutomaticModes {
             get {
                 return this["cmodes"] as ModeElementCollection;
             }
@@ -55,12 +70,26 @@ namespace cmpctircd.Configuration {
 
         [ConfigurationProperty("umodes")]
         [ConfigurationCollection(typeof(ModeElement), AddItemName = "mode")]
-        public ModeElementCollection UserModes {
+        public ModeElementCollection AutomaticUserModes {
             get {
                 return this["umodes"] as ModeElementCollection;
             }
         }
 
+        [ConfigurationProperty("servers")]
+        [ConfigurationCollection(typeof(ModeElement), AddItemName = "server")]
+        public ServerElementCollection Servers {
+            get {
+                return this["servers"] as ServerElementCollection;
+            }
+        }
 
+        [ConfigurationProperty("opers")]
+        [ConfigurationCollection(typeof(ModeElement), AddItemName = "oper")]
+        public OperatorElementCollection Operators {
+            get {
+                return this["opers"] as OperatorElementCollection;
+            }
+        }
     }
 }

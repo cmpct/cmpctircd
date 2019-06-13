@@ -2,6 +2,8 @@
 using System.Configuration;
 using System.Xml;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace cmpctircd.Configuration {
     public class OperatorElement : ConfigurationElement {
@@ -29,10 +31,10 @@ namespace cmpctircd.Configuration {
             set { this["tls"] = XmlConvert.ToString(value); }
         }
 
-        [ConfigurationProperty("host", IsRequired = true)]
-        public string Host {
-            get { return (string)this["host"]; }
-            set { this["host"] = value; }
+        [ConfigurationProperty("hosts", IsRequired = true)]
+        public List<string> Hosts {
+            get { return ((string) this["hosts"]).Split(' ').Where(h => !string.IsNullOrEmpty(h)).ToList(); }
+            set { this["hosts"] = string.Join(" ", value); }
         }
     }
 }

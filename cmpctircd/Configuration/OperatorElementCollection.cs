@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.Linq;
 
@@ -18,10 +19,11 @@ namespace cmpctircd.Configuration {
             return ((OperatorElement) element).Name;
         }
 
-        [ConfigurationProperty("channels", IsRequired = false, DefaultValue = "")]
-        public List<string> Channels {
-            get { return ((string) this["channels"]).Split(' ').Where(s => !string.IsNullOrEmpty(s)).ToList(); }
-            set { this["channels"] = string.Join(" ", value); }
+        [TypeConverter(typeof(ListConverter))]
+        [ConfigurationProperty("channels", IsRequired = false)]
+        public IList<string> Channels {
+            get { return (List<string>) this["channels"]; }
+            set { this["channels"] = value; }
         }
     }
 }

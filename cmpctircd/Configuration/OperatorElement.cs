@@ -4,6 +4,8 @@ using System.Xml;
 using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Collections.Generic;
 using System.Linq;
+using System.ComponentModel;
+using System.Globalization;
 
 namespace cmpctircd.Configuration {
     public class OperatorElement : ConfigurationElement {
@@ -13,28 +15,50 @@ namespace cmpctircd.Configuration {
             set { this["name"] = value; }
         }
 
+        [TypeConverter(typeof(HexadecimalConverter))]
         [ConfigurationProperty("password", IsRequired = true)]
         public byte[] Password {
-            get { return SoapHexBinary.Parse((string) this["password"]).Value; }
-            set { this["password"] = new SoapHexBinary(value).ToString(); }
+            get { return (byte[]) this["password"]; }
+            set { this["password"] = value; }
         }
 
+        [TypeConverter(typeof(TypeNameConverter))]
         [ConfigurationProperty("provider", IsRequired = true)]
         public Type Provider {
-            get { return Type.GetType((string)this["provider"], true, false); }
-            set { this["provider"] = value.FullName; }
+            get { return this["provider"] as Type; }
+            set { this["provider"] = value; }
         }
 
-        [ConfigurationProperty("tls", IsRequired = false, DefaultValue = "false")]
+        [ConfigurationProperty("tls", IsRequired = false, DefaultValue = false)]
         public bool Tls {
-            get { return bool.Parse((string)this["tls"]); }
-            set { this["tls"] = XmlConvert.ToString(value); }
+            get { return (bool) this["tls"]; }
+            set { this["tls"] = value; }
         }
 
+        [TypeConverter(typeof(ListConverter))]
         [ConfigurationProperty("hosts", IsRequired = true)]
         public List<string> Hosts {
-            get { return ((string) this["hosts"]).Split(' ').Where(h => !string.IsNullOrEmpty(h)).ToList(); }
-            set { this["hosts"] = string.Join(" ", value); }
+            get { return (List<string>) this["hosts"]; }
+            set { this["hosts"] = value; }
+        }
+    }
+
+    [TypeConverter(typeof(HexadecimalConverter))]
+    class HexadecimalConverter : TypeConverter {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType) {
+            return sourceType == typeof(string);
+        }
+
+        public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) {
+            return SoapHexBinary.Parse((string) value).Value;
+        }
+
+        public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
+            return destinationType == typeof(string);
+        }
+
+        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) {
+            return SoapHexBinary.Parse((string) value).Value;
         }
     }
 }

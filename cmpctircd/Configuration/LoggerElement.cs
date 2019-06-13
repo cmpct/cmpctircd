@@ -13,14 +13,14 @@ namespace cmpctircd.Configuration {
 
         [ConfigurationProperty("type", IsRequired = true)]
         public LoggerType Type {
-            get { return (LoggerType) Enum.Parse(typeof(LoggerType), (string)this["type"]); }
-            set { this["type"] = value.ToString(); }
+            get { return (LoggerType) this["type"]; }
+            set { this["type"] = value; }
         }
 
         [ConfigurationProperty("level", IsRequired = true)]
         public LogType Level {
-            get { return (LogType)Enum.Parse(typeof(LogType), (string)this["level"]); }
-            set { this["level"] = value.ToString(); }
+            get { return (LogType) this["level"]; }
+            set { this["level"] = value; }
         }
 
         protected override bool OnDeserializeUnrecognizedAttribute(string name, string value) {

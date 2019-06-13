@@ -1,30 +1,29 @@
 ﻿using System.Configuration;
-using System.Xml;
 
 namespace cmpctircd.Configuration {
     public class AdvancedElement : ConfigurationElement {
         [ConfigurationProperty("resolveHostnames", IsRequired = true)]
         public bool ResolveHostnames {
-            get { return bool.Parse((string) this["resolveHostnames"]); }
-            set { this["resolveHostnames"] = XmlConvert.ToString(value);  }
+            get { return (bool) this["resolveHostnames"]; }
+            set { this["resolveHostnames"] = value;  }
         }
 
         [ConfigurationProperty("requirePongCookie", IsRequired = true)]
         public bool RequirePongCookie {
-            get { return bool.Parse((string) this["requirePongCookie"]); }
-            set { this["requirePongCookie"] = XmlConvert.ToString(value); }
+            get { return (bool) this["requirePongCookie"]; }
+            set { this["requirePongCookie"] = value; }
         }
 
         [ConfigurationProperty("pingTimeout", IsRequired = true)]
         public int PingTimeout {
-            get { return int.Parse((string) this["pingTimeout"]); }
-            set { this["pingTimeout"] = XmlConvert.ToString(value); }
+            get { return (int) this["pingTimeout"]; }
+            set { this["pingTimeout"] = value; }
         }
 
         [ConfigurationProperty("maxTargets", IsRequired = true)]
         public int MaxTargets {
-            get { return int.Parse((string) this["maxTargets"]); }
-            set { this["maxTargets"] = XmlConvert.ToString(value); }
+            get { return (int) this["maxTargets"]; }
+            set { this["maxTargets"] = value; }
         }
 
         [ConfigurationProperty("cloak", IsRequired = true)]

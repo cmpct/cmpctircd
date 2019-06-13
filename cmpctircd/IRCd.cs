@@ -39,13 +39,13 @@ namespace cmpctircd {
         public bool CloakFull { get; set; }
         public static string CloakPrefix { get; set; }
         public static int CloakDomainParts { get; set; }
-        public Dictionary<string, string> AutoModes;
-        public Dictionary<string, string> AutoUModes;
-        public List<LoggerElement> Loggers;
+        public IDictionary<string, string> AutoModes;
+        public IDictionary<string, string> AutoUModes;
+        public IList<LoggerElement> Loggers;
         public ConcurrentDictionary<string, string> DNSCache;
 
-        public List<OperatorElement> Opers;
-        public List<string> OperChan;
+        public IList<OperatorElement> Opers;
+        public IList<string> OperChan;
         public DateTime CreateTime { get; private set; }
         public static char[] lastUID = new char[] { };
 
@@ -80,7 +80,7 @@ namespace cmpctircd {
 
             // Create certificate refresh
             if(config.Tls != null)
-                Certificate = new AutomaticCertificateCacheRefresh(config.Tls.File, password: Config.Tls.Password);
+                Certificate = new AutomaticCertificateCacheRefresh(new FileInfo(config.Tls.File), password: Config.Tls.Password);
         }
 
         public void Run() {

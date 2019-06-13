@@ -4,9 +4,9 @@ using System.IO;
 namespace cmpctircd.Configuration {
     public class TlsElement : ConfigurationElement {
         [ConfigurationProperty("file", IsRequired = true)]
-        public FileInfo File {
-            get { return new FileInfo((string) this["file"]); }
-            set { this["file"] = value.FullName; }
+        public string File {
+            get { return (string) this["file"]; }
+            set { this["file"] = value; }
         }
 
         [ConfigurationProperty("password", IsRequired = false, DefaultValue = "")]

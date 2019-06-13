@@ -1,5 +1,4 @@
 ﻿using System.Configuration;
-using System.Xml;
 
 namespace cmpctircd.Configuration {
     public class CloakElement : ConfigurationElement {
@@ -17,14 +16,14 @@ namespace cmpctircd.Configuration {
 
         [ConfigurationProperty("domainParts", IsRequired = true)]
         public int DomainParts {
-            get { return int.Parse((string) this["domainParts"]); }
-            set { this["domainParts"] = XmlConvert.ToString(value); }
+            get { return (int) this["domainParts"]; }
+            set { this["domainParts"] = value; }
         }
 
         [ConfigurationProperty("full", IsRequired = true)]
         public bool Full {
-            get { return bool.Parse((string) this["full"]); }
-            set { this["full"] = XmlConvert.ToString(value); }
+            get { return (bool) this["full"]; }
+            set { this["full"] = value; }
         }
     }
 }

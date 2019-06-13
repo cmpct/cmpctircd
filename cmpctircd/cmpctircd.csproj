@@ -67,6 +67,7 @@
     <Compile Include="Configuration\ServerElementCollection.cs" />
     <Compile Include="Configuration\SocketElement.cs" />
     <Compile Include="Configuration\SocketElementCollection.cs" />
+    <Compile Include="Configuration\ListConverter.cs" />
     <Compile Include="Configuration\TlsElement.cs" />
     <Compile Include="Errors.cs" />
     <Compile Include="HandlerArgs.cs" />

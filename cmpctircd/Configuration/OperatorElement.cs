@@ -23,10 +23,10 @@ namespace cmpctircd.Configuration {
         }
 
         [TypeConverter(typeof(TypeNameConverter))]
-        [ConfigurationProperty("provider", IsRequired = true)]
-        public Type Provider {
-            get { return this["provider"] as Type; }
-            set { this["provider"] = value; }
+        [ConfigurationProperty("algorithm", IsRequired = true)]
+        public Type Algorithm {
+            get { return this["algorithm"] as Type; }
+            set { this["algorithm"] = value; }
         }
 
         [ConfigurationProperty("tls", IsRequired = false, DefaultValue = false)]

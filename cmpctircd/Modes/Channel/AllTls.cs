@@ -35,12 +35,9 @@ namespace cmpctircd.Modes {
                 return false;
             }
 
-            lock(channel.Clients) {
-                // We can't have people join which aren't on TLS, so lock the dict
-                foreach(var pair in channel.Clients) {
-                    // Return false if any user doesn't have TLS
-                    if(!pair.Value.Modes["z"].Enabled) return false;
-                }
+            foreach(var pair in channel.Clients) {
+                // Return false if any user doesn't have TLS
+                if(!pair.Value.Modes["z"].Enabled) return false;
             }
 
             // Announce the change to the room
@@ -71,12 +68,9 @@ namespace cmpctircd.Modes {
             }
             
             bool foundNonTlsUser = false;
-            lock(channel.Clients) {
-                // We can't have people join which aren't on TLS, so lock the dict
-                foreach(var pair in channel.Clients) {
-                    // Return false if any user doesn't have TLS
-                    if(!pair.Value.Modes["z"].Enabled) foundNonTlsUser = true;
-                }
+            foreach(var pair in channel.Clients) {
+                // Return false if any user doesn't have TLS
+                if(!pair.Value.Modes["z"].Enabled) foundNonTlsUser = true;
             }
 
             if(!foundNonTlsUser && !forceSet) {

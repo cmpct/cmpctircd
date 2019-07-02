@@ -53,9 +53,7 @@ namespace cmpctircd.Modes {
             }
 
             // Announce the change to the room
-            lock(Affects) {
-                Affects.Add(targetClient);
-            }
+            Affects.Add(targetClient);
 
             if (announce) {
                 channel.SendToRoom(client, $":{client.Mask} MODE {channel.Name} +v {targetClient.Nick}", sendSelf);
@@ -96,9 +94,7 @@ namespace cmpctircd.Modes {
                 throw new IrcErrNotOnChannelException(targetClient, channel.Name);
 
             // Announce the change to the room
-            lock (Affects) {
-                Affects.Remove(targetClient);
-            }
+            Affects.Remove(targetClient);
 
             channel.Privileges.TryUpdate(targetClient, channel.Status(targetClient), ProvidedLevel);
             if (announce) {

@@ -39,15 +39,11 @@ namespace cmpctircd.Modes {
 
 
         virtual public bool Has(Client client) {
-            lock(Affects) {
-                return Affects.Contains(client);
-            }
+            return Affects.Contains(client);
         }
 
         public List<Client> Get() {
-            lock(Affects) {
-                return Affects;
-            }
+            return Affects;
         }
 
         virtual public string GetValue() {

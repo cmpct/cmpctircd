@@ -26,7 +26,8 @@ namespace cmpctircd {
             }
 
             // Create a psuedo client with which to send messages
-            _PsuedoClient = new Client(IRCd, new System.Net.Sockets.TcpClient(), null);
+            var pseudoTcpClient = new System.Net.Sockets.TcpClient();
+            _PsuedoClient = new Client(IRCd, pseudoTcpClient, null, pseudoTcpClient.GetStream());
             _PsuedoClient.Nick = IRCd.Host;
 
             // Apply any modes - if we have them

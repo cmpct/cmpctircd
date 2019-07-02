@@ -11,6 +11,7 @@ using System.Net.Security;
 
 using cmpctircd.Modes;
 using System.Net;
+using System.IO;
 
 namespace cmpctircd
 {
@@ -43,10 +44,7 @@ namespace cmpctircd
         public void SendVersion() => Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.Host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.Version));
         public string OriginServerName() => RemoteClient ? OriginServer.Name : IRCd.Host;
 
-        public readonly static object nickLock = new object();
-        private readonly object _disconnectLock = new object();
-
-        public Client(IRCd ircd, TcpClient tc, SocketListener sl, String UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl) {
+        public Client(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream, String UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl, stream) {
             if(ircd.Config.ResolveHostnames)
                 ResolvingHost = true;
 
@@ -180,7 +178,7 @@ namespace cmpctircd
 
             // Henceforth, we assume user can become Authenticated!
             State = ClientState.Auth;
-            System.Threading.Interlocked.Increment(ref Listener.AuthClientCount);
+            ++Listener.AuthClientCount;
 
             Write(String.Format(":{0} {1} {2} :Welcome to the {3} IRC Network {4}", IRCd.Host, IrcNumeric.RPL_WELCOME.Printable(), Nick, IRCd.Network, Mask));
             Write(String.Format(":{0} {1} {2} :Your host is {3}, running version cmpctircd-{4}", IRCd.Host, IrcNumeric.RPL_YOURHOST.Printable(), Nick, IRCd.Host, IRCd.Version));
@@ -205,9 +203,8 @@ namespace cmpctircd
         }
 
         public void SetModes() {
-            if (TlsStream != null) {
+            if(IsTlsEnabled)
                 Modes["z"].Grant("", true, true);
-            }
             foreach(var mode in IRCd.AutoUModes) {
                 if(Modes.ContainsKey(mode.Key)) {
                     var modeObject = Modes[mode.Key];
@@ -297,49 +294,47 @@ namespace cmpctircd
         }
 
         public Boolean SetNick(String nick) {
-            lock(nickLock) {
-                // Return if nick is the same
-                String oldNick = this.Nick;
-                String newNick = nick;
+            // Return if nick is the same
+            String oldNick = this.Nick;
+            String newNick = nick;
 
-                if (String.Compare(newNick, oldNick, false) == 0)
-                    return true;
-
-                // Is the nick safe?
-                Regex safeNicks = new Regex(@"[A-Za-z{}\[\]_\\^|`][A-Za-z{}\[\]_\-\\^|`0-9]*", RegexOptions.IgnoreCase);
-                Boolean safeNick = safeNicks.Match(newNick).Success;
-                if (!safeNick) {
-                    throw new IrcErrErroneusNicknameException(this, newNick);
-                }
-
-
-                // Does a user with this nick already exist?
-                try {
-                    IRCd.GetClientByNick(newNick);
-                    // Allow a nick change if old nick is the same as the new new (ignoring casing)
-                    // e.g. Sam -> sam
-                    if(String.Compare(oldNick, newNick, true) != 0) {
-                        throw new IrcErrNicknameInUseException(this, newNick);
-                    }
-                } catch(InvalidOperationException) {}
-
-                foreach(var channel in IRCd.ChannelManager.Channels) {
-                    if(!channel.Value.Inhabits(this)) continue;
-                    channel.Value.SendToRoom(this, String.Format(":{0} NICK :{1}", Mask, newNick), false);
-                    channel.Value.Remove(oldNick, false, false);
-                    channel.Value.Add(this, newNick);
-                }
-
-                if(!String.IsNullOrEmpty(oldNick)) {
-                    Write(String.Format(":{0} NICK {1}", Mask, nick));
-                }
-                this.Nick = newNick;
-
-                IRCd.WriteToAllServers($":{UUID} NICK {newNick} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}");
-
-                SendWelcome();
+            if (String.Compare(newNick, oldNick, false) == 0)
                 return true;
+
+            // Is the nick safe?
+            Regex safeNicks = new Regex(@"[A-Za-z{}\[\]_\\^|`][A-Za-z{}\[\]_\-\\^|`0-9]*", RegexOptions.IgnoreCase);
+            Boolean safeNick = safeNicks.Match(newNick).Success;
+            if (!safeNick) {
+                throw new IrcErrErroneusNicknameException(this, newNick);
             }
+
+
+            // Does a user with this nick already exist?
+            try {
+                IRCd.GetClientByNick(newNick);
+                // Allow a nick change if old nick is the same as the new new (ignoring casing)
+                // e.g. Sam -> sam
+                if(String.Compare(oldNick, newNick, true) != 0) {
+                    throw new IrcErrNicknameInUseException(this, newNick);
+                }
+            } catch(InvalidOperationException) {}
+
+            foreach(var channel in IRCd.ChannelManager.Channels) {
+                if(!channel.Value.Inhabits(this)) continue;
+                channel.Value.SendToRoom(this, String.Format(":{0} NICK :{1}", Mask, newNick), false);
+                channel.Value.Remove(oldNick, false, false);
+                channel.Value.Add(this, newNick);
+            }
+
+            if(!String.IsNullOrEmpty(oldNick)) {
+                Write(String.Format(":{0} NICK {1}", Mask, nick));
+            }
+            this.Nick = newNick;
+
+            IRCd.WriteToAllServers($":{UUID} NICK {newNick} {DateTimeOffset.UtcNow.ToUnixTimeSeconds()}");
+
+            SendWelcome();
+            return true;
         }
 
         public Boolean SetUser(String ident, String real_name) {
@@ -437,41 +432,37 @@ namespace cmpctircd
 
         public new void Disconnect(bool graceful) => Disconnect("", graceful, graceful);
         public override void Disconnect(string quitReason = "", bool graceful = true, bool sendToSelf = true) {
-            lock(_disconnectLock) {
-                if(State.Equals(ClientState.Disconnected)) return;
-                try {
-                    if(graceful) {
-                        // Inform all of the channels we're a member of that we are leaving
-                        foreach(var channel in IRCd.ChannelManager.Channels) {
-                            if(channel.Value.Inhabits(this)) {
-                                channel.Value.Quit(this, quitReason);
-                            }
+            if(State.Equals(ClientState.Disconnected)) return;
+            try {
+                if(graceful) {
+                    // Inform all of the channels we're a member of that we are leaving
+                    foreach(var channel in IRCd.ChannelManager.Channels) {
+                        if(channel.Value.Inhabits(this)) {
+                            channel.Value.Quit(this, quitReason);
                         }
                     }
-
-                    IRCd.WriteToAllServers($":{UUID} QUIT :{quitReason}", new List<Server>() { OriginServer } );
-
-                    if(sendToSelf) {
-                        // Need this flag to prevent infinite loop of calls to Disconnect() upon IOException
-                        // No need to guard the Channel quit because they do not send to the user leaving
-                        Write($":{Mask} QUIT :{quitReason}");
-                    }
-                } catch(Exception e) when(e is ObjectDisposedException || e is SocketException) {
-                    // The user has been disconnected but the server is still trying to call Disconnect on it
-                    IRCd.Log.Debug($"Tried to disconnect a removed user: {e.ToString()}");
                 }
 
-                State = ClientState.Disconnected;
+                IRCd.WriteToAllServers($":{UUID} QUIT :{quitReason}", new List<Server>() { OriginServer } );
 
-                if (!RemoteClient) {
-                    if (TlsStream != null) {
-                        TlsStream.Close();
-                    }
-                    TcpClient.Close();
+                if(sendToSelf) {
+                    // Need this flag to prevent infinite loop of calls to Disconnect() upon IOException
+                    // No need to guard the Channel quit because they do not send to the user leaving
+                    Write($":{Mask} QUIT :{quitReason}");
                 }
-
-                Listener.Remove(this);
+            } catch(Exception e) when(e is ObjectDisposedException || e is SocketException) {
+                // The user has been disconnected but the server is still trying to call Disconnect on it
+                IRCd.Log.Debug($"Tried to disconnect a removed user: {e.ToString()}");
             }
+
+            State = ClientState.Disconnected;
+
+            if (!RemoteClient) {
+                Stream?.Close();
+                TcpClient.Close();
+            }
+
+            Listener.Remove(this);
          }
     }
 }

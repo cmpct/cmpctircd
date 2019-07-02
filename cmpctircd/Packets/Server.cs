@@ -205,7 +205,7 @@ namespace cmpctircd.Packets {
 
         public bool UidHandler(HandlerArgs args) {
             var parts = args.Line.Split(new char[] { ' ' }, 12);
-
+            
             // TODO: check parts count
             var last_index = parts.Count() - 1;
             var sid_from     = parts[0];
@@ -227,7 +227,7 @@ namespace cmpctircd.Packets {
 
             // TODO: needed for FJOIN (???)
             var uid = user_uuid.Substring(3); // Drop the first 2 characters of UUID to make it a UID
-            var client = new Client(args.IRCd, args.Server.TcpClient, null, uid, args.Server, true) {
+            var client = new Client(args.IRCd, args.Server.TcpClient, null, args.Server.Stream, uid, args.Server, true) {
                 Nick  = nick,
                 Ident = ident,
                 SignonTime = Int32.Parse(signon_time),
@@ -241,11 +241,10 @@ namespace cmpctircd.Packets {
             };
 
             // TODO modes
-            lock(args.Server.Listener.Clients)
-                args.Server.Listener.Clients.Add(client);
+            args.Server.Listener.Clients.Add(client);
 
-            System.Threading.Interlocked.Increment(ref args.Server.Listener.ClientCount);
-            System.Threading.Interlocked.Increment(ref args.Server.Listener.AuthClientCount);
+            ++args.Server.Listener.ClientCount;
+            ++args.Server.Listener.AuthClientCount;
 
             args.IRCd.Log.Debug($"[SERVER] got new client {nick}");
             return true;

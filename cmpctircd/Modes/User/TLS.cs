@@ -19,7 +19,7 @@ namespace cmpctircd.Modes {
         override public bool Grant(string args, bool forceSet = false, bool announce = false, bool sendSelf = true) {
             if (Enabled && !forceSet)
                 return false;
-            if (Subject.TlsStream != null) {
+            if (Subject.IsTlsEnabled) {
                 Enabled = true;
                 if (announce) {
                     Subject.Write($":{Subject.Nick} MODE {Subject.Nick} :+z");

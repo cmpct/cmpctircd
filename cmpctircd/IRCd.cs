@@ -45,7 +45,6 @@ namespace cmpctircd {
         public List<Config.Oper> Opers;
         public List<string> OperChan;
         public DateTime CreateTime { get; private set; }
-        public readonly static object modeLock = new object();
         public static char[] lastUID = new char[] { };
 
         public IRCd(Log log, Config.ConfigData config) {
@@ -132,11 +131,6 @@ namespace cmpctircd {
                 };
                 statTimer.Start();
             }
-
-
-            while (true) {
-                System.Threading.Thread.Sleep(10);
-            }
         }
 
         public void WriteToAllServers(string message, List<Server> except = null) {
@@ -193,25 +187,23 @@ namespace cmpctircd {
                 return ModeDict;
             }
 
-            lock(modeLock) {
-                ModeDict = new Dictionary<string, string>();
+            ModeDict = new Dictionary<string, string>();
 
-                var chan = new Channel(ChannelManager, this);
-                foreach(var modeList in ModeTypes) {
-                    foreach(var mode in modeList.Value) {
-                        var modeObject = chan.Modes[mode];
+            var chan = new Channel(ChannelManager, this);
+            foreach(var modeList in ModeTypes) {
+                foreach(var mode in modeList.Value) {
+                    var modeObject = chan.Modes[mode];
 
-                        // TODO: Are two different caches needed?
-                        if(requireSymbols && String.IsNullOrEmpty(modeObject.Symbol)) continue;
-                        ModeDict.Add(modeObject.Character, modeObject.Symbol);
-                    }
+                    // TODO: Are two different caches needed?
+                    if(requireSymbols && String.IsNullOrEmpty(modeObject.Symbol)) continue;
+                    ModeDict.Add(modeObject.Character, modeObject.Symbol);
                 }
-
-                var modeCharacters  = String.Join("", ModeDict.Select(p => p.Key));
-                var modeSymbols     = String.Join("", ModeDict.Select(p => p.Value));
-                ModeDict.Add("Characters", modeCharacters);
-                ModeDict.Add("Symbols", modeSymbols);
             }
+
+            var modeCharacters  = String.Join("", ModeDict.Select(p => p.Key));
+            var modeSymbols     = String.Join("", ModeDict.Select(p => p.Value));
+            ModeDict.Add("Characters", modeCharacters);
+            ModeDict.Add("Symbols", modeSymbols);
 
             return ModeDict;
         }
@@ -223,23 +215,21 @@ namespace cmpctircd {
                 return UserModes;
             }
 
-            lock(modeLock) {
-                UserModes = new List<string>();
+            UserModes = new List<string>();
 
-                string[] badClasses = { "Mode", "ModeType" };
-                var classes = AppDomain.CurrentDomain.GetAssemblies()
-                                    .SelectMany(t => t.GetTypes())
-                                    .Where(
-                                        t => t.IsClass &&
-                                        t.Namespace == "cmpctircd.Modes" &&
-                                        t.BaseType.Equals(typeof(UserMode)) &&
-                                        !badClasses.Contains(t.Name)
-                );
+            string[] badClasses = { "Mode", "ModeType" };
+            var classes = AppDomain.CurrentDomain.GetAssemblies()
+                                .SelectMany(t => t.GetTypes())
+                                .Where(
+                                    t => t.IsClass &&
+                                    t.Namespace == "cmpctircd.Modes" &&
+                                    t.BaseType.Equals(typeof(UserMode)) &&
+                                    !badClasses.Contains(t.Name)
+            );
 
-                foreach(Type className in classes) {
-                    UserMode modeInstance = (UserMode) Activator.CreateInstance(Type.GetType(className.ToString()), client);
-                    UserModes.Add(modeInstance.Character);
-                }
+            foreach(Type className in classes) {
+                UserMode modeInstance = (UserMode) Activator.CreateInstance(Type.GetType(className.ToString()), client);
+                UserModes.Add(modeInstance.Character);
             }
 
             return UserModes;
@@ -251,57 +241,55 @@ namespace cmpctircd {
                 return ModeTypes;
             }
 
-            lock(modeLock) {
-                ModeTypes = new Dictionary<string, List<string>>();
+            ModeTypes = new Dictionary<string, List<string>>();
 
-                // http://www.irc.org/tech_docs/005.html
-                List<string> typeA = new List<string>();
-                List<string> typeB = new List<string>();
-                List<string> typeC = new List<string>();
-                List<string> typeD = new List<string>();
-                List<string> typeNone = new List<string>();
+            // http://www.irc.org/tech_docs/005.html
+            List<string> typeA = new List<string>();
+            List<string> typeB = new List<string>();
+            List<string> typeC = new List<string>();
+            List<string> typeD = new List<string>();
+            List<string> typeNone = new List<string>();
 
-                string[] badClasses = { "Mode", "ModeType" };
-                var classes = AppDomain.CurrentDomain.GetAssemblies()
-                                    .SelectMany(t => t.GetTypes())
-                                    .Where(
-                                        t => t.IsClass &&
-                                        t.Namespace == "cmpctircd.Modes" &&
-                                        t.BaseType.Equals(typeof(ChannelMode)) &&
-                                        !badClasses.Contains(t.Name)
-                );
+            string[] badClasses = { "Mode", "ModeType" };
+            var classes = AppDomain.CurrentDomain.GetAssemblies()
+                                .SelectMany(t => t.GetTypes())
+                                .Where(
+                                    t => t.IsClass &&
+                                    t.Namespace == "cmpctircd.Modes" &&
+                                    t.BaseType.Equals(typeof(ChannelMode)) &&
+                                    !badClasses.Contains(t.Name)
+            );
 
-                foreach(Type className in classes) {
-                    ChannelMode modeInstance = (ChannelMode) Activator.CreateInstance(Type.GetType(className.ToString()), new Channel(ChannelManager, this));
-                    ChannelModeType type = modeInstance.Type;
-                    string modeChar = modeInstance.Character;
+            foreach(Type className in classes) {
+                ChannelMode modeInstance = (ChannelMode) Activator.CreateInstance(Type.GetType(className.ToString()), new Channel(ChannelManager, this));
+                ChannelModeType type = modeInstance.Type;
+                string modeChar = modeInstance.Character;
 
-                    switch(type) {
-                        case ChannelModeType.A:
-                            typeA.Add(modeChar);
-                            break;
-                        case ChannelModeType.B:
-                            typeB.Add(modeChar);
-                            break;
-                        case ChannelModeType.C:
-                            typeC.Add(modeChar);
-                            break;
-                        case ChannelModeType.D:
-                            typeD.Add(modeChar);
-                            break;
+                switch(type) {
+                    case ChannelModeType.A:
+                        typeA.Add(modeChar);
+                        break;
+                    case ChannelModeType.B:
+                        typeB.Add(modeChar);
+                        break;
+                    case ChannelModeType.C:
+                        typeC.Add(modeChar);
+                        break;
+                    case ChannelModeType.D:
+                        typeD.Add(modeChar);
+                        break;
 
-                        default:
-                            typeNone.Add(modeChar);
-                            break;
-                    }
+                    default:
+                        typeNone.Add(modeChar);
+                        break;
                 }
-
-                ModeTypes.Add("A", typeA);
-                ModeTypes.Add("B", typeB);
-                ModeTypes.Add("C", typeC);
-                ModeTypes.Add("D", typeD);
-                ModeTypes.Add("None", typeNone);
             }
+
+            ModeTypes.Add("A", typeA);
+            ModeTypes.Add("B", typeB);
+            ModeTypes.Add("C", typeC);
+            ModeTypes.Add("D", typeD);
+            ModeTypes.Add("None", typeNone);
             return ModeTypes;
         }
 
@@ -313,47 +301,45 @@ namespace cmpctircd {
             var aCharacter = Convert.ToChar(65); // A
             var zCharacter = Convert.ToChar(90); // Z
 
-            lock (lastUID) {
-                if (new String(lastUID) == "" || UID.Sum(character => Convert.ToInt32(character)) == highestUid) {
-                    // We're at the start or we've hit the maximum possible ID (ZZZZZZ)
-                    // Start (again)...
-                    UID = new char[] { 'A', 'A', 'A', 'A', 'A', 'A' };
-                } else {
-                    for (int i = UID.Length - 1; i >= 0; i--) {
-                        // We need to increment every index, starting at UID[5] (6) until it reaches Z
-                        // Once it reaches Z (this will depend on subsequent UIDs), hop to the next column and repeat
+            if (new String(lastUID) == "" || UID.Sum(character => Convert.ToInt32(character)) == highestUid) {
+                // We're at the start or we've hit the maximum possible ID (ZZZZZZ)
+                // Start (again)...
+                UID = new char[] { 'A', 'A', 'A', 'A', 'A', 'A' };
+            } else {
+                for (int i = UID.Length - 1; i >= 0; i--) {
+                    // We need to increment every index, starting at UID[5] (6) until it reaches Z
+                    // Once it reaches Z (this will depend on subsequent UIDs), hop to the next column and repeat
 
-                        // If this column of the old UID was a Z, don't increment it
-                        // Copy it over and work on the next column
-                        if (lastUID[i] == zCharacter) {
-                            UID[i] = lastUID[i];
-                            continue;
+                    // If this column of the old UID was a Z, don't increment it
+                    // Copy it over and work on the next column
+                    if (lastUID[i] == zCharacter) {
+                        UID[i] = lastUID[i];
+                        continue;
+                    }
+
+                    // Add one to the column if we're at the start
+                    if (i == UID.Length - 1) {
+                        UID[i] = Convert.ToChar(lastUID[i] + 1);
+                    } else if(lastUID[i + 1] == zCharacter) {
+                        // Add one to the column if the previous column is Z
+                        UID[i] = Convert.ToChar(lastUID[i] + 1);
+
+                        // Once we've added one to THIS column, reset the one over to an A
+                        if (lastUID[i + 1] == zCharacter) {
+                            // If the next character over is a Z, change it to an A when we bump the next column
+                            // e.g. if lastUID is AAAAAZ, make next AAAABA
+                            UID[i + 1] = Convert.ToChar(aCharacter);
                         }
-
-                        // Add one to the column if we're at the start
-                        if (i == UID.Length - 1) {
-                            UID[i] = Convert.ToChar(lastUID[i] + 1);
-                        } else if(lastUID[i + 1] == zCharacter) {
-                            // Add one to the column if the previous column is Z
-                            UID[i] = Convert.ToChar(lastUID[i] + 1);
-
-                            // Once we've added one to THIS column, reset the one over to an A
-                            if (lastUID[i + 1] == zCharacter) {
-                                // If the next character over is a Z, change it to an A when we bump the next column
-                                // e.g. if lastUID is AAAAAZ, make next AAAABA
-                                UID[i + 1] = Convert.ToChar(aCharacter);
-                            }
-                        } else {
-                            // Otherwise just copy that value
-                            // e.g. with AAAAAB -> AAAAAC, only the B -> C has changed, so rest can be copied
-                            UID[i] = lastUID[i];
-                        }
+                    } else {
+                        // Otherwise just copy that value
+                        // e.g. with AAAAAB -> AAAAAC, only the B -> C has changed, so rest can be copied
+                        UID[i] = lastUID[i];
                     }
                 }
-
-                // Don't allow this UID to be generated again...
-                lastUID = UID;
             }
+
+            // Don't allow this UID to be generated again...
+            lastUID = UID;
 
             var string_UID = new String(UID);
             Log.Debug($"Generated a UID: {string_UID}");

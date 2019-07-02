@@ -98,6 +98,7 @@
     <Compile Include="SocketBase.cs" />
     <Compile Include="SocketListener.cs" />
     <Compile Include="Channel\Topic.cs" />
+    <Compile Include="Threading\QueuedSynchronizationContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

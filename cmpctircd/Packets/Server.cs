@@ -127,14 +127,14 @@ namespace cmpctircd.Packets {
             var desc     = parts[5].Substring(1);
 
             // Compare with config
-            bool foundMatch = true && args.IRCd.Config.ServerLinks.Count() > 0;
-            for(int i = 0; i < args.IRCd.Config.ServerLinks.Count(); i++) {
-                var link = args.IRCd.Config.ServerLinks[i];
+            bool foundMatch = true && args.IRCd.Config.Servers.Count > 0;
+            for(int i = 0; i < args.IRCd.Config.Servers.Count; i++) {
+                var link = args.IRCd.Config.Servers[i];
 
                 // TODO: Add error messages
                 if(link.Host     != hostname) foundMatch = false;
                 if(link.Port     != args.Server.Listener.Info.Port) foundMatch = false;
-                if(link.TLS      != args.Server.Listener.Info.TLS) foundMatch = false;
+                if(link.IsTls    != args.Server.Listener.Info.IsTls) foundMatch = false;
                 if(link.Password != password) foundMatch = false;
 
                 var foundHostMatch = false;
@@ -169,7 +169,7 @@ namespace cmpctircd.Packets {
                     break;
                 } else {
                     // Reset for next iteration unless we're at the end
-                    if(i != args.IRCd.Config.ServerLinks.Count() - 1)
+                    if(i != args.IRCd.Config.Servers.Count - 1)
                         foundMatch = true;
                 }
             }

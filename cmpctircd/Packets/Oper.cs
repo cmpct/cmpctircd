@@ -3,10 +3,14 @@ using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using System.Text.RegularExpressions;
+using System.Runtime.Remoting.Metadata.W3cXsd2001;
 
 namespace cmpctircd.Packets {
     public class Oper {
+        /// <summary>
+        /// HashAlgorithm instance cache, to reduce reflection overheads.
+        /// </summary>
+        private static readonly Dictionary<Type, HashAlgorithm> _algorithms = new Dictionary<Type, HashAlgorithm>();
 
         // Class for all IRC Operator commands such as OPER, KILL, SAMODE, etc.
         public Oper(IRCd ircd) {
@@ -23,13 +27,13 @@ namespace cmpctircd.Packets {
             try {
                 var ircop = args.IRCd.Opers.Single(oper => oper.Name == userInput[1]);
                 // Check for TLS
-                if (ircop.TLS) {
+                if (ircop.Tls) {
                     if(!args.Client.Modes["z"].Enabled) {
                         return false;
                     }
                 }
                 // Check the hosts match
-                foreach (var hostList in ircop.Host) {
+                foreach (var hostList in ircop.Hosts) {
                     var mask = Ban.CreateMask(hostList);
 
                     if(Ban.Match(args.Client, mask)) {
@@ -39,21 +43,24 @@ namespace cmpctircd.Packets {
                 if (!hostMatch) {
                     throw new IrcErrNoOperHostException(args.Client);
                 }
+                // Instantiate the algorithm through reflection, if not already instantiated.
+                HashAlgorithm algorithm;
+                if(!_algorithms.TryGetValue(ircop.Algorithm, out algorithm))
+                    algorithm = _algorithms[ircop.Algorithm] = (ircop.Algorithm.GetConstructor(Type.EmptyTypes)?.Invoke(new object[0]) as HashAlgorithm) ?? throw new IrcErrNoOperHostException(args.Client);
                 // Hash the user's input to match the stored hash password in the config
-                SHA256 sha256 = SHA256Managed.Create();
                 byte[] password = Encoding.UTF8.GetBytes(userInput[2]);
-                string builtHash = string.Concat(sha256.ComputeHash(password).Select(x => x.ToString("x2")));
-                if (builtHash == ircop.Password) {
+                byte[] builtHash = algorithm.ComputeHash(password);
+                if(builtHash.SequenceEqual(ircop.Password)) {
                     Channel channel;
                     Topic topic;
                     args.Client.Modes["o"].Grant("", true, true);
                     args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_YOUREOPER.Printable()} {args.Client.Nick} :You are now an IRC Operator");
-                    if (args.IRCd.OperChan.Count() == 0) {
+                    if(args.IRCd.OperChan.Count() == 0) {
                         return true;
                     }
                     // Create and join the oper-only chan
-                    foreach (string chan in args.IRCd.OperChan) {
-                        if (args.IRCd.ChannelManager.Exists(chan)) {
+                    foreach(string chan in args.IRCd.OperChan) {
+                        if(args.IRCd.ChannelManager.Exists(chan)) {
                             channel = args.IRCd.ChannelManager[chan];
                             args.Client.Invites.Remove(channel);
                         } else {

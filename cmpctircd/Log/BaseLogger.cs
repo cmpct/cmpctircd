@@ -13,7 +13,7 @@ namespace cmpctircd {
             this.Level = level;
         }
 
-        abstract public void Create(Dictionary<string, string> arguments); 
+        abstract public void Create(IReadOnlyDictionary<string, string> arguments); 
 
         // TODO: partial with the Prepare()?  
         abstract public void WriteLine(string msg, LogType type, bool prepared = true);

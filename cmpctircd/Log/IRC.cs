@@ -10,7 +10,7 @@ namespace cmpctircd {
 
         public IRC(IRCd ircd, LogType type) : base(ircd, type) {}
 
-        override public void Create(Dictionary<string, string> arguments) {
+        override public void Create(IReadOnlyDictionary<string, string> arguments) {
             var channelName = arguments["channel"];
 
             if(IRCd.ChannelManager == null) {

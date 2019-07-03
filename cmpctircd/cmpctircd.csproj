@@ -35,6 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -44,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AutomaticFileRefresh.cs" />
     <Compile Include="Channel\Ban.cs" />
     <Compile Include="Channel\Channel.cs" />
     <Compile Include="Channel\ChannelManager.cs" />
@@ -51,7 +53,21 @@
     <Compile Include="Client\Client.cs" />
     <Compile Include="Client\ClientState.cs" />
     <Compile Include="Cloak.cs" />
-    <Compile Include="Config.cs" />
+    <Compile Include="Configuration\AdvancedElement.cs" />
+    <Compile Include="Configuration\CloakElement.cs" />
+    <Compile Include="Configuration\CmpctConfigurationSection.cs" />
+    <Compile Include="Configuration\LoggerElement.cs" />
+    <Compile Include="Configuration\LoggerElementCollection.cs" />
+    <Compile Include="Configuration\ModeElement.cs" />
+    <Compile Include="Configuration\ModeElementCollection.cs" />
+    <Compile Include="Configuration\OperatorElement.cs" />
+    <Compile Include="Configuration\OperatorElementCollection.cs" />
+    <Compile Include="Configuration\ServerElement.cs" />
+    <Compile Include="Configuration\ServerElementCollection.cs" />
+    <Compile Include="Configuration\SocketElement.cs" />
+    <Compile Include="Configuration\SocketElementCollection.cs" />
+    <Compile Include="Configuration\ListConverter.cs" />
+    <Compile Include="Configuration\TlsElement.cs" />
     <Compile Include="Errors.cs" />
     <Compile Include="HandlerArgs.cs" />
     <Compile Include="Client\HostInfo.cs" />
@@ -110,11 +126,6 @@
     <EmbeddedResource Include="ircd.rules">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="ircd.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

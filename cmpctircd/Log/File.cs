@@ -9,7 +9,7 @@ namespace cmpctircd {
 
         public File(IRCd ircd, LogType type) : base(ircd, type) {}
 
-        override public void Create(Dictionary<string, string> arguments) {
+        override public void Create(IReadOnlyDictionary<string, string> arguments) {
             var path  = arguments["path"];
             writer    = new StreamWriter(path, true) {
                 AutoFlush = true

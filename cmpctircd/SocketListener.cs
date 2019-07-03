@@ -12,6 +12,7 @@ using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 using System.Collections;
 using System.Text.RegularExpressions;
+using cmpctircd.Configuration;
 
 namespace cmpctircd {
     public class SocketListener {
@@ -20,7 +21,7 @@ namespace cmpctircd {
         private TcpListener _listener = null;
         private List<Server> _servers = new List<Server>();
 
-        public Config.ListenerInfo Info { get; private set; }
+        public SocketElement Info { get; private set; }
         public List<Client> Clients = new List<Client>();
         public int ClientCount = 0;
         public int AuthClientCount = 0;
@@ -28,10 +29,10 @@ namespace cmpctircd {
         public int ServerCount = 0;
         public int AuthServerCount = 0;
 
-        public SocketListener(IRCd ircd, Config.ListenerInfo info) {
+        public SocketListener(IRCd ircd, SocketElement info) {
             this._ircd = ircd;
             this.Info = info;
-            _listener = new TcpListener(info.IP, info.Port);
+            _listener = new TcpListener(info.Host, info.Port);
             _ircd.ClientLists.Add(Clients);
             _ircd.ServerLists.Add(_servers);
         }
@@ -46,7 +47,7 @@ namespace cmpctircd {
         }
         public void Stop() {
             if (_started) {
-                _ircd.Log.Debug($"Shutting down listener [IP: {Info.IP}, Port: {Info.Port}, TLS: {Info.TLS}]");
+                _ircd.Log.Debug($"Shutting down listener [IP: {Info.Host}, Port: {Info.Port}, TLS: {Info.IsTls}]");
                 _listener.Stop();
                 _started = false;
             }
@@ -75,9 +76,9 @@ namespace cmpctircd {
             Stream stream = tc.GetStream();
 
             // Handshake with TLS if they're from a TLS port
-            if (Info.TLS) {
+            if (Info.IsTls) {
                 try {
-                    stream = HandshakeTls(tc);
+                    stream = await HandshakeTls(tc);
                 } catch (Exception e) {
                     _ircd.Log.Debug($"Exception in HandshakeTls: {e.ToString()}");
                     tc.Close();
@@ -173,15 +174,14 @@ namespace cmpctircd {
             }
         }
 
-        public SslStream HandshakeTls(TcpClient tc) {
+        public async Task<SslStream> HandshakeTls(TcpClient tc) {
             SslStream stream = new SslStream(tc.GetStream(), true);
             // NOTE: Must use carefully constructed cert in PKCS12 format (.pfx)
             // NOTE: https://security.stackexchange.com/a/29428
             // NOTE: You will get a NotSupportedException otherwise
             // NOTE: Create a TLS certificate using openssl (or $TOOL), then:
             // NOTE:    openssl pkcs12 -export -in tls_cert.pem -inkey tls_key.pem -out server.pfx
-            X509Certificate serverCertificate = new X509Certificate2(_ircd.Config.TLS_PfxLocation, _ircd.Config.TLS_PfxPassword);
-            stream.AuthenticateAsServer(serverCertificate, false, SslProtocols.Tls12, true);
+            stream.AuthenticateAsServer(await _ircd.Certificate.GetCertificateAsync(), false, SslProtocols.Tls12, true);
             return stream;
         }
 

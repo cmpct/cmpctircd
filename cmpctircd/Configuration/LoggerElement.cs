@@ -7,6 +7,11 @@ namespace cmpctircd.Configuration {
     public class LoggerElement : ConfigurationElement {
         private readonly Dictionary<string, string> _attributes = new Dictionary<string, string>();
 
+        // Guid, due to a lack of other unique properties for this element type.
+        public Guid Guid {
+            get;
+        } = Guid.NewGuid();
+
         public IReadOnlyDictionary<string, string> Attributes {
             get { return new ReadOnlyDictionary<string, string>(_attributes); }
         }

@@ -8,7 +8,7 @@ namespace cmpctircd.Configuration {
         private readonly Dictionary<string, string> _attributes = new Dictionary<string, string>();
 
         // Guid, due to a lack of other unique properties for this element type.
-        public Guid Guid {
+        public Guid InstanceGuid {
             get;
         } = Guid.NewGuid();
 

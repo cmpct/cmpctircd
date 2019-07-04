@@ -1,4 +1,3 @@
-using System;
 namespace cmpctircd.Modes {
     public enum ChannelModeType {
         

@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 
-using cmpctircd.Modes;
-
 namespace cmpctircd.Modes {
     public abstract class ChannelMode {
 

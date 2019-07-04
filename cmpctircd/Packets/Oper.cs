@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 
 namespace cmpctircd.Packets {
     public class Oper {

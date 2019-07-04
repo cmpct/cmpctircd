@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net.Sockets;
-
-using cmpctircd.Packets;
-using cmpctircd.Modes;
 using System.Text.RegularExpressions;
 using System.IO;
+
+using cmpctircd.Modes;
 using cmpctircd.Configuration;
 
 namespace cmpctircd {

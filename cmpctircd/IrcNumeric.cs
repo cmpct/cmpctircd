@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace cmpctircd
-{
+﻿namespace cmpctircd {
     /// <summary>
     /// Represents IRC numeric responses and errors.
     /// </summary>
@@ -23,8 +16,7 @@ namespace cmpctircd
     /// http://www.valinor.sorcery.net/docs/rfc1459/6.1-error-replies.html
     /// </para>
     /// </remarks>
-    public enum IrcNumeric
-    {
+    public enum IrcNumeric {
         RPL_WELCOME  = 001,
         RPL_YOURHOST = 002,
         RPL_CREATED  = 003,

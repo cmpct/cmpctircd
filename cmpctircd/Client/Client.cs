@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -35,9 +34,9 @@ namespace cmpctircd
         public ClientState State { get; set; }
         public bool ResolvingHost { get; set; } = false;
 
-        public ConcurrentDictionary<string, UserMode> Modes {
+        public Dictionary<string, UserMode> Modes {
             get; set;
-        } = new ConcurrentDictionary<string, UserMode>();
+        } = new Dictionary<string, UserMode>();
 
         // TODO will this work for multiple hops? think so but it's something to bare in mind
         public string UUID;
@@ -77,7 +76,7 @@ namespace cmpctircd
                     IRCd.Log.Error($"{modeInstance.Name} has the same character ({modeChar}) as another user mode! Skipping.");
                     continue;
                 }
-                Modes.TryAdd(modeChar, modeInstance);
+                Modes.Add(modeChar, modeInstance);
                 ircd.Log.Debug($"Creating instance of {modeChar} - {modeInstance.Description}");
             }
 
@@ -113,7 +112,7 @@ namespace cmpctircd
 
             if(IRCd.DNSCache == null) {
                 // Create the cache
-                IRCd.DNSCache = new ConcurrentDictionary<string, string>();
+                IRCd.DNSCache = new Dictionary<string, string>();
             } else {
                 // Check if this IP is in the cache
                 if(IRCd.DNSCache.ContainsKey(ip)) {

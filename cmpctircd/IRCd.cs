@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -42,7 +41,7 @@ namespace cmpctircd {
         public IDictionary<string, string> AutoModes;
         public IDictionary<string, string> AutoUModes;
         public IList<LoggerElement> Loggers;
-        public ConcurrentDictionary<string, string> DNSCache;
+        public Dictionary<string, string> DNSCache;
 
         public IList<OperatorElement> Opers;
         public IList<string> OperChan;

@@ -49,7 +49,7 @@ namespace cmpctircd.Modes {
             // But first check if they already have such a privilege...
             ChannelPrivilege targetPrivs = channel.Privileges.GetOrAdd(targetClient, ChannelPrivilege.Normal);
             if(targetPrivs.CompareTo(ProvidedLevel) < 0) {
-                channel.Privileges.TryUpdate(targetClient, ProvidedLevel, targetPrivs);
+                channel.Privileges[targetClient] = ProvidedLevel;
             }
 
             // Announce the change to the room
@@ -96,7 +96,7 @@ namespace cmpctircd.Modes {
             // Announce the change to the room
             Affects.Remove(targetClient);
 
-            channel.Privileges.TryUpdate(targetClient, channel.Status(targetClient), ProvidedLevel);
+            channel.Privileges[targetClient] = channel.Status(targetClient);
             if (announce) {
                 channel.SendToRoom(client, $":{client.Mask} MODE {channel.Name} -v {targetClient.Nick}", sendSelf);
             }

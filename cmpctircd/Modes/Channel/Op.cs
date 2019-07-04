@@ -51,7 +51,7 @@ namespace cmpctircd.Modes {
             ChannelPrivilege targetPrivs = channel.Privileges.GetOrAdd(targetClient, ChannelPrivilege.Normal);
             if(targetPrivs.CompareTo(ProvidedLevel) < 0) {
                 // Set the user to op because they were previously less privileged
-                channel.Privileges.TryUpdate(targetClient, ChannelPrivilege.Op, targetPrivs);
+                channel.Privileges[targetClient] = ChannelPrivilege.Op;
             }
 
             // Announce the change to the room
@@ -98,7 +98,7 @@ namespace cmpctircd.Modes {
             // Announce the change to the room
             Affects.Remove(targetClient);
 
-            channel.Privileges.TryUpdate(targetClient, channel.Status(targetClient), ChannelPrivilege.Op);
+            channel.Privileges[targetClient] = channel.Status(targetClient);
             if (announce) {
                 channel.SendToRoom(client, $":{client.Mask} MODE {channel.Name} -o {targetClient.Nick}", sendSelf);
             }

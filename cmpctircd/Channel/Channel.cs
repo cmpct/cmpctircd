@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -12,18 +11,18 @@ namespace cmpctircd {
         public String Name { get; set; }
         public ChannelManager Manager { get; private set;}
         // A dictionary of clients in the room (nick => client)
-        public ConcurrentDictionary<string, Client> Clients
+        public Dictionary<string, Client> Clients
         {
             get; private set;
-        } = new ConcurrentDictionary<string, Client>();
+        } = new Dictionary<string, Client>();
 
         public Topic Topic { get; set; } = new Topic();
 
-        public ConcurrentDictionary<string, ChannelMode> Modes {
+        public Dictionary<string, ChannelMode> Modes {
             get; set;
-        } = new ConcurrentDictionary<string, ChannelMode>();
+        } = new Dictionary<string, ChannelMode>();
 
-        public ConcurrentDictionary<Client, ChannelPrivilege> Privileges = new ConcurrentDictionary<Client, ChannelPrivilege>();
+        public Dictionary<Client, ChannelPrivilege> Privileges = new Dictionary<Client, ChannelPrivilege>();
         public long CreationTime { get; set; }
 
         // Used to prevent logging channels from being destroyed
@@ -49,7 +48,7 @@ namespace cmpctircd {
                     ircd.Log.Error($"{modeInstance.Name} has the same character ({modeChar}) as another channel mode! Skipping.");
                     continue;
                 }
-                Modes.TryAdd(modeChar, modeInstance);
+                Modes.Add(modeChar, modeInstance);
                 ircd.Log.Debug($"Creating instance of {modeChar} - {modeInstance.Description}");
             }
 
@@ -65,7 +64,7 @@ namespace cmpctircd {
             if(Modes["b"].Has(client)) {
                 throw new IrcErrBannedFromChanException(client, Name);
             }
-            if(!Clients.TryAdd(client.Nick, client)) { return; }
+            Clients.Add(client.Nick, client);
             client.IRCd.Log.Debug($"Added {client.Nick} to {Name}");
 
             // Tell everyone local we've joined
@@ -259,7 +258,7 @@ namespace cmpctircd {
             return Clients.ContainsKey(nick);
         }
         public void Add(Client client, String nick) {
-            Clients.TryAdd(nick, client);
+            Clients.Add(nick, client);
         }
 
         // For both Remove() functions, consider carefully whether or not the channel object may need to be destroyed once completed
@@ -274,10 +273,10 @@ namespace cmpctircd {
                     }
                     catch {}
                 }
-                Privileges.TryRemove(client, out _);
+                Privileges.Remove(client);
             }
 
-            Clients.TryRemove(client.Nick, out _);
+            Clients.Remove(client.Nick);
 
             if(Modes.ContainsKey("Z")) {
                 // Attempt to set +Z (only works if applicable)

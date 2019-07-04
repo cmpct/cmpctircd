@@ -69,6 +69,7 @@
     <Compile Include="Configuration\ListConverter.cs" />
     <Compile Include="Configuration\TlsElement.cs" />
     <Compile Include="Errors.cs" />
+    <Compile Include="Extensions.cs" />
     <Compile Include="HandlerArgs.cs" />
     <Compile Include="Client\HostInfo.cs" />
     <Compile Include="IRCd.cs" />

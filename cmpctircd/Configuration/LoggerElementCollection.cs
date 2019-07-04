@@ -13,7 +13,7 @@ namespace cmpctircd.Configuration {
         }
 
         protected override object GetElementKey(ConfigurationElement element) {
-            return element.GetHashCode();
+            return ((LoggerElement) element).InstanceGuid;
         }
     }
 }

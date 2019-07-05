@@ -118,7 +118,7 @@ namespace cmpctircd {
     /// Watches a specified certificate file for changes and provides up-to-date contents with caching.
     /// </summary>
     public sealed class AutomaticCertificateCacheRefresh : AutomaticFileRefresh {
-        private X509Certificate2 _certificate = new X509Certificate2(); // Certificate cache
+        private X509Certificate2 _certificate; // Certificate cache
         private readonly string _password = "";
 
         /// <summary>
@@ -139,8 +139,11 @@ namespace cmpctircd {
         public async Task<X509Certificate2> GetCertificateAsync() {
             await semaphore.WaitAsync();
             if(Reload) {
-                _certificate.Reset();
-                _certificate.Import(await Read(), _password, X509KeyStorageFlags.DefaultKeySet);
+                _certificate = new X509Certificate2(await Read(), _password, X509KeyStorageFlags.DefaultKeySet);
+
+                // Won't run on Mono
+                //_certificate.Reset();
+                //_certificate.Import(await Read(), _password, X509KeyStorageFlags.DefaultKeySet);
             }
             semaphore.Release();
             return _certificate;

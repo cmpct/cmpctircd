@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace cmpctircd {
     public static class Extensions {
@@ -8,6 +9,10 @@ namespace cmpctircd {
                 return dictionary[key] = value;
             else
                 return current;
+        }
+
+        public static void ForEach<T>(this IEnumerable<T> enumerable, Action<T> action) {
+            foreach(T item in enumerable) action(item);
         }
     }
 }

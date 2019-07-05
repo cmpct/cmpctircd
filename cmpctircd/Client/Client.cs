@@ -107,23 +107,18 @@ namespace cmpctircd
             var  ip            = IP.ToString();
             Write($":{IRCd.Host} NOTICE Auth :*** Looking up your hostname...");
 
-            if(IRCd.DNSCache == null) {
-                // Create the cache
-                IRCd.DNSCache = new Dictionary<string, string>();
-            } else {
-                // Check if this IP is in the cache
-                if(IRCd.DNSCache.ContainsKey(ip)) {
-                    var cached = IRCd.DNSCache[ip];
+            // Check if this IP is in the cache
+            if(IRCd.DNSCache.ContainsKey(ip)) {
+                var cached = IRCd.DNSCache[ip];
 
-                    if(cached == ip) {
-                        // See below comment
-                        failedResolve = true;
-                    } else {
-                        DNSHost = cached;
-                        Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({DNSHost}) -- cached");
-                        ResolvingHost = false;
-                        return;
-                    }
+                if(cached == ip) {
+                    // See below comment
+                    failedResolve = true;
+                } else {
+                    DNSHost = cached;
+                    Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({DNSHost}) -- cached");
+                    ResolvingHost = false;
+                    return;
                 }
             }
 

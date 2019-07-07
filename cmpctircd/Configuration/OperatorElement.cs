@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Configuration;
 using System.Xml;
-using System.Runtime.Remoting.Metadata.W3cXsd2001;
 using System.Collections.Generic;
 using System.Linq;
 using System.ComponentModel;
@@ -50,7 +49,13 @@ namespace cmpctircd.Configuration {
         }
 
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value) {
-            return SoapHexBinary.Parse((string) value).Value;
+            // From hex string to byte[]
+            // https://stackoverflow.com/questions/321370/how-can-i-convert-a-hex-string-to-a-byte-array
+            var hex = (string) value;
+            return Enumerable.Range(0, hex.Length)
+                     .Where(x => x % 2 == 0)
+                     .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
+                     .ToArray();
         }
 
         public override bool CanConvertTo(ITypeDescriptorContext context, Type destinationType) {
@@ -58,7 +63,8 @@ namespace cmpctircd.Configuration {
         }
 
         public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType) {
-            return SoapHexBinary.Parse((string) value).Value;
+            // From byte[] to hex string
+            return String.Concat(Array.ConvertAll((byte[]) value, x => x.ToString("X2")));
         }
     }
 }

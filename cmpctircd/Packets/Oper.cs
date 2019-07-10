@@ -5,19 +5,14 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 
 namespace cmpctircd.Packets {
-    public class Oper {
+    public static class Oper {
         /// <summary>
         /// HashAlgorithm instance cache, to reduce reflection overheads.
         /// </summary>
         private static readonly Dictionary<Type, HashAlgorithm> _algorithms = new Dictionary<Type, HashAlgorithm>();
 
-        // Class for all IRC Operator commands such as OPER, KILL, SAMODE, etc.
-        public Oper(IRCd ircd) {
-            ircd.PacketManager.Register("OPER", OperHandler);
-            ircd.PacketManager.Register("SAMODE", SamodeHandler);
-        }
-
-        public Boolean OperHandler(HandlerArgs args) {
+        [Handler("OPER", ListenerType.Client)]
+        public static bool OperHandler(HandlerArgs args) {
             bool hostMatch = false;
             if (args.SpacedArgs.Count <= 2) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "OPER");
@@ -77,7 +72,8 @@ namespace cmpctircd.Packets {
             }
         }
 
-        public Boolean SamodeHandler(HandlerArgs args) {
+        [Handler("SAMODE", ListenerType.Client)]
+        public static bool SamodeHandler(HandlerArgs args) {
             if (args.SpacedArgs.Count == 1)
                 throw new IrcErrNotEnoughParametersException(args.Client, "SAMODE");
             if(args.Client.Modes["o"].Enabled) {

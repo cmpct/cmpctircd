@@ -1,4 +1,5 @@
-﻿using System;
+﻿using cmpctircd.Packets;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -129,16 +130,22 @@ namespace cmpctircd {
         }
 
         public bool Load() {
-            var classes = AppDomain.CurrentDomain.GetAssemblies()
-                                   .SelectMany(t => t.GetTypes())
-                                   .Where(
-                                       t => t.IsClass &&
-                                            t.Namespace == "cmpctircd.Packets" &&
-                                            t.GetCustomAttributes(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), true).Count() == 0
-                                    );
-            foreach(Type className in classes) {
-                Activator.CreateInstance(Type.GetType(className.ToString()), _ircd);
-            }
+            AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(t => t.GetTypes())
+                .SelectMany(t => t.GetMethods())
+                .ForEach(
+                    m => m.GetCustomAttributes(typeof(Handler), false).ForEach(a => {
+                        Handler attr = (Handler) a;
+                        if(!m.IsStatic)
+                            _ircd.Log.Warn($"'{m.DeclaringType.FullName}.{m.Name}' is not static. Handler methods loaded through reflection must be static.");
+                        else
+                            Register(
+                                attr.Command,
+                                (Func<HandlerArgs, bool>) Delegate.CreateDelegate(typeof(Func<HandlerArgs, bool>), m),
+                                attr.Type
+                            );
+                    })
+                );
             return true;
         }
     }

@@ -5,23 +5,9 @@ using System.Linq;
 using cmpctircd.Modes;
 
 namespace cmpctircd.Packets {
-    public class Channels {
-        //private IRCd ircd;
-
-        public Channels(IRCd ircd) {
-            ircd.PacketManager.Register("JOIN", joinHandler);
-            ircd.PacketManager.Register("PRIVMSG", privmsgHandler);
-            ircd.PacketManager.Register("PART", partHandler);
-            ircd.PacketManager.Register("TOPIC", topicHandler);
-            ircd.PacketManager.Register("NOTICE", noticeHandler);
-            ircd.PacketManager.Register("WHO", WhoHandler);
-            ircd.PacketManager.Register("NAMES", NamesHandler);
-            ircd.PacketManager.Register("MODE", ModeHandler);
-            ircd.PacketManager.Register("KICK", KickHandler);
-            ircd.PacketManager.Register("INVITE", InviteHandler);
-        }
-
-        private bool InviteHandler(HandlerArgs args) {
+    public static class Channels {
+        [Handler("INVITE", ListenerType.Client)]
+        public static bool InviteHandler(HandlerArgs args) {
             Channel channel;
             Client targetClient;
 
@@ -59,7 +45,8 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public bool KickHandler(HandlerArgs args) {
+        [Handler("KICK", ListenerType.Client)]
+        public static bool KickHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
             Client targetClient;
@@ -102,7 +89,8 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public Boolean topicHandler(HandlerArgs args) {
+        [Handler("TOPIC", ListenerType.Client)]
+        public static bool TopicHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
             Topic topic;
@@ -134,7 +122,8 @@ namespace cmpctircd.Packets {
             }
         }
 
-        public Boolean joinHandler(HandlerArgs args) {
+        [Handler("JOIN", ListenerType.Client)]
+        public static bool JoinHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
 
@@ -197,7 +186,8 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public Boolean privmsgHandler(HandlerArgs args) {
+        [Handler("PRIVMSG", ListenerType.Client)]
+        public static bool PrivMsgHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
             Client targetClient = null;
@@ -275,7 +265,8 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public bool noticeHandler(HandlerArgs args) {
+        [Handler("NOTICE", ListenerType.Client)]
+        public static bool NoticeHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
             Client targetClient = null;
@@ -349,7 +340,8 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public Boolean partHandler(HandlerArgs args) {
+        [Handler("PART", ListenerType.Client)]
+        public static bool PartHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
             String rawLine = args.Line;
@@ -387,7 +379,8 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public Boolean WhoHandler(HandlerArgs args) {
+        [Handler("WHO", ListenerType.Client)]
+        public static Boolean WhoHandler(HandlerArgs args) {
             String target;
             Channel targetChannel;
 
@@ -427,7 +420,9 @@ namespace cmpctircd.Packets {
             };
             return true;
         }
-        public Boolean NamesHandler(HandlerArgs args) {
+
+        [Handler("NAMES", ListenerType.Client)]
+        public static Boolean NamesHandler(HandlerArgs args) {
             String[] splitLineSpace = args.Line.Split(new string[] { " " }, 3, StringSplitOptions.None);
             String [] splitCommaLine;
 
@@ -459,7 +454,8 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public bool ModeHandler(HandlerArgs args) {
+        [Handler("MODE", ListenerType.Client)]
+        public static bool ModeHandler(HandlerArgs args) {
             // This handler is for Channel requests (i.e. where the target begins with a # or &)
             // TODO: update with channel validation logic (in ChannelManager?)
             string target;

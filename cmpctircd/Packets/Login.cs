@@ -17,10 +17,10 @@ namespace cmpctircd.Packets {
             string username;
             string real_name;
 
-            try {
+            if(args.SpacedArgs.Count >= 3 && args.Trailer != null) {
                 username = args.SpacedArgs[1];
-                real_name = args.SpacedArgs[4].StartsWith(":") ? args.SpacedArgs[4].Substring(1) : args.SpacedArgs[4];
-            } catch(IndexOutOfRangeException) {
+                real_name = args.Trailer;
+            } else {
                 throw new IrcErrNotEnoughParametersException(client, "");
             }
 

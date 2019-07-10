@@ -14,16 +14,16 @@ namespace cmpctircd
     public class Client : SocketBase {
         // Metadata
         // TODO: Make these read-only apart from via setNick()?
-        public String UID { get; set; }
-        public String Nick { get; set; }
-        public String Ident { get; set; }
-        public String RealName { get; set; }
-        public String AwayMessage { get; set; }
-        public List<Channel> Invites = new List<Channel>();
+        public string UID { get; }
+        public string Nick { get; set; }
+        public string Ident { get; set; }
+        public string RealName { get; set; }
+        public string AwayMessage { get; set; }
+        public IList<Channel> Invites { get; } = new List<Channel>();
 
         // Connection information
         public Server OriginServer { get; set; }
-        public bool RemoteClient { get; set; } = false;
+        public bool RemoteClient { get; } = false;
         public string Cloak { get; set; }
         public String DNSHost { get; set; }
         public long IdleTime { get; set; }
@@ -31,8 +31,8 @@ namespace cmpctircd
         public ClientState State { get; set; }
         public bool ResolvingHost { get; set; } = false;
 
-        public Dictionary<string, UserMode> Modes {
-            get; set;
+        public IDictionary<string, UserMode> Modes {
+            get;
         } = new Dictionary<string, UserMode>();
 
         // TODO will this work for multiple hops? think so but it's something to bare in mind
@@ -40,7 +40,7 @@ namespace cmpctircd
         public void SendVersion() => Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.Host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.Version));
         public string OriginServerName() => RemoteClient ? OriginServer.Name : IRCd.Host;
 
-        public Client(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream, String UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl, stream) {
+        public Client(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream, string UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl, stream) {
             if(ircd.Config.Advanced.ResolveHostnames)
                 ResolvingHost = true;
 
@@ -55,14 +55,14 @@ namespace cmpctircd
             IdleTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             // Initialise modes
-            string[] badClasses = { "ChannelMode", "ChannelModeType" };
+            Type[] except = { typeof(ChannelMode), typeof(ChannelModeType) };
             var classes = AppDomain.CurrentDomain.GetAssemblies()
                                    .SelectMany(t => t.GetTypes())
                                    .Where(
                                        t => t.IsClass &&
                                        t.Namespace == "cmpctircd.Modes" &&
                                        t.BaseType.Equals(typeof(UserMode)) &&
-                                       !badClasses.Contains(t.Name)
+                                       !except.Contains(t)
                                     );
 
             foreach(Type className in classes) {

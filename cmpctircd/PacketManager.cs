@@ -4,8 +4,8 @@ using System.Linq;
 
 namespace cmpctircd {
     public class PacketManager {
-        private IRCd ircd;
-        public Dictionary<String, List<HandlerInfo>> handlers = new Dictionary<string, List<HandlerInfo>>();
+        private IRCd _ircd;
+        private IDictionary<String, IList<HandlerInfo>> _handlers = new Dictionary<string, IList<HandlerInfo>>();
 
         public struct HandlerInfo {
             public string Packet;
@@ -14,19 +14,19 @@ namespace cmpctircd {
         }
 
         public PacketManager(IRCd ircd) {
-            this.ircd = ircd;
+            _ircd = ircd;
         }
 
         public bool Register(HandlerInfo info) {
-            ircd.Log.Debug("Registering packet: " + info.Packet);
-            if (handlers.ContainsKey(info.Packet.ToUpper())) {
+            _ircd.Log.Debug("Registering packet: " + info.Packet);
+            if (_handlers.ContainsKey(info.Packet.ToUpper())) {
                 // Already a handler for this packet so add it to the list
-                handlers[info.Packet].Add(info);
+                _handlers[info.Packet].Add(info);
             } else {
                 // No handlers for this packet yet, so create the List
                 var list = new List<HandlerInfo>();
                 list.Add(info);
-                handlers.Add(info.Packet.ToUpper(), list);
+                _handlers.Add(info.Packet.ToUpper(), list);
             }
             return true;
         }
@@ -47,8 +47,8 @@ namespace cmpctircd {
             List<String> idleCommands = new List<String>();
 
             if(convertUids) {
-                args.Line   = ircd.ReplaceUUIDWithNick(args.Line);
-                args.Client = ircd.GetClientByNick(ircd.ExtractIdentifierFromMessage(args.Line, true));
+                args.Line   = _ircd.ReplaceUUIDWithNick(args.Line);
+                args.Client = _ircd.GetClientByNick(_ircd.ExtractIdentifierFromMessage(args.Line, true));
             }
 
             var client = args.Client;
@@ -75,7 +75,7 @@ namespace cmpctircd {
                         client.IdleTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                     }
                 } catch(Exception e) {
-                    ircd.Log.Debug($"Exception (client): {e.ToString()}");
+                    _ircd.Log.Debug($"Exception (client): {e.ToString()}");
                     return false;
                 }
             } else {
@@ -85,12 +85,12 @@ namespace cmpctircd {
                     registrationCommands.Add("CAPAB");
                     registrationCommands.Add("SERVER");
                     if(server.State.Equals(ServerState.PreAuth) && !registrationCommands.Contains(packet.ToUpper())) {
-                        ircd.Log.Error($"Server just tried to use command pre-auth: {packet.ToUpper()}");
+                        _ircd.Log.Error($"Server just tried to use command pre-auth: {packet.ToUpper()}");
                         server.Disconnect("ERROR: Sent command before auth (send SERVER packet!)", true);
                         return false;
                     }
                 } catch(Exception e) {
-                    ircd.Log.Debug($"Exception (server): ${e.ToString()}");
+                    _ircd.Log.Debug($"Exception (server): ${e.ToString()}");
                     return false;
                 }
             }
@@ -103,18 +103,18 @@ namespace cmpctircd {
                         record.Handler.Invoke(args);
                     }
                 } else {
-                    ircd.Log.Debug("No handler for " + packet.ToUpper());
+                    _ircd.Log.Debug("No handler for " + packet.ToUpper());
                     if(client != null)
                         throw new IrcErrUnknownCommandException(client, packet.ToUpper());
                 }
             } catch(Exception e) {
-                ircd.Log.Debug("Exception: " + e.ToString());
+                _ircd.Log.Debug("Exception: " + e.ToString());
                 return false;
             }
 
             if(args.Server != null)
-                ircd.Log.Debug($"Got a server line: {args.Line}");
-            ircd.Log.Debug("Handler for " + packet.ToUpper() + " executed");
+                _ircd.Log.Debug($"Got a server line: {args.Line}");
+            _ircd.Log.Debug("Handler for " + packet.ToUpper() + " executed");
             return true;
         }
 
@@ -122,8 +122,8 @@ namespace cmpctircd {
         private List<HandlerInfo> FindHandlers(string name, ListenerType type) {
             var functions = new List<HandlerInfo>();
             name = name.ToUpper();
-            if (handlers.ContainsKey(name)) {
-                functions.AddRange(handlers[name].Where(record => record.Type == type));
+            if (_handlers.ContainsKey(name)) {
+                functions.AddRange(_handlers[name].Where(record => record.Type == type));
             }
             return functions;
         }
@@ -137,7 +137,7 @@ namespace cmpctircd {
                                             t.GetCustomAttributes(typeof(System.Runtime.CompilerServices.CompilerGeneratedAttribute), true).Count() == 0
                                     );
             foreach(Type className in classes) {
-                Activator.CreateInstance(Type.GetType(className.ToString()), ircd);
+                Activator.CreateInstance(Type.GetType(className.ToString()), _ircd);
             }
             return true;
         }

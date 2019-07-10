@@ -15,10 +15,10 @@ namespace cmpctircd {
         private IRCd _ircd;
         private Boolean _started = false;
         private TcpListener _listener = null;
-        private List<Server> _servers = new List<Server>();
+        private IList<Server> _servers = new List<Server>();
 
         public SocketElement Info { get; private set; }
-        public List<Client> Clients = new List<Client>();
+        public IList<Client> Clients { get; } = new List<Client>();
         public int ClientCount = 0;
         public int AuthClientCount = 0;
 

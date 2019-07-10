@@ -9,14 +9,16 @@ namespace cmpctircd
     /// </summary>
     public class HandlerArgs
     {
-        public IRCd IRCd { get; set; }
+        public IRCd IRCd { get; }
+        // TODO: Make read-only
         public Client Client { get; set; }
-        public Server Server { get; set; }
+        public Server Server { get; }
+        // TODO: Make read-only
         public string Line { get; set; }
         public bool Force { get; set; }
 
-        public List<string> SpacedArgs { get; set; }
-        public string       Trailer { get; set; }
+        public IList<string> SpacedArgs { get; }
+        public string       Trailer { get; }
 
         public HandlerArgs(IRCd ircd, string line, bool force) {
             IRCd = ircd;

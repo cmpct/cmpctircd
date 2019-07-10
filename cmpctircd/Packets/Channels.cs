@@ -22,24 +22,22 @@ namespace cmpctircd.Packets {
         }
 
         private bool InviteHandler(HandlerArgs args) {
-            string[] rawSplit = args.Line.Split(' ');
             Channel channel;
             Client targetClient;
 
-            if (rawSplit.Count() <= 2) {
+            if (args.SpacedArgs.Count <= 2)
                 throw new IrcErrNotEnoughParametersException(args.Client, "INVITE");
-            }
 
-            if(args.IRCd.ChannelManager.Exists(rawSplit[2])) {
-                channel = args.IRCd.ChannelManager[rawSplit[2]];
+            if(args.IRCd.ChannelManager.Exists(args.SpacedArgs[2])) {
+                channel = args.IRCd.ChannelManager[args.SpacedArgs[2]];
             } else {
-                throw new IrcErrNoSuchTargetNickException(args.Client, rawSplit[2]);
+                throw new IrcErrNoSuchTargetNickException(args.Client, args.SpacedArgs[2]);
             }
 
             try {
-                targetClient = args.IRCd.GetClientByNick(rawSplit[1]);
+                targetClient = args.IRCd.GetClientByNick(args.SpacedArgs[1]);
             } catch(InvalidOperationException) {
-                throw new IrcErrNoSuchTargetNickException(args.Client, rawSplit[1]);
+                throw new IrcErrNoSuchTargetNickException(args.Client, args.SpacedArgs[1]);
             }
 
             if(!channel.Clients.ContainsKey(args.Client.Nick)) {
@@ -64,31 +62,28 @@ namespace cmpctircd.Packets {
         public bool KickHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
-            String rawLine = args.Line;
             Client targetClient;
-            String[] rawSplit;
             Channel channel;
             String target;
             String message;
 
-            rawSplit = rawLine.Split(' ');
 
-            if(rawSplit.Count() <= 2) {
+            if(args.SpacedArgs.Count <= 2) {
                 throw new IrcErrNotEnoughParametersException(client, "KICK");
             }
 
-            if(rawSplit.Count() >= 4) {
-                message = rawLine.Split(':')[1];
+            if(args.SpacedArgs.Count >= 4) {
+                message = args.Trailer;
             } else {
                 message = client.Nick;
             }
 
-            target  = rawSplit[2];
+            target  = args.SpacedArgs[2];
 
-            if (ircd.ChannelManager.Exists(rawSplit[1])) {
-                channel = ircd.ChannelManager[rawSplit[1]];
+            if (ircd.ChannelManager.Exists(args.SpacedArgs[1])) {
+                channel = ircd.ChannelManager[args.SpacedArgs[1]];
             } else {
-                throw new IrcErrNoSuchTargetChannelException(client, rawSplit[1]);
+                throw new IrcErrNoSuchTargetChannelException(client, args.SpacedArgs[1]);
             }
 
             try {
@@ -112,17 +107,15 @@ namespace cmpctircd.Packets {
             Client client = args.Client;
             Topic topic;
             String rawLine = args.Line;
-            String[] rawSplit;
             String target;
             String command;
 
-            rawSplit = rawLine.Split(' ');
-            command = rawSplit[0].ToUpper();
-            switch (rawSplit.Length) {
+            command = args.SpacedArgs[0].ToUpper();
+            switch (args.SpacedArgs.Count) {
                 case 1:
                     throw new IrcErrNotEnoughParametersException(client, command);
                 case 2:
-                    target = rawSplit[1];
+                    target = args.SpacedArgs[1];
                     if (!ircd.ChannelManager.Channels.ContainsKey(target)) {
                         throw new IrcErrNoSuchTargetNickException(client, target);
                     }
@@ -131,7 +124,7 @@ namespace cmpctircd.Packets {
                     return true;
 
                 default:
-                    target = rawSplit[1];
+                    target = args.SpacedArgs[1];
                     if (!ircd.ChannelManager.Channels.ContainsKey(target)) {
                         throw new IrcErrNoSuchTargetNickException(client, target);
                     }
@@ -144,21 +137,18 @@ namespace cmpctircd.Packets {
         public Boolean joinHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
-            String rawLine = args.Line;
 
-            String[] splitLine = rawLine.Split(' ');
-            String[] splitColonLine = rawLine.Split(new char[] { ':' }, 2);
             String[] splitCommaLine;
             Channel channel;
             Topic topic;
 
             try {
-                splitCommaLine = splitLine[1].Split(new char[] { ','});
+                splitCommaLine = args.SpacedArgs[1].Split(new char[] { ','});
             } catch(IndexOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(client, "JOIN");
             }
 
-            for(int i = 0; i < splitCommaLine.Count(); i++) {
+            for(int i = 0; i < splitCommaLine.Length; i++) {
                 if((i + 1) > ircd.MaxTargets) break;
 
                 string channel_name = splitCommaLine[i];
@@ -212,19 +202,15 @@ namespace cmpctircd.Packets {
             Client client = args.Client;
             Client targetClient = null;
 
-            var spaceSplit = args.SpacedArgs;
             String target;
             String message;
-            String command;
-
-            command = spaceSplit[0].ToUpper();
 
             // Catch both no parameter and whitespace
-            if (spaceSplit.Count < 2 || String.IsNullOrWhiteSpace(spaceSplit[1])) {
+            if (args.SpacedArgs.Count < 2 || String.IsNullOrWhiteSpace(args.SpacedArgs[1])) {
                 throw new IrcErrNoRecipientException(client, "PRIVMSG");
             }
 
-            target = spaceSplit[1];
+            target = args.SpacedArgs[1];
 
             if (!target.StartsWith("#")) {
                 try {
@@ -294,15 +280,14 @@ namespace cmpctircd.Packets {
             Client client = args.Client;
             Client targetClient = null;
 
-            var commandArgs = args.SpacedArgs;
             String target;
             String message;
             String fmtMessage;
 
             // Check the target has been sent
-            if (commandArgs.Count() >= 1) {
+            if (args.SpacedArgs.Count >= 1) {
                 // Check the target exists
-                target = commandArgs[1];
+                target = args.SpacedArgs[1];
                 if(target.StartsWith("#")) {
                     // The target is a channel
                     if(!ircd.ChannelManager.Exists(target)) {
@@ -403,13 +388,11 @@ namespace cmpctircd.Packets {
         }
 
         public Boolean WhoHandler(HandlerArgs args) {
-            String[] splitLine = args.Line.Split(new string[] { ":" }, 2, StringSplitOptions.None);
-            String[] splitLineSpace = args.Line.Split(new string[] { " " }, 3, StringSplitOptions.None);
             String target;
             Channel targetChannel;
 
             try {
-                target = splitLineSpace[1];
+                target = args.SpacedArgs[1];
             } catch(IndexOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "WHO");
             }
@@ -445,7 +428,6 @@ namespace cmpctircd.Packets {
             return true;
         }
         public Boolean NamesHandler(HandlerArgs args) {
-            String[] splitLine = args.Line.Split(new string[] { ":" }, 2, StringSplitOptions.None);
             String[] splitLineSpace = args.Line.Split(new string[] { " " }, 3, StringSplitOptions.None);
             String [] splitCommaLine;
 
@@ -455,7 +437,7 @@ namespace cmpctircd.Packets {
                 throw new IrcErrNotEnoughParametersException(args.Client, "NAMES");
             }
 
-            for(int i = 0; i < splitCommaLine.Count(); i++) {
+            for(int i = 0; i < splitCommaLine.Length; i++) {
                 if((i + 1) > args.IRCd.MaxTargets) break;
 
                 var channel_name = splitCommaLine[i];
@@ -480,12 +462,11 @@ namespace cmpctircd.Packets {
         public bool ModeHandler(HandlerArgs args) {
             // This handler is for Channel requests (i.e. where the target begins with a # or &)
             // TODO: update with channel validation logic (in ChannelManager?)
-            var splitLineSpace = args.SpacedArgs;
             string target;
             Channel channel;
 
             try {
-                target = splitLineSpace[1];
+                target = args.SpacedArgs[1];
             } catch(IndexOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "MODE");
             }
@@ -500,7 +481,7 @@ namespace cmpctircd.Packets {
                 throw new IrcErrNoSuchTargetChannelException(args.Client, target);
             }
 
-            if(splitLineSpace.Count() == 2) {
+            if(args.SpacedArgs.Count == 2) {
                 // This is a request for MODE (e.g. MODE #cmpctircd)
                 string[] channelModes = channel.GetModeStrings("+");
                 string characters = channelModes[0];
@@ -512,16 +493,16 @@ namespace cmpctircd.Packets {
                 }
                 // TODO: creation time?
 
-            } else if(splitLineSpace.Count() > 2) {
+            } else if(args.SpacedArgs.Count > 2) {
                 // Process
-                string modes = splitLineSpace[2];
+                string modes = args.SpacedArgs[2];
                 string[] param;
 
-                if(splitLineSpace.Count() == 3) {
-                    splitLineSpace.Add("");
+                if(args.SpacedArgs.Count == 3) {
+                    args.SpacedArgs.Add("");
                 }
 
-                param = splitLineSpace[3].Split(new string[] { " " }, StringSplitOptions.None);
+                param = args.SpacedArgs[3].Split(new string[] { " " }, StringSplitOptions.None);
 
                 string currentModifier = "";
                 string modeChars = "";
@@ -536,7 +517,7 @@ namespace cmpctircd.Packets {
                     // TODO: should we put this in the foreach?
 
                     // TODO: Some ircds make the ban list op only?
-                    if(modesNoOperator == "b" && String.IsNullOrEmpty(splitLineSpace[3])) {
+                    if(modesNoOperator == "b" && String.IsNullOrEmpty(args.SpacedArgs[3])) {
                         var banMode = (BanMode)channel.Modes["b"];
                         foreach(Ban ban in banMode.Bans.Values) {
                             args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_BANLIST.Printable()} {args.Client.Nick} {channel.Name} {ban.GetBan()}");

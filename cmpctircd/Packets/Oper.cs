@@ -18,13 +18,12 @@ namespace cmpctircd.Packets {
         }
 
         public Boolean OperHandler(HandlerArgs args) {
-            string[] userInput = args.Line.Split(' ');
             bool hostMatch = false;
-            if (userInput.Count() <= 2) {
+            if (args.SpacedArgs.Count <= 2) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "OPER");
             }
             try {
-                var ircop = args.IRCd.Opers.Single(oper => oper.Name == userInput[1]);
+                var ircop = args.IRCd.Opers.Single(oper => oper.Name == args.SpacedArgs[1]);
                 // Check for TLS
                 if (ircop.Tls) {
                     if(!args.Client.Modes["z"].Enabled) {
@@ -47,7 +46,7 @@ namespace cmpctircd.Packets {
                 if(!_algorithms.TryGetValue(ircop.Algorithm, out algorithm))
                     algorithm = _algorithms[ircop.Algorithm] = (ircop.Algorithm.GetConstructor(Type.EmptyTypes)?.Invoke(new object[0]) as HashAlgorithm) ?? throw new IrcErrNoOperHostException(args.Client);
                 // Hash the user's input to match the stored hash password in the config
-                byte[] password = Encoding.UTF8.GetBytes(userInput[2]);
+                byte[] password = Encoding.UTF8.GetBytes(args.SpacedArgs[2]);
                 byte[] builtHash = algorithm.ComputeHash(password);
                 if(builtHash.SequenceEqual(ircop.Password)) {
                     Channel channel;
@@ -79,9 +78,8 @@ namespace cmpctircd.Packets {
         }
 
         public Boolean SamodeHandler(HandlerArgs args) {
-            if (args.Line.Split(' ').Count() == 1) {
+            if (args.SpacedArgs.Count == 1)
                 throw new IrcErrNotEnoughParametersException(args.Client, "SAMODE");
-            }
             if(args.Client.Modes["o"].Enabled) {
                 args.Force = true;
                 args.IRCd.PacketManager.FindHandler("MODE", args, ListenerType.Client);

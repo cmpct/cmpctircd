@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace cmpctircd.Packets
 {
@@ -30,13 +29,12 @@ namespace cmpctircd.Packets
         }
 
         public Boolean WhoisHandler(HandlerArgs args) {
-            String[] splitLineSpace = args.Line.Split(' ');
-            String[] splitLineComma = args.Line.Split(',');
+            String[] splitLineComma;
             Client targetClient;
             long idleTime;
 
             try {
-                splitLineComma = splitLineSpace[1].Split(new char[] { ','});
+                splitLineComma = args.SpacedArgs[1].Split(new char[] { ','});
             } catch(IndexOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "WHOIS");
             }
@@ -120,8 +118,7 @@ namespace cmpctircd.Packets
         }
 
         public bool WhoHandler(HandlerArgs args) {
-            String[] splitLine = args.Line.Split(' ');
-            string mask = splitLine[1];
+            string mask = args.SpacedArgs[1];
 
             // TODO: may be another change as with channel WHO?
             // TODO: change when linking
@@ -172,7 +169,6 @@ namespace cmpctircd.Packets
         }
 
         public Boolean AwayHandler(HandlerArgs args) {
-            String[] splitLine = args.Line.Split(' ');
             String[] splitColonLine = args.Line.Split(new char[] { ':' }, 2);
             String message;
 
@@ -201,7 +197,7 @@ namespace cmpctircd.Packets
 
         public bool UserhostHandler(HandlerArgs args) {
             // the format is USERHOST nick1 nick2; so skip the command name
-            var items = args.Line.Split(' ').Skip(1).ToArray();
+            var items = args.SpacedArgs.Skip(1).ToArray();
             if (items.Length == 0 || items.Length > 5) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "USERHOST");
             }
@@ -232,18 +228,16 @@ namespace cmpctircd.Packets
 
         public Boolean PingHandler(HandlerArgs args) {
             // TODO: Modification for multiple servers
-            string cookie = args.Line.Split(' ')[1];
+            string cookie = args.SpacedArgs[1];
             args.Client.Write($":{args.IRCd.Host} PONG {args.IRCd.Host} :{cookie}");
             return true;
         }
 
         public bool ModeHandler(HandlerArgs args) {
-            string[] splitLine = args.Line.Split(new string[] { ":" }, 2, StringSplitOptions.None);
-            List<string> splitLineSpace = args.Line.Split(new string[] { " " }, 4, StringSplitOptions.RemoveEmptyEntries).ToList<string>();
             string target;
 
             try {
-                target = splitLineSpace[1];
+                target = args.SpacedArgs[1];
             } catch (IndexOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "MODE");
             }
@@ -255,7 +249,7 @@ namespace cmpctircd.Packets
             // Only allow the user to set their own modes
             Client targetClient = args.Client;
 
-            if (splitLineSpace.Count == 1) {
+            if (args.SpacedArgs.Count == 1) {
                 // This is a MODE request of the form: MODE <nick>
                 if (targetClient != args.Client) {
                     // Can only request own modes
@@ -264,16 +258,16 @@ namespace cmpctircd.Packets
 
                 var userModes = targetClient.GetModeStrings("+");
                 args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_UMODEIS.Printable()} {targetClient.Nick} {userModes[0]} {userModes[1]}");
-            } else if(splitLineSpace.Count() >= 2) {
+            } else if(args.SpacedArgs.Count >= 2) {
                 // Process
-                string modes = splitLineSpace[1];
+                string modes = args.SpacedArgs[1];
                 string[] param;
 
-                if (splitLineSpace.Count() == 2) {
-                    splitLineSpace.Add("");
+                if (args.SpacedArgs.Count == 2) {
+                    args.SpacedArgs.Add("");
                 }
 
-                param = splitLineSpace[2].Split(new string[] { " " }, StringSplitOptions.None);
+                param = args.SpacedArgs[2].Split(new string[] { " " }, StringSplitOptions.None);
 
                 string currentModifier = "";
                 string modeChars = "";

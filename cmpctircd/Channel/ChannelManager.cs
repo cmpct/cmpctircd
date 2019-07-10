@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace cmpctircd {
     public class ChannelManager {
         private IRCd IRCd { get; set; }
-        public ConcurrentDictionary<String, Channel> Channels
+        public Dictionary<String, Channel> Channels
         {
             get; private set;
-        } = new ConcurrentDictionary<string, Channel>();
+        } = new Dictionary<string, Channel>();
 
         public ChannelManager(IRCd ircd) {
             this.IRCd = ircd;
@@ -22,7 +20,7 @@ namespace cmpctircd {
         public Channel Create(String channel_name) {
             Channel channel = new Channel(this, IRCd);
             channel.Name = channel_name;
-            Channels.TryAdd(channel_name, channel);
+            Channels.Add(channel_name, channel);
 
             IRCd.ServerLists.ForEach(serverList => serverList.ForEach(
                 server => server.SyncChannel(channel)
@@ -31,7 +29,7 @@ namespace cmpctircd {
         }
 
         public void Remove(String channel_name) {
-            Channels.TryRemove(channel_name, out var _);
+            Channels.Remove(channel_name);
         }
 
         public Channel this[String channel] => Channels[channel];

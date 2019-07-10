@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace cmpctircd.Packets {
     class Server {
@@ -207,7 +205,7 @@ namespace cmpctircd.Packets {
             var parts = args.Line.Split(new char[] { ' ' }, 12);
             
             // TODO: check parts count
-            var last_index = parts.Count() - 1;
+            var last_index = parts.Length - 1;
             var sid_from     = parts[0];
             var user_uuid    = parts[2];
             var timestamp    = parts[3];

@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 using System.IO;
-using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
-using System.Collections;
 using System.Text.RegularExpressions;
 using cmpctircd.Configuration;
 
@@ -19,10 +15,10 @@ namespace cmpctircd {
         private IRCd _ircd;
         private Boolean _started = false;
         private TcpListener _listener = null;
-        private List<Server> _servers = new List<Server>();
+        private IList<Server> _servers = new List<Server>();
 
         public SocketElement Info { get; private set; }
-        public List<Client> Clients = new List<Client>();
+        public IList<Client> Clients { get; } = new List<Client>();
         public int ClientCount = 0;
         public int AuthClientCount = 0;
 

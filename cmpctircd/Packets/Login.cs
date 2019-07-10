@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace cmpctircd.Packets {
     public class Login {
@@ -16,18 +12,15 @@ namespace cmpctircd.Packets {
         }
 
         public Boolean userHandler(HandlerArgs args) {
-            IRCd ircd = args.IRCd;
             Client client = args.Client;
-            String rawLine = args.Line;
 
-            String[] splitLine = rawLine.Split(new char[] { ' ' }, 5);
-            String username;
-            String real_name;
+            string username;
+            string real_name;
 
-            try {
-                username = splitLine[1];
-                real_name = splitLine[4].StartsWith(":") ? splitLine[4].Substring(1) : splitLine[4];
-            } catch(IndexOutOfRangeException) {
+            if(args.SpacedArgs.Count >= 3 && args.Trailer != null) {
+                username = args.SpacedArgs[1];
+                real_name = args.Trailer;
+            } else {
                 throw new IrcErrNotEnoughParametersException(client, "");
             }
 
@@ -43,8 +36,7 @@ namespace cmpctircd.Packets {
         public Boolean nickHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
-            String rawLine = args.Line;
-            String newNick = rawLine.Split(' ')[1];
+            string newNick = args.SpacedArgs[1];
             // Some bots will try to send ':' with the channel, remove this
             newNick = newNick.StartsWith(":") ? newNick.Substring(1) : newNick;
             ircd.Log.Debug($"Changing nick to {newNick}");
@@ -53,13 +45,10 @@ namespace cmpctircd.Packets {
         }
 
         private Boolean quitHandler(HandlerArgs args) {
-            IRCd ircd = args.IRCd;
             Client client = args.Client;
-            String rawLine = args.Line;
-            String[] splitLine = rawLine.Split(new char[] { ':' }, 2);
             string reason;
             try {
-                reason = splitLine[1];
+                reason = args.SpacedArgs[1];
             } catch(IndexOutOfRangeException) {
                 reason = "Leaving";
             }
@@ -69,11 +58,10 @@ namespace cmpctircd.Packets {
         }
 
         private Boolean pongHandler(HandlerArgs args) {
-            IRCd ircd = args.IRCd;
             Client client = args.Client;
-            String rawLine = args.Line;
-            String[] splitLine = rawLine.Split(new char[] { ':' }, 2);
-            String cookie;
+            string rawLine = args.Line;
+            string[] splitLine = rawLine.Split(new char[] { ':' }, 2);
+            string cookie;
 
             try {
                 cookie = splitLine[1];

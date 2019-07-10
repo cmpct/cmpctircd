@@ -1,4 +1,3 @@
-using System;
 namespace cmpctircd {
     public enum ClientState {
         Auth    = 1, // Authenticated (logged in, able to run commands)

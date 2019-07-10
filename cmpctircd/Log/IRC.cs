@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 
 namespace cmpctircd {
     public class IRC : BaseLogger {

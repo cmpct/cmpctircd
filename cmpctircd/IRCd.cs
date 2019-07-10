@@ -1,51 +1,45 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net.Sockets;
-
-using cmpctircd.Packets;
-using cmpctircd.Modes;
 using System.Text.RegularExpressions;
 using System.IO;
+
+using cmpctircd.Modes;
 using cmpctircd.Configuration;
 
 namespace cmpctircd {
     public class IRCd {
-        private List<SocketListener> Listeners;
-        public PacketManager PacketManager { get; set; }
-        public ChannelManager ChannelManager { get; set; }
-        public List<List<Client>> ClientLists { get; set; }
-        public List<List<Server>> ServerLists { get; set; }
-        private Dictionary<string, List<string>> ModeTypes { get; set; }
-        private Dictionary<string, string> ModeDict { get; set; }
-        private List<string> UserModes { get; set; }
+        private readonly IList<SocketListener> Listeners = new List<SocketListener>();
+        public PacketManager PacketManager { get; }
+        public ChannelManager ChannelManager { get; }
+        public IList<IList<Client>> ClientLists { get; } = new List<IList<Client>>();
+        public IList<IList<Server>> ServerLists { get; } = new List<IList<Server>>();
+        private IDictionary<string, IList<string>> ModeTypes { get; set; }
+        private IDictionary<string, string> ModeDict { get; set; }
+        private IList<string> UserModes { get; set; }
 
-        public Log Log;
-        public CmpctConfigurationSection Config;
-        public string SID;
-        public string Host;
-        public string Desc;
-        public string Network;
+        public Log Log { get; }
+        public CmpctConfigurationSection Config { get; }
+        public string SID { get; }
+        public string Host { get; }
+        public string Desc { get; }
+        public string Network { get; }
         public const string Version = "0.2.1-dev";
-        public int MaxTargets;
+        public int MaxTargets { get; }
         public int MaxSeen { get; set; } = 0;
-        public bool RequirePong { get; set; } = true;
-        public int PingTimeout { get; set; } = 120;
-        public string CloakKey { get; set;}
-        public bool CloakFull { get; set; }
-        public static string CloakPrefix { get; set; }
-        public static int CloakDomainParts { get; set; }
-        public IDictionary<string, string> AutoModes;
-        public IDictionary<string, string> AutoUModes;
-        public IList<LoggerElement> Loggers;
-        public ConcurrentDictionary<string, string> DNSCache;
+        public bool RequirePong { get; }
+        public int PingTimeout { get; }
+        public string CloakKey { get; }
+        public bool CloakFull { get; }
+        public static string CloakPrefix { get; private set; }
+        public static int CloakDomainParts { get; private set; }
+        public IDictionary<string, string> AutoModes { get; }
+        public IDictionary<string, string> AutoUModes { get; }
+        public IList<LoggerElement> Loggers { get; }
+        public IDictionary<string, string> DNSCache { get; } = new Dictionary<string, string>();
 
-        public IList<OperatorElement> Opers;
-        public IList<string> OperChan;
+        public IList<OperatorElement> Opers { get; }
+        public IList<string> OperChan { get; }
         public DateTime CreateTime { get; private set; }
         public static char[] lastUID = new char[] { };
 
@@ -78,6 +72,9 @@ namespace cmpctircd {
             Opers = config.Operators.OfType<OperatorElement>().ToList();
             OperChan = config.Operators.Channels;
 
+            PacketManager = new PacketManager(this);
+            ChannelManager = new ChannelManager(this);
+
             // Create certificate refresh
             if(config.Tls != null)
                 Certificate = new AutomaticCertificateCacheRefresh(new FileInfo(config.Tls.File), password: Config.Tls.Password);
@@ -92,18 +89,11 @@ namespace cmpctircd {
             }
             Log.Info($"==> Host: {Host}");
 
-            Listeners   = new List<SocketListener>();
-            ClientLists = new List<List<Client>>();
-            ServerLists = new List<List<Server>>();
-
             foreach(var listener in Config.Sockets.OfType<SocketElement>()) {
                 SocketListener sl = new SocketListener(this, listener);
                 Log.Info($"==> Listening on: {listener.Host}:{listener.Port} ({listener.Type}) ({(listener.IsTls ? "SSL/TLS" : "Plain" )})");
                 Listeners.Add(sl);
             }
-
-            PacketManager = new PacketManager(this);
-            ChannelManager = new ChannelManager(this);
 
             Listeners.ForEach(listener => listener.Bind());
             PacketManager.Load();
@@ -189,7 +179,7 @@ namespace cmpctircd {
             throw new InvalidOperationException("No such server exists");
         }
 
-        public Dictionary<string, string> GetSupportedModes(bool requireSymbols) {
+        public IDictionary<string, string> GetSupportedModes(bool requireSymbols) {
             if(ModeDict != null && ModeDict.Count() > 0) {
                 // Caching because this is still a relatively expensive operation to perform on each connection
                 // (GetSupportedModesByType() is likely far more expensive given it uses reflection)
@@ -218,7 +208,7 @@ namespace cmpctircd {
             return ModeDict;
         }
 
-        public List<string> GetSupportedUModes(Client client) {
+        public IList<string> GetSupportedUModes(Client client) {
             if(UserModes != null && UserModes.Count() > 0) {
                 // Caching because reflection is an expensive operation to perform on each connection
                 // This is called by SendWelcome() to provide RPL_MYINFO
@@ -245,13 +235,13 @@ namespace cmpctircd {
             return UserModes;
         }
 
-        public Dictionary<string, List<string>> GetSupportedModesByType() {
+        public IDictionary<string, IList<string>> GetSupportedModesByType() {
             if(ModeTypes != null && ModeTypes.Count() > 0) {
                 // Caching to only generate this list once - reflection is expensive
                 return ModeTypes;
             }
 
-            ModeTypes = new Dictionary<string, List<string>>();
+            ModeTypes = new Dictionary<string, IList<string>>();
 
             // http://www.irc.org/tech_docs/005.html
             List<string> typeA = new List<string>();

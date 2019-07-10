@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
@@ -13,11 +11,10 @@ namespace cmpctircd {
         // A shared base class for the Client and Server classes
 
         // Internals
-        // TODO: Many of these look like they shouldn't be public or should be private set. Review?
-        public IRCd IRCd { get; set; }
-        public TcpClient TcpClient { get; set; }
-        public Stream Stream { get; private set; }
-        public bool IsTlsEnabled { get; private set; }
+        public IRCd IRCd { get; }
+        public TcpClient TcpClient { get; }
+        public Stream Stream { get; }
+        public bool IsTlsEnabled { get; }
         // TODO: make these protected set?
         public SocketListener Listener { get; set; }
 
@@ -115,11 +112,12 @@ namespace cmpctircd {
             return Write(packet, Stream);
         }
 
-        public Task Write(string packet, Stream stream) {
+        public async Task Write(string packet, Stream stream) {
             if(stream == null)
                 throw new ArgumentNullException(nameof(stream));
             byte[] packetBytes = Encoding.UTF8.GetBytes(packet + "\r\n");
-            return stream.WriteAsync(packetBytes, 0, packetBytes.Length);
+            if(stream.CanWrite)
+                await stream.WriteAsync(packetBytes, 0, packetBytes.Length);
         }
 
         public void Disconnect(bool graceful = false) => Disconnect("", graceful, graceful);

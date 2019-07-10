@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Concurrent;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Net.Sockets;
-using System.Net.Security;
 
 using cmpctircd.Modes;
 using System.Net;
@@ -18,16 +14,16 @@ namespace cmpctircd
     public class Client : SocketBase {
         // Metadata
         // TODO: Make these read-only apart from via setNick()?
-        public String UID { get; set; }
-        public String Nick { get; set; }
-        public String Ident { get; set; }
-        public String RealName { get; set; }
-        public String AwayMessage { get; set; }
-        public List<Channel> Invites = new List<Channel>();
+        public string UID { get; }
+        public string Nick { get; set; }
+        public string Ident { get; set; }
+        public string RealName { get; set; }
+        public string AwayMessage { get; set; }
+        public IList<Channel> Invites { get; } = new List<Channel>();
 
         // Connection information
         public Server OriginServer { get; set; }
-        public bool RemoteClient { get; set; } = false;
+        public bool RemoteClient { get; } = false;
         public string Cloak { get; set; }
         public String DNSHost { get; set; }
         public long IdleTime { get; set; }
@@ -35,16 +31,16 @@ namespace cmpctircd
         public ClientState State { get; set; }
         public bool ResolvingHost { get; set; } = false;
 
-        public ConcurrentDictionary<string, UserMode> Modes {
-            get; set;
-        } = new ConcurrentDictionary<string, UserMode>();
+        public IDictionary<string, UserMode> Modes {
+            get;
+        } = new Dictionary<string, UserMode>();
 
         // TODO will this work for multiple hops? think so but it's something to bare in mind
         public string UUID;
         public void SendVersion() => Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.Host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.Version));
         public string OriginServerName() => RemoteClient ? OriginServer.Name : IRCd.Host;
 
-        public Client(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream, String UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl, stream) {
+        public Client(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream, string UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl, stream) {
             if(ircd.Config.Advanced.ResolveHostnames)
                 ResolvingHost = true;
 
@@ -59,14 +55,14 @@ namespace cmpctircd
             IdleTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             // Initialise modes
-            string[] badClasses = { "ChannelMode", "ChannelModeType" };
+            Type[] except = { typeof(ChannelMode), typeof(ChannelModeType) };
             var classes = AppDomain.CurrentDomain.GetAssemblies()
                                    .SelectMany(t => t.GetTypes())
                                    .Where(
                                        t => t.IsClass &&
                                        t.Namespace == "cmpctircd.Modes" &&
                                        t.BaseType.Equals(typeof(UserMode)) &&
-                                       !badClasses.Contains(t.Name)
+                                       !except.Contains(t)
                                     );
 
             foreach(Type className in classes) {
@@ -77,7 +73,7 @@ namespace cmpctircd
                     IRCd.Log.Error($"{modeInstance.Name} has the same character ({modeChar}) as another user mode! Skipping.");
                     continue;
                 }
-                Modes.TryAdd(modeChar, modeInstance);
+                Modes.Add(modeChar, modeInstance);
                 ircd.Log.Debug($"Creating instance of {modeChar} - {modeInstance.Description}");
             }
 
@@ -111,23 +107,18 @@ namespace cmpctircd
             var  ip            = IP.ToString();
             Write($":{IRCd.Host} NOTICE Auth :*** Looking up your hostname...");
 
-            if(IRCd.DNSCache == null) {
-                // Create the cache
-                IRCd.DNSCache = new ConcurrentDictionary<string, string>();
-            } else {
-                // Check if this IP is in the cache
-                if(IRCd.DNSCache.ContainsKey(ip)) {
-                    var cached = IRCd.DNSCache[ip];
+            // Check if this IP is in the cache
+            if(IRCd.DNSCache.ContainsKey(ip)) {
+                var cached = IRCd.DNSCache[ip];
 
-                    if(cached == ip) {
-                        // See below comment
-                        failedResolve = true;
-                    } else {
-                        DNSHost = cached;
-                        Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({DNSHost}) -- cached");
-                        ResolvingHost = false;
-                        return;
-                    }
+                if(cached == ip) {
+                    // See below comment
+                    failedResolve = true;
+                } else {
+                    DNSHost = cached;
+                    Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({DNSHost}) -- cached");
+                    ResolvingHost = false;
+                    return;
                 }
             }
 

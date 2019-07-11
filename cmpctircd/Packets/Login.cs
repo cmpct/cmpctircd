@@ -43,7 +43,7 @@ namespace cmpctircd.Packets {
             string reason;
             try {
                 reason = args.SpacedArgs[1];
-            } catch(IndexOutOfRangeException) {
+            } catch(ArgumentOutOfRangeException) {
                 reason = "Leaving";
             }
 

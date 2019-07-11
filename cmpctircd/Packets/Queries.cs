@@ -20,7 +20,7 @@ namespace cmpctircd.Packets {
 
             try {
                 splitLineComma = args.SpacedArgs[1].Split(new char[] { ','});
-            } catch(IndexOutOfRangeException) {
+            } catch(ArgumentOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "WHOIS");
             }
 
@@ -229,7 +229,7 @@ namespace cmpctircd.Packets {
 
             try {
                 target = args.SpacedArgs[1];
-            } catch (IndexOutOfRangeException) {
+            } catch (ArgumentOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "MODE");
             }
 

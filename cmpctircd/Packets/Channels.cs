@@ -94,31 +94,18 @@ namespace cmpctircd.Packets {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
             Topic topic;
-            String rawLine = args.Line;
-            String target;
-            String command;
-
-            command = args.SpacedArgs[0].ToUpper();
-            switch (args.SpacedArgs.Count) {
-                case 1:
-                    throw new IrcErrNotEnoughParametersException(client, command);
-                case 2:
-                    target = args.SpacedArgs[1];
-                    if (!ircd.ChannelManager.Channels.ContainsKey(target)) {
-                        throw new IrcErrNoSuchTargetNickException(client, target);
-                    }
-                    topic = ircd.ChannelManager[target].Topic;
+            if(args.SpacedArgs.Count == 0) {
+                throw new IrcErrNotEnoughParametersException(client, "TOPIC");
+            } else {
+                string target = args.SpacedArgs[1];
+                if(!ircd.ChannelManager.Channels.ContainsKey(target))
+                    throw new IrcErrNoSuchTargetNickException(client, target);
+                topic = ircd.ChannelManager[target].Topic;
+                if(args.Trailer != null)
+                    topic.SetTopic(client, target, args.Trailer);
+                else
                     topic.GetTopic(client, target);
-                    return true;
-
-                default:
-                    target = args.SpacedArgs[1];
-                    if (!ircd.ChannelManager.Channels.ContainsKey(target)) {
-                        throw new IrcErrNoSuchTargetNickException(client, target);
-                    }
-                    topic = ircd.ChannelManager[target].Topic;
-                    topic.SetTopic(client, target, rawLine);
-                    return true;
+                return true;
             }
         }
 
@@ -133,7 +120,7 @@ namespace cmpctircd.Packets {
 
             try {
                 splitCommaLine = args.SpacedArgs[1].Split(new char[] { ','});
-            } catch(IndexOutOfRangeException) {
+            } catch(ArgumentOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(client, "JOIN");
             }
 
@@ -386,7 +373,7 @@ namespace cmpctircd.Packets {
 
             try {
                 target = args.SpacedArgs[1];
-            } catch(IndexOutOfRangeException) {
+            } catch(ArgumentOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "WHO");
             }
 
@@ -463,7 +450,7 @@ namespace cmpctircd.Packets {
 
             try {
                 target = args.SpacedArgs[1];
-            } catch(IndexOutOfRangeException) {
+            } catch(ArgumentOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "MODE");
             }
 

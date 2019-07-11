@@ -3,99 +3,27 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace cmpctircd.Packets {
-    class Server {
+    public static class Server {
+        // TODO: three CAPAB packets
+        // TODO: Handle BURST, don't process until we get them all? Group the FJOINs
 
-        public Server(IRCd ircd) {
-            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
-                Packet = "PING",
-                Handler = PingHandler,
-                Type    = ListenerType.Server
-            });
-
-            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
-                Packet  = "PONG",
-                Handler = PongHandler,
-                Type    = ListenerType.Server
-            });
-
-            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
-                Packet = "CAPAB",
-                Handler = CapabHandler,
-                Type    = ListenerType.Server
-            });
-
-            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
-                Packet  = "SERVER",
-                Handler = ServerHandler,
-                Type    = ListenerType.Server
-            });
-
-            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
-                Packet  = "UID",
-                Handler = UidHandler,
-                Type    = ListenerType.Server
-            });
-
-            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
-                Packet  = "FJOIN",
-                Handler = FjoinHandler,
-                Type    = ListenerType.Server
-            });
-
-            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
-                Packet  = "QUIT",
-                Handler = QuitHandler,
-                Type    = ListenerType.Server
-            });
-
-            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
-                Packet  = "SQUIT",
-                Handler = SquitHandler,
-                Type    = ListenerType.Server
-            });
-
-            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
-                Packet  = "PRIVMSG",
-                Handler = PrivmsgHandler,
-                Type    = ListenerType.Server
-            });
-
-            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
-                Packet  = "NOTICE",
-                Handler = NoticeHandler,
-                Type    = ListenerType.Server
-            });
-
-            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
-                Packet = "FMODE",
-                Handler = FmodeHandler,
-                Type = ListenerType.Server
-            });
-
-            ircd.PacketManager.Register(new PacketManager.HandlerInfo() {
-                Packet  = "SVSNICK",
-                Handler = SvsnickHandler,
-                Type    = ListenerType.Server
-            });
-
-            // TODO: three CAPAB packets
-            // TODO: Handle BURST, don't process until we get them all? Group the FJOINs
-        }
-
-        public bool PingHandler(HandlerArgs args) {
+        [Handler("PING", ListenerType.Server)]
+        public static bool PingHandler(HandlerArgs args) {
             // TODO: implement for hops > 1
             // TODO: could use args.Server.SID instead of SpacedArgs?
             args.Server.Write($":{args.IRCd.SID} PONG {args.IRCd.SID} {args.SpacedArgs[1]}");
             return true;
         }
 
-        public bool PongHandler(HandlerArgs args) {
+        [Handler("PONG", ListenerType.Server)]
+        public static bool PongHandler(HandlerArgs args) {
             args.Server.WaitingForPong = false;
             args.Server.LastPong       = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             return true;
         }
 
-        public bool CapabHandler(HandlerArgs args) {
+        [Handler("CAPAB", ListenerType.Server)]
+        public static bool CapabHandler(HandlerArgs args) {
             // TODO: checked if already sent capab?
             if (args.SpacedArgs.Count > 0 && args.SpacedArgs[1] == "START") {
                 args.Server.SendCapab();
@@ -103,7 +31,8 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public bool ServerHandler(HandlerArgs args) {
+        [Handler("SERVER", ListenerType.Server)]
+        public static bool ServerHandler(HandlerArgs args) {
             // TODO: introduce some ServerState magic
             var parts = args.Line.Split(new char[] { ' ' }, 7).ToList();
 
@@ -201,7 +130,8 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public bool UidHandler(HandlerArgs args) {
+        [Handler("UID", ListenerType.Server)]
+        public static bool UidHandler(HandlerArgs args) {
             var parts = args.Line.Split(new char[] { ' ' }, 12);
             
             // TODO: check parts count
@@ -248,7 +178,8 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public bool FjoinHandler(HandlerArgs args) {
+        [Handler("FJOIN", ListenerType.Server)]
+        public static bool FjoinHandler(HandlerArgs args) {
             // TODO check if the SID is one we know, maybe specify in config? (???)
             var parts     = args.Line.Split(new char[] { ' ' }, 6);
             var channel   = parts[2];
@@ -279,11 +210,13 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public bool QuitHandler(HandlerArgs args) {
+        [Handler("QUIT", ListenerType.Server)]
+        public static bool QuitHandler(HandlerArgs args) {
             return args.IRCd.PacketManager.FindHandler("QUIT", args, ListenerType.Client, true);
         }
 
-        public bool SquitHandler(HandlerArgs args) {
+        [Handler("SQUIT", ListenerType.Server)]
+        public static bool SQuitHandler(HandlerArgs args) {
             // TODO: reason?
             args.Server.IRCd.Log.Info($"Server {args.Server.Name} sent SQUIT; disconnecting");
             args.Server.Disconnect(true);
@@ -291,15 +224,18 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public bool PrivmsgHandler(HandlerArgs args) {
+        [Handler("PRIVMSG", ListenerType.Server)]
+        public static bool PrivMsgHandler(HandlerArgs args) {
             return args.IRCd.PacketManager.FindHandler("PRIVMSG", args, ListenerType.Client, true);
         }
 
-        public bool NoticeHandler(HandlerArgs args) {
+        [Handler("NOTICE", ListenerType.Server)]
+        public static bool NoticeHandler(HandlerArgs args) {
             return args.IRCd.PacketManager.FindHandler("NOTICE", args, ListenerType.Client, true);
         }
 
-        public bool FmodeHandler(HandlerArgs args) {
+        [Handler("FMODE", ListenerType.Server)]
+        public static bool FModeHandler(HandlerArgs args) {
             // Trust the server
             args.Force = true;
 
@@ -327,7 +263,8 @@ namespace cmpctircd.Packets {
             return args.IRCd.PacketManager.FindHandler("MODE", args, ListenerType.Client, true);
         }
 
-        public bool SvsnickHandler(HandlerArgs args) {
+        [Handler("SVSNICK", ListenerType.Server)]
+        public static bool SVSNickHandler(HandlerArgs args) {
             // SVSMODE format: :SID SVSMODE TARGET_UUID NEW_NICK TS
             // NICK    format: NICK NEW_NICK
 

@@ -1,17 +1,9 @@
 ﻿using System;
 
 namespace cmpctircd.Packets {
-    public class Login {
-        //private IRCd ircd;
-
-        public Login(IRCd ircd) {
-            ircd.PacketManager.Register("USER", userHandler);
-            ircd.PacketManager.Register("NICK", nickHandler);
-            ircd.PacketManager.Register("QUIT", quitHandler);
-            ircd.PacketManager.Register("PONG", pongHandler);
-        }
-
-        public Boolean userHandler(HandlerArgs args) {
+    public static class Login {
+        [Handler("USER", ListenerType.Client)]
+        public static bool UserHandler(HandlerArgs args) {
             Client client = args.Client;
 
             string username;
@@ -33,7 +25,8 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        public Boolean nickHandler(HandlerArgs args) {
+        [Handler("NICK", ListenerType.Client)]
+        public static bool NickHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
             string newNick = args.SpacedArgs[1];
@@ -44,12 +37,13 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        private Boolean quitHandler(HandlerArgs args) {
+        [Handler("QUIT", ListenerType.Client)]
+        public static bool quitHandler(HandlerArgs args) {
             Client client = args.Client;
             string reason;
             try {
                 reason = args.SpacedArgs[1];
-            } catch(IndexOutOfRangeException) {
+            } catch(ArgumentOutOfRangeException) {
                 reason = "Leaving";
             }
 
@@ -57,7 +51,8 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        private Boolean pongHandler(HandlerArgs args) {
+        [Handler("PONG", ListenerType.Client)]
+        public static bool PongHandler(HandlerArgs args) {
             Client client = args.Client;
             string rawLine = args.Line;
             string[] splitLine = rawLine.Split(new char[] { ':' }, 2);

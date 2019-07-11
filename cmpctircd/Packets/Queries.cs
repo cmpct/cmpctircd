@@ -4,38 +4,23 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace cmpctircd.Packets
-{
-    public class Queries
-    {
-        // This class is for the server query group of commands
-        // TODO: Stats & Links?
-        public Queries(IRCd ircd)
-        {
-            ircd.PacketManager.Register("VERSION", versionHandler);
-            ircd.PacketManager.Register("WHOIS", WhoisHandler);
-            ircd.PacketManager.Register("WHO", WhoHandler);
-            ircd.PacketManager.Register("AWAY", AwayHandler);
-            ircd.PacketManager.Register("LUSERS", LusersHandler);
-            ircd.PacketManager.Register("USERHOST", UserhostHandler);
-            ircd.PacketManager.Register("PING", PingHandler);
-            ircd.PacketManager.Register("MODE", ModeHandler);
-        }
-
-        public Boolean versionHandler(HandlerArgs args)
-        {
+namespace cmpctircd.Packets {
+    public static class Queries {
+        [Handler("VERSION", ListenerType.Client)]
+        public static bool VersionHandler(HandlerArgs args) {
             args.Client.SendVersion();
             return true;
         }
 
-        public Boolean WhoisHandler(HandlerArgs args) {
+        [Handler("WHOIS", ListenerType.Client)]
+        public static bool WhoisHandler(HandlerArgs args) {
             String[] splitLineComma;
             Client targetClient;
             long idleTime;
 
             try {
                 splitLineComma = args.SpacedArgs[1].Split(new char[] { ','});
-            } catch(IndexOutOfRangeException) {
+            } catch(ArgumentOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "WHOIS");
             }
 
@@ -117,7 +102,8 @@ namespace cmpctircd.Packets
             return true;
         }
 
-        public bool WhoHandler(HandlerArgs args) {
+        [Handler("WHO", ListenerType.Client)]
+        public static bool WhoHandler(HandlerArgs args) {
             string mask = args.SpacedArgs[1];
 
             // TODO: may be another change as with channel WHO?
@@ -168,7 +154,8 @@ namespace cmpctircd.Packets
             return true;
         }
 
-        public Boolean AwayHandler(HandlerArgs args) {
+        [Handler("AWAY", ListenerType.Client)]
+        public static bool AwayHandler(HandlerArgs args) {
             String[] splitColonLine = args.Line.Split(new char[] { ':' }, 2);
             String message;
 
@@ -188,14 +175,16 @@ namespace cmpctircd.Packets
             return true;
         }
 
-        public Boolean LusersHandler(HandlerArgs args) {
+        [Handler("LUSERS", ListenerType.Client)]
+        public static bool LUsersHandler(HandlerArgs args) {
             // TODO: Lusers takes a server parameter
             // add this when we have linking
             args.Client.SendLusers();
             return true;
         }
 
-        public bool UserhostHandler(HandlerArgs args) {
+        [Handler("USERHOST", ListenerType.Client)]
+        public static bool UserHostHandler(HandlerArgs args) {
             // the format is USERHOST nick1 nick2; so skip the command name
             var items = args.SpacedArgs.Skip(1).ToArray();
             if (items.Length == 0 || items.Length > 5) {
@@ -226,19 +215,21 @@ namespace cmpctircd.Packets
             return true;
         }
 
-        public Boolean PingHandler(HandlerArgs args) {
+        [Handler("PING", ListenerType.Client)]
+        public static bool PingHandler(HandlerArgs args) {
             // TODO: Modification for multiple servers
             string cookie = args.SpacedArgs[1];
             args.Client.Write($":{args.IRCd.Host} PONG {args.IRCd.Host} :{cookie}");
             return true;
         }
 
-        public bool ModeHandler(HandlerArgs args) {
+        [Handler("MODE", ListenerType.Client)]
+        public static bool ModeHandler(HandlerArgs args) {
             string target;
 
             try {
                 target = args.SpacedArgs[1];
-            } catch (IndexOutOfRangeException) {
+            } catch (ArgumentOutOfRangeException) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "MODE");
             }
 

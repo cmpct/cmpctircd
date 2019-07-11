@@ -19,7 +19,7 @@ namespace cmpctircd {
             }
         }
 
-        public void SetTopic(Client client, string target, string rawLine) {
+        public void SetTopic(Client client, string target, string topic) {
             Channel = client.IRCd.ChannelManager[target];
             if (Channel.Inhabits(client)) {
                 var userRank = Channel.Status(client);
@@ -36,12 +36,7 @@ namespace cmpctircd {
                     }
                 }
 
-                try {
-                    TopicText = rawLine.Split(new char[] { ':' }, 2)[1];
-                } catch(IndexOutOfRangeException) {
-                    throw new IrcErrNotEnoughParametersException(client, "TOPIC");
-                }
-
+                TopicText = topic;
                 Date   = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                 Setter = client.Nick;
                 Channel.SendToRoom(client, String.Format(":{0} TOPIC {1} :{2}", client.Mask, Channel.Name, TopicText), true);

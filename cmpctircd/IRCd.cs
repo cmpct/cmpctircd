@@ -133,6 +133,11 @@ namespace cmpctircd {
             }
         }
 
+        public void Stop() {
+            // TODO: Do other things?
+            Listeners.ForEach(listener => listener.Stop());
+        }
+
         public void WriteToAllServers(string message, List<Server> except = null) {
             foreach(List<Server> servers in ServerLists) {
                 foreach(Server server in servers) {

@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 
 namespace cmpctircd
 {
-    static class Cloak {
+    public static class Cloak {
 
         /// <summary>
         /// This function will return a suitable cloak for the user

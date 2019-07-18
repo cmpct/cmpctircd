@@ -118,10 +118,17 @@ namespace cmpctircd.Packets {
             Channel channel;
             Topic topic;
 
+
+            if(args.SpacedArgs.Count == 0 && String.IsNullOrWhiteSpace(args.Trailer)) {
+                throw new IrcErrNotEnoughParametersException(client, "JOIN");
+            }
+
             try {
+                // Message of format: JOIN #x,#y,#z
                 splitCommaLine = args.SpacedArgs[1].Split(new char[] { ','});
             } catch(ArgumentOutOfRangeException) {
-                throw new IrcErrNotEnoughParametersException(client, "JOIN");
+                // Message of format: JOIN :#x,#y,#z
+                splitCommaLine = args.Trailer.Split(new char[] { ',' });
             }
 
             for(int i = 0; i < splitCommaLine.Length; i++) {

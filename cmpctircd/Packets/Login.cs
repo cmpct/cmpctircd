@@ -29,9 +29,8 @@ namespace cmpctircd.Packets {
         public static bool NickHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
-            string newNick = args.SpacedArgs[1];
-            // Some bots will try to send ':' with the channel, remove this
-            newNick = newNick.StartsWith(":") ? newNick.Substring(1) : newNick;
+
+            var newNick = args.SpacedArgs.Count > 1 ? args.SpacedArgs[1] : args.Trailer;
             ircd.Log.Debug($"Changing nick to {newNick}");
             client.SetNick(newNick);
             return true;

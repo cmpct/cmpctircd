@@ -430,11 +430,21 @@ namespace cmpctircd
             try {
                 if(graceful) {
                     // Inform all of the channels we're a member of that we are leaving
-                    foreach(var channel in IRCd.ChannelManager.Channels) {
-                        if(channel.Value.Inhabits(this)) {
-                            channel.Value.Quit(this, quitReason);
+                    var destroyChannels = new List<Channel> ();
+
+                    foreach(var channel in IRCd.ChannelManager.Channels.Values) {
+                        if(channel.Inhabits(this)) {
+                            channel.Quit(this, quitReason, false);
+                            destroyChannels.Add(channel);
                         }
                     }
+
+                    foreach(var channel in destroyChannels) {
+                        // Attempt to destroy any channels we were in
+                        // Only kills channel if it is now empty
+                        channel.Destroy();
+                    }
+
                 }
 
                 IRCd.WriteToAllServers($":{UUID} QUIT :{quitReason}", new List<Server>() { OriginServer } );

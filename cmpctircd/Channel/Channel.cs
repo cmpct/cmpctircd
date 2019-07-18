@@ -129,7 +129,7 @@ namespace cmpctircd {
             ));
         }
 
-        public void Quit(Client client, String reason) {
+        public void Quit(Client client, String reason, bool destroy = true) {
             if(!Inhabits(client)) {
                 throw new InvalidOperationException("User isn't in the room!");
             }
@@ -144,7 +144,12 @@ namespace cmpctircd {
             // Then we call Destroy() afterwards which will only destroy the room if conditions are met
             Remove(client, false);
             SendToRoom(client, String.Format(":{0} QUIT {1}", client.Mask, reason), false);
-            Destroy(); // if needed
+
+            if(destroy) {
+                // Only destroy if asked to; may cause problems if iterating over Channels list
+                // Caller can call Destroy() if appropriate
+                Destroy(); // if needed
+            }
 
             // TODO: Do we need to tell servers about us quitting?
         }

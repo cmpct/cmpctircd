@@ -58,6 +58,7 @@ namespace cmpctircd {
                 registrationCommands.Add("NICK");
                 registrationCommands.Add("CAP"); // TODO: NOT YET IMPLEMENTED
                 registrationCommands.Add("PONG");
+                registrationCommands.Add("PASS"); // TODO: NOT YET IMPLEMENTED
                 idleCommands.Add("PING");
                 idleCommands.Add("PONG");
                 idleCommands.Add("WHOIS");

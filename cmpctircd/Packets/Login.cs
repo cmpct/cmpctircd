@@ -9,9 +9,12 @@ namespace cmpctircd.Packets {
             string username;
             string real_name;
 
-            if(args.SpacedArgs.Count >= 3 && args.Trailer != null) {
-                username = args.SpacedArgs[1];
-                real_name = args.Trailer;
+            // Format:
+            // USER username hostname server_name (:)real_name
+            // hostname, server_name ignored
+            if(args.SpacedArgs.Count >= 3) {
+                username  = args.SpacedArgs[1];
+                real_name = args.Trailer != null ? args.Trailer : args.SpacedArgs[4];
             } else {
                 throw new IrcErrNotEnoughParametersException(client, "");
             }

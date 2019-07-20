@@ -204,11 +204,14 @@ namespace cmpctircd.Packets {
                 }
             }
 
-            if (String.IsNullOrEmpty(args.Trailer)) {
+            // Format:
+            // PRIVMSG target (:)message
+            // PRIVMSG target :message with spaces
+            if (String.IsNullOrEmpty(args.Trailer) && args.SpacedArgs.Count < 3 && String.IsNullOrEmpty(args.SpacedArgs[2])) {
                 throw new IrcErrNoTextToSendException(client);
             }
 
-            message = args.Trailer;
+            message = String.IsNullOrEmpty(args.Trailer) ? args.SpacedArgs[2] : args.Trailer;
 
             if (target.StartsWith("#")) {
                 // PRIVMSG a channel

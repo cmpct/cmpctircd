@@ -489,20 +489,17 @@ namespace cmpctircd.Packets {
             } else if(args.SpacedArgs.Count > 2) {
                 // Process
                 string modes = args.SpacedArgs[2];
-                string[] param;
 
                 if(args.SpacedArgs.Count == 3) {
                     args.SpacedArgs.Add("");
                 }
-
-                param = args.SpacedArgs[3].Split(new string[] { " " }, StringSplitOptions.None);
 
                 string currentModifier = "";
                 string modeChars = "";
                 string modeArgs = "";
                 string modeString = "";
                 bool announce = false;
-                int position = 0;
+                int position = 3; // start from spacedArgs[3]
                 ChannelMode modeObject;
                 var modesNoOperator = modes.Replace("+", "").Replace("-", "");
                 if(args.IRCd.GetSupportedModesByType()["A"].Contains(modesNoOperator)) {
@@ -535,22 +532,22 @@ namespace cmpctircd.Packets {
                         }
                         if(currentModifier == "+") {
                             // Attempt to add the mode
-                            bool success = modeObject.Grant(args.Client, param[position], args.Force, announce, announce);
+                            bool success = modeObject.Grant(args.Client, args.SpacedArgs[position], args.Force, announce, announce);
 
                             if(success && modeObject.Stackable) {
                                 modeChars += modeStr;
                                 if(modeObject.HasParameters) {
-                                    modeArgs += param[position] + " ";
+                                    modeArgs += args.SpacedArgs[position] + " ";
                                 }
                             }
                         } else if(currentModifier == "-") {
                             // Attempt to revoke the mode
-                            bool success = modeObject.Revoke(args.Client, param[position], args.Force, announce, announce);
+                            bool success = modeObject.Revoke(args.Client, args.SpacedArgs[position], args.Force, announce, announce);
 
                             if(success && modeObject.Stackable) {
                                 modeChars += modeStr;
                                 if(modeObject.HasParameters) {
-                                    modeArgs += param[position] + " ";
+                                    modeArgs += args.SpacedArgs[position] + " ";
                                 }
                             }
                         }

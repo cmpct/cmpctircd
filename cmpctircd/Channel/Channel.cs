@@ -7,7 +7,9 @@ using cmpctircd.Modes;
 namespace cmpctircd {
     public class Channel {
         public String Name { get; set; }
-        public ChannelManager Manager { get; private set;}
+        public ChannelManager Manager { get; private set; }
+        public LogManager LogMan { get; private set; } // TODO: better name?
+
         // A dictionary of clients in the room (nick => client)
         public Dictionary<string, Client> Clients
         {
@@ -53,6 +55,7 @@ namespace cmpctircd {
 
             DateTime date = DateTime.UtcNow;
             CreationTime  = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            LogMan        = new LogManager(this);
         }
         public void AddClient(Client client) {
             if(Inhabits(client)) {
@@ -62,8 +65,14 @@ namespace cmpctircd {
             if(Modes["b"].Has(client)) {
                 throw new IrcErrBannedFromChanException(client, Name);
             }
+
             Clients.Add(client.Nick, client);
             client.IRCd.Log.Debug($"Added {client.Nick} to {Name}");
+
+            // Inform the LogManager
+            if(client.Identified) {
+                LogMan.ClientJoined(client);
+            }
 
             // Tell everyone local we've joined
             SendToRoom(client, String.Format(":{0} JOIN :{1}", client.Mask, this.Name), true, false);
@@ -113,6 +122,17 @@ namespace cmpctircd {
             client.IRCd.ServerLists.ForEach(serverList => serverList.ForEach(
                 server => server.SyncChannel(this)
             ));
+
+            // They are now in the channel, send them the messages
+            // TODO: Could we do some quick checks based on first join time to save us going through buffer?
+            // TODO: Way to opt out for channels? Or opt in?
+            var buffer = LogMan.GetDueMessages(client);
+            foreach(var message in buffer) {
+                // Send the messages to the client
+                // TODO: Some sort of header? Warning?
+                // TODO: IRCv3?
+                client.Write(message);
+            }
         }
 
 
@@ -280,6 +300,14 @@ namespace cmpctircd {
             }
 
             Clients.Remove(client.Nick);
+
+            if(client.Identified) {
+                try {
+                    LogMan.ClientQuit(client);
+                } catch(InvalidOperationException) {
+                    client.IRCd.Log.Debug("Tried to call LogManager.ClientQuit but got InvalidOperationException");
+                }
+            }
 
             if(Modes.ContainsKey("Z")) {
                 // Attempt to set +Z (only works if applicable)

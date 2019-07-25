@@ -248,6 +248,9 @@ namespace cmpctircd.Packets {
                             }
                         }
                         channel.SendToRoom(client, String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, channel.Name, message), false);
+
+                        // Add this message to the buffer for the channel
+                        channel.LogMan.NewMessage($":{client.Mask} {args.Line}");
                     }
                 } else {
                     throw new IrcErrNoSuchTargetNickException(client, target);

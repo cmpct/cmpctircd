@@ -30,6 +30,7 @@ namespace cmpctircd
         public long SignonTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         public ClientState State { get; set; }
         public bool ResolvingHost { get; set; } = false;
+        public bool Identified { get; set; } = true; // TODO: change to false
 
         public IDictionary<string, UserMode> Modes {
             get;

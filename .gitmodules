@@ -1,3 +1,3 @@
 [submodule "cmpctircd-tests"]
 	path = cmpctircd-tests
-	url = http://git.cmpct.info/cmpct/cmpctircd-tests.git
+	url = https://bitbucket.org/cmpcti/cmpctircd-tests/src

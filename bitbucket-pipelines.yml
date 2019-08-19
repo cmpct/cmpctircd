@@ -1,0 +1,14 @@
+image: microsoft/dotnet:sdk
+
+pipelines:
+  default:
+    - step:
+        caches:
+          - dotnetcore
+        script:
+          - dotnet restore
+          - dotnet build
+          - dotnet test
+
+
+

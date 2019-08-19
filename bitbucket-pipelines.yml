@@ -6,6 +6,7 @@ pipelines:
         caches:
           - dotnetcore
         script:
+          - git submodule update --init
           - dotnet restore
           - dotnet build
           - dotnet test

@@ -218,7 +218,10 @@ namespace cmpctircd.Packets {
         [Handler("PING", ListenerType.Client)]
         public static bool PingHandler(HandlerArgs args) {
             // TODO: Modification for multiple servers
-            string cookie = args.SpacedArgs[1];
+            var cookie = "";
+            if(args.SpacedArgs.Count > 1) {
+                cookie = args.SpacedArgs[1];
+            }
             args.Client.Write($":{args.IRCd.Host} PONG {args.IRCd.Host} :{cookie}");
             return true;
         }

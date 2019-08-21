@@ -56,12 +56,10 @@ namespace cmpctircd {
                     // The server has authenticated (SID is empty if they haven't yet)
                     PingString = $":{IRCd.SID} PING {IRCd.SID} {PingCookie}";
                     SendPing = true;
-                    Write(PingString);
                 } else {
                     PingCookie = CreatePingCookie();
                     PingString = $"PING :{PingCookie}";
                     SendPing   = true;
-                    Write(PingString);
                 }
 
                 if (SendPing) {

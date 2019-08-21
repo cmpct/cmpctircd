@@ -47,8 +47,10 @@ namespace cmpctircd
             this.UID = UID;
             this.OriginServer = OriginServer;
             this.RemoteClient = RemoteClient;
-            if (this.UID == null)
+            if (this.UID == null) {
                 this.UID = ircd.GenerateUID();
+                IRCd.Log.Debug($"UID {UID} generated for client with IP: {IP.ToString()}");
+            }
 
             UUID = (RemoteClient ? OriginServer.SID : IRCd.SID) + this.UID;
             State = ClientState.PreAuth;

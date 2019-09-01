@@ -86,7 +86,7 @@ namespace cmpctircd
             TcpClient?.Close();
         }
 
-        public new void BeginTasks() {
+        public override void BeginTasks() {
             try {
                 // Check for PING/PONG events due
                 CheckTimeout();

@@ -118,45 +118,9 @@ namespace cmpctircd {
                 }
                     
                 reader = new StreamReader(socketBase.Stream);
-                var line = await reader.ReadLineAsync();
 
-                while(line != null) {
-                    if (!string.IsNullOrWhiteSpace(line)) {
-                        // Read until there's no more left
-                        var parts = Regex.Split(line, " ");
-
-                        HandlerArgs args;
-                        switch (Info.Type) {
-                            case ListenerType.Server:
-                                args = new HandlerArgs(_ircd, socketBase as Server, line, false);
-                                break;
-
-                            case ListenerType.Client:
-                            default:
-                                args = new HandlerArgs(_ircd, socketBase as Client, line, false);
-                                break;
-                        }
-
-                        // For ListenerType.Client, search for parts[0]
-                        // But for ListenerType.Server, packets post-authentication are prefixed with :SID
-                        var search_prefix = parts[0];
-                        if (Info.Type == ListenerType.Server) {
-                            // Did check for ServerState.Auth before but no need
-                            if (parts[0].StartsWith(":") && parts.Count() > 1) {
-                                // (typically) authenticated server or they start their packets with their SID
-                                search_prefix = parts[1];
-                            } else {
-                                // (typically) unauthenticated server
-                                // (e.g. CAPAB ...)
-                                search_prefix = parts[0];
-                            }
-                        }
-
-                        _ircd.PacketManager.FindHandler(search_prefix, args, Info.Type);
-                    }
-                    // Grab another line
-                    line = await reader.ReadLineAsync();
-                }
+                // Loop until socket disconnects
+                ReadLoop(socketBase, reader);
             } catch(Exception) {
                 if(socketBase != null) {
                     socketBase.Disconnect("Connection reset by host", true, false);
@@ -166,6 +130,58 @@ namespace cmpctircd {
                     reader.Dispose();
                 }
             }
+        }
+
+        public async void ReadLoop(SocketBase socketBase, StreamReader reader) {
+            var line = await reader.ReadLineAsync();
+
+            while(line != null) {
+                if (!string.IsNullOrWhiteSpace(line)) {
+                    // Read until there's no more left
+                    var parts = Regex.Split(line, " ");
+                    var args  = GetHandlerArgs(socketBase, line);
+                    var search_prefix = GetPacketPrefix(parts);
+
+                    _ircd.PacketManager.FindHandler(search_prefix, args, Info.Type);
+                }
+                // Grab another line
+                line = await reader.ReadLineAsync();
+            }
+        }
+
+        public string GetPacketPrefix(string[] parts) {
+            // For ListenerType.Client, search for parts[0]
+            // But for ListenerType.Server, packets post-authentication are prefixed with :SID
+            var search_prefix = parts[0];
+            if (Info.Type == ListenerType.Server) {
+                // Did check for ServerState.Auth before but no need
+                if (parts[0].StartsWith(":") && parts.Count() > 1) {
+                    // (typically) authenticated server or they start their packets with their SID
+                    search_prefix = parts[1];
+                } else {
+                    // (typically) unauthenticated server
+                    // (e.g. CAPAB ...)
+                    search_prefix = parts[0];
+                }
+            }
+
+            return search_prefix;
+        }
+
+        public HandlerArgs GetHandlerArgs(SocketBase socketBase, string line) {
+            HandlerArgs args;
+            switch (Info.Type) {
+                case ListenerType.Server:
+                    args = new HandlerArgs(_ircd, socketBase as Server, line, false);
+                    break;
+
+                case ListenerType.Client:
+                default:
+                    args = new HandlerArgs(_ircd, socketBase as Client, line, false);
+                    break;
+            }
+
+            return args;
         }
 
         public async Task<SslStream> HandshakeTls(TcpClient tc) {

@@ -66,11 +66,7 @@ namespace cmpctircd {
             }
         }
 
-        async Task HandleClient(TcpClient tc) {
-            Client client = null;
-            Server server = null;
-            Stream stream = tc.GetStream();
-
+        protected async void HandshakeIfNeeded(TcpClient tc, Stream stream) {
             // Handshake with TLS if they're from a TLS port
             if (Info.IsTls) {
                 try {
@@ -80,22 +76,33 @@ namespace cmpctircd {
                     tc.Close();
                 }
             }
+        }
 
+        protected SocketBase CreateClientObject(TcpClient tc, Stream stream) {
+            // Check whether this listener port is for clients or servers
             if (Info.Type == ListenerType.Client) {
-                client = new Client(_ircd, tc, this, stream);
+                var client = new Client(_ircd, tc, this, stream);
                 Clients.Add(client);
 
                 // Increment the client count
                 ++ClientCount;
-            } else {
-                server = new Server(_ircd, tc, this, stream);
-                _servers.Add(server);
-
-                // Increment the server count
-                ++ServerCount;
+                return client;
             }
 
+            var server = new Server(_ircd, tc, this, stream);
+            _servers.Add(server);
+
+            // Increment the server count
+            ++ServerCount;
+            return server;
+        }
+
+        async Task HandleClient(TcpClient tc) {
             StreamReader reader = null;
+            var stream = tc.GetStream();
+            var socketBase = CreateClientObject(tc, stream);
+
+            HandshakeIfNeeded(tc, stream);
 
             try {
                 // Call the appropriate BeginTasks
@@ -104,21 +111,14 @@ namespace cmpctircd {
                 // XXX: Regarding the CanRead checks:
                 // XXX: Temporary fix for http://bugs.cmpct.info/show_bug.cgi?id=253
                 // XXX: May need deeper changes(?)
-                if(Info.Type == ListenerType.Client) {
-                    if(!client.Stream.CanRead)
-                        throw new InvalidOperationException("Can't read on this socket");
-                    client.BeginTasks();
+                if(socketBase.Stream.CanRead) {
+                    socketBase.BeginTasks();
                 } else {
-                    if(!server.Stream.CanRead)
-                        throw new InvalidOperationException("Can't read on this socket");
-                    server.BeginTasks();
+                    throw new InvalidOperationException("Can't read on this socket");
                 }
-
-                string line;
                     
-                reader = new StreamReader(Info.Type == ListenerType.Client ? client.Stream : server.Stream);
-
-                line = await reader.ReadLineAsync();
+                reader = new StreamReader(socketBase.Stream);
+                var line = await reader.ReadLineAsync();
 
                 while(line != null) {
                     if (!string.IsNullOrWhiteSpace(line)) {
@@ -128,12 +128,12 @@ namespace cmpctircd {
                         HandlerArgs args;
                         switch (Info.Type) {
                             case ListenerType.Server:
-                                args = new HandlerArgs(_ircd, server, line, false);
+                                args = new HandlerArgs(_ircd, socketBase as Server, line, false);
                                 break;
 
                             case ListenerType.Client:
                             default:
-                                args = new HandlerArgs(_ircd, client, line, false);
+                                args = new HandlerArgs(_ircd, socketBase as Client, line, false);
                                 break;
                         }
 
@@ -158,10 +158,8 @@ namespace cmpctircd {
                     line = await reader.ReadLineAsync();
                 }
             } catch(Exception) {
-                if(client != null) {
-                    client.Disconnect("Connection reset by host", true, false);
-                } else if (server != null) {
-                    server.Disconnect("Connection reset by host", true, false);
+                if(socketBase != null) {
+                    socketBase.Disconnect("Connection reset by host", true, false);
                 }
 
                 if(reader != null) {

@@ -33,10 +33,7 @@ namespace cmpctircd {
             IsTlsEnabled = stream is SslStream;
         }
 
-        public void BeginTasks() {
-            // Base tasks such as DNS or connections
-            // noop in base
-        }
+        public virtual void BeginTasks() {}
 
         public void CheckTimeout(bool server = false) {
             // By default, no pong cookie is required

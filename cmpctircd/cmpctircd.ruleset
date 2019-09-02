@@ -1,0 +1,8 @@
+<RuleSet Name="Rules for cmpctircd roject" Description="Customisation of rules for cmpctircd" ToolsVersion="10.0">
+  <Rules AnalyzerId="Microsoft.CodeQuality.Analyzers" RuleNamespace="Microsoft.CodeQuality.Analyzers">
+    <!-- Disable https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1101.md -->
+    <Rule Id="SA1101" Action="None" />
+    <!-- Disable https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/master/documentation/SA1500.md -->
+    <Rule Id="SA1500" Action="None" />
+  </Rules>
+</RuleSet>

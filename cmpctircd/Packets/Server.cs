@@ -190,6 +190,11 @@ namespace cmpctircd.Packets {
             var userList  = parts[5].Split(new char[] { ' ' });
             foreach(var user in userList) {
                 var userParts = user.Split(new char[] { ',' });
+
+                if (userParts.Count() != 2) {
+                    continue;
+                }
+
                 var modes     = userParts[0];
                 var UID       = userParts[1];
 

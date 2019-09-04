@@ -58,6 +58,10 @@ namespace cmpctircd {
             Desc    = config.Description;
             Network = config.Network;
 
+            if (SID == "auto") {
+                SID = IRCd.GenerateSID(Host, Desc);
+            }
+
             PingTimeout = config.Advanced.PingTimeout;
             RequirePong = config.Advanced.RequirePongCookie;
 

@@ -13,8 +13,14 @@ namespace cmpctircd {
         public string Desc { get; set; }
         public ServerState State { get; set; }
 
+        private string Password { get; set; }
+
         public Server(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream) : base(ircd, tc, sl, stream) {
             State = ServerState.PreAuth;
+        }
+
+        public Server(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream, string password) : this(ircd, tc, sl, stream) {
+            Password = password;
         }
 
         public new void BeginTasks() {
@@ -98,7 +104,6 @@ namespace cmpctircd {
             // Introduce ourselves
 
             // TODO: send password?
-            var Password = "mypassword";
             Write($"SERVER {IRCd.Host} {Password} 0 {IRCd.SID} :{IRCd.Desc}");
 
             // Burst

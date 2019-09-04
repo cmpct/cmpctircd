@@ -30,7 +30,7 @@ namespace cmpctircd {
             tc = new TcpClient(); 
             await tc.ConnectAsync(Info.Host.ToString(), Info.Port);
 
-            var server = new Server(_ircd, tc, this, tc.GetStream());
+            var server = new Server(_ircd, tc, this, tc.GetStream(), password);
             _servers.Add(server);
 
             try {

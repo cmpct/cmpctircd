@@ -35,5 +35,18 @@ namespace cmpctircd.Configuration {
             get { return (bool) this["tls"]; }
             set { this["tls"] = value; }
         }
+
+        // Outbound server
+        [ConfigurationProperty("outbound", IsRequired = false, DefaultValue = false)]
+        public bool IsOutbound {
+            get { return (bool) this["outbound"]; }
+            set { this["outbound"] = value; }
+        }
+
+        [ConfigurationProperty("destination", IsRequired = false)]
+        public string Destination {
+            get { return (string) this["destination"]; }
+            set { this["destination"] = value; }
+        }
     }
 }

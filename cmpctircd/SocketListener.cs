@@ -12,10 +12,10 @@ using cmpctircd.Configuration;
 
 namespace cmpctircd {
     public class SocketListener {
-        private IRCd _ircd;
+        protected IRCd _ircd;
         private Boolean _started = false;
         private TcpListener _listener = null;
-        private IList<Server> _servers = new List<Server>();
+        protected IList<Server> _servers = new List<Server>();
 
         public SocketElement Info { get; private set; }
         public IList<Client> Clients { get; } = new List<Client>();
@@ -37,11 +37,11 @@ namespace cmpctircd {
         }
 
         // Bind to the port and start listening
-        public void Bind() {
+        public virtual void Bind() {
             _listener.Start();
             _started = true;
         }
-        public void Stop() {
+        public virtual void Stop() {
             if (_started) {
                 _ircd.Log.Debug($"Shutting down listener [IP: {Info.Host}, Port: {Info.Port}, TLS: {Info.IsTls}]");
                 _listener.Stop();

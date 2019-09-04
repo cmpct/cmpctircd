@@ -10,6 +10,7 @@ using cmpctircd.Configuration;
 namespace cmpctircd {
     public class IRCd {
         private readonly IList<SocketListener> Listeners = new List<SocketListener>();
+        private readonly IList<SocketConnector> Connectors = new List<SocketConnector>();
         public PacketManager PacketManager { get; }
         public ChannelManager ChannelManager { get; }
         public IList<IList<Client>> ClientLists { get; } = new List<IList<Client>>();
@@ -91,11 +92,24 @@ namespace cmpctircd {
 
             foreach(var listener in Config.Sockets.OfType<SocketElement>()) {
                 SocketListener sl = new SocketListener(this, listener);
-                Log.Info($"==> Listening on: {listener.Host}:{listener.Port} ({listener.Type}) ({(listener.IsTls ? "SSL/TLS" : "Plain" )})");
+                Log.Info($"==> Listening on: {listener.Host}:{listener.Port} ({listener.Type}) ({(listener.IsTls ? "TLS" : "Plain" )})");
+
                 Listeners.Add(sl);
+                sl.Bind();
             }
 
-            Listeners.ForEach(listener => listener.Bind());
+            foreach (var server in Config.Servers.OfType<ServerElement>()) {
+                if (server.IsOutbound) {
+                    // <server> tag with outbound="true"
+                    // We want to connect out to this server, not have them connect to us
+                    var sc = new SocketConnector(this, server);
+                    Log.Info($"==> Connecting to: {server.Destination}:{server.Port} (server.Host) ({(server.IsTls ? "TLS" : "Plain" )})");
+
+                    Connectors.Add(sc);
+                    sc.Connect(server.Password);
+                }
+            }
+
             PacketManager.Load();
 
             // Set create time

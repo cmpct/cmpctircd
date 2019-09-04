@@ -35,6 +35,23 @@ namespace cmpctircd.Configuration {
             get { return (bool) this["tls"]; }
             set { this["tls"] = value; }
         }
+
+        public static implicit operator SocketElement(ServerElement serverElement) {
+            var se = new SocketElement();
+
+            // Check if this is a DNS name
+            // If it is, resolve it
+            if (!IPAddress.TryParse(serverElement.Destination, out var IP)) {
+                IP = Dns.GetHostEntry(serverElement.Destination).AddressList[0];
+            }
+
+            se.Host = IP;
+            se.Port = serverElement.Port;
+            se.IsTls = serverElement.IsTls;
+            se.Type = ListenerType.Server;
+
+            return se;
+        }
     }
 
     [TypeConverter(typeof(IPAddressConverter))]

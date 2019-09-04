@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
+using System.Net;
 using System.IO;
 using System.Net.Sockets;
 using cmpctircd.Configuration;
@@ -28,7 +29,12 @@ namespace cmpctircd {
             StreamReader reader = null;
 
             tc = new TcpClient(); 
-            await tc.ConnectAsync(Info.Host.ToString(), Info.Port);
+            try {
+                await tc.ConnectAsync(Info.Host.ToString(), Info.Port);
+            } catch(SocketException) {
+                _ircd.Log.Warn($"Unable to connect to server {Info.Host.ToString()}:{Info.Port}");
+                return;
+            }
 
             var server = new Server(_ircd, tc, this, tc.GetStream(), password);
             _servers.Add(server);

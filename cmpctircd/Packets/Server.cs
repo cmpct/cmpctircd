@@ -25,7 +25,9 @@ namespace cmpctircd.Packets {
         [Handler("CAPAB", ListenerType.Server)]
         public static bool CapabHandler(HandlerArgs args) {
             // TODO: checked if already sent capab?
-            if (args.SpacedArgs.Count > 0 && args.SpacedArgs[1] == "START") {
+            if (args.SpacedArgs.Count > 0 && args.SpacedArgs[1] == "START" && args.Server.Listener.GetType() != typeof(SocketConnector)) {
+                // Only send if CAPAB START and if inbound connection
+                // On outbound, we send straightaway
                 args.Server.SendCapab();
             }
             return true;
@@ -103,10 +105,17 @@ namespace cmpctircd.Packets {
 
             if(foundMatch) {
                 args.Server.State = ServerState.Auth;
+                args.Server.Name = hostname;
+                args.Server.SID = sid;
+                args.Server.Desc = desc;
                 args.IRCd.Log.Warn("[SERVER] Got an authed server"); // TODO: Change to Info?
 
                 // Introduce ourselves
-                args.Server.SendHandshake();
+                if(args.Server.Listener.GetType() != typeof(SocketConnector)) {
+                    // Only introduce if we're being connected to (i.e. inbound)
+                    // This is because for outbound connections, we introduce ourselves first
+                    args.Server.SendHandshake();
+                }
 
                 // Set the ping cookie to be the SID, so we start pinging them (see CheckTimeout)
                 args.Server.PingCookie = args.Server.SID;

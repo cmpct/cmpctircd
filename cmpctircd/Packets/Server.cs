@@ -105,23 +105,11 @@ namespace cmpctircd.Packets {
                 args.Server.State = ServerState.Auth;
                 args.IRCd.Log.Warn("[SERVER] Got an authed server"); // TODO: Change to Info?
 
-                // Introduce ourselves...
-                // TODO: send password?
-                args.Server.Name = hostname;
-                args.Server.SID = sid;
-                args.Server.Desc = desc;
-                args.Server.Write($"SERVER {args.IRCd.Host} {password} 0 {args.IRCd.SID} :{args.IRCd.Desc}");
+                // Introduce ourselves
+                args.Server.SendHandshake();
 
                 // Set the ping cookie to be the SID, so we start pinging them (see CheckTimeout)
                 args.Server.PingCookie = args.Server.SID;
-
-                // Burst
-                // TODO: Implement INBOUND burst
-                // TODO: And queue up things during the BURST? (e.g. FJOINs)
-                var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                args.Server.Write($":{args.IRCd.SID} BURST {time}");
-                args.Server.Sync();
-                args.Server.Write($":{args.IRCd.SID} ENDBURST");
             } else {
                 args.IRCd.Log.Warn("[SERVER] Got an unauthed server");
                 args.Server.Disconnect("ERROR: Invalid credentials", true);

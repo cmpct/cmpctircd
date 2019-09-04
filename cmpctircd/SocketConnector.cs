@@ -38,6 +38,11 @@ namespace cmpctircd {
             list.Add(server);
 
             _ircd.ServerLists.Add(list);
+
+            // Send handshake
+            server.SendHandshake();
+            server.SendCapab();
+
             // Once we get a socket, loop indefinitely reading
             ReadLoop(server, reader);
         }

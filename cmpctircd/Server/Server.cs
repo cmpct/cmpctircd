@@ -94,6 +94,22 @@ namespace cmpctircd {
             Write($":{IRCd.SID} FJOIN {channel.Name} {channel.CreationTime} {modeString} :{nicks}");
         }
 
+        public void SendHandshake() {
+            // Introduce ourselves
+
+            // TODO: send password?
+            var Password = "mypassword";
+            Write($"SERVER {IRCd.Host} {Password} 0 {IRCd.SID} :{IRCd.Desc}");
+
+            // Burst
+            // TODO: Implement INBOUND burst
+            // TODO: And queue up things during the BURST? (e.g. FJOINs)
+            var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            Write($":{IRCd.SID} BURST {time}");
+            Sync();
+            Write($":{IRCd.SID} ENDBURST");
+        }
+
         public void SendCapab() {
             // CAPAB BEGIN
             var version = 1202;

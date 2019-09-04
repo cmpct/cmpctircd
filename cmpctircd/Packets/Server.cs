@@ -11,7 +11,14 @@ namespace cmpctircd.Packets {
         public static bool PingHandler(HandlerArgs args) {
             // TODO: implement for hops > 1
             // TODO: could use args.Server.SID instead of SpacedArgs?
-            args.Server.Write($":{args.IRCd.SID} PONG {args.IRCd.SID} {args.SpacedArgs[1]}");
+            var pingCookie = "";
+            if (args.SpacedArgs.Count == 1) {
+                pingCookie = args.SpacedArgs[0];
+            } else {
+                pingCookie = args.SpacedArgs[1];
+            }
+
+            args.Server.Write($":{args.IRCd.SID} PONG {args.IRCd.SID} {pingCookie}");
             return true;
         }
 

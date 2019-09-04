@@ -97,7 +97,7 @@ namespace cmpctircd {
             return server;
         }
 
-        async Task HandleClient(TcpClient tc) {
+        private async void HandleClient(TcpClient tc) {
             StreamReader reader = null;
             var stream = tc.GetStream();
             var socketBase = CreateClientObject(tc, stream);
@@ -120,7 +120,7 @@ namespace cmpctircd {
                 reader = new StreamReader(socketBase.Stream);
 
                 // Loop until socket disconnects
-                ReadLoop(socketBase, reader);
+                await ReadLoop(socketBase, reader);
             } catch(Exception) {
                 if(socketBase != null) {
                     socketBase.Disconnect("Connection reset by host", true, false);
@@ -132,7 +132,7 @@ namespace cmpctircd {
             }
         }
 
-        public async void ReadLoop(SocketBase socketBase, StreamReader reader) {
+        public async Task ReadLoop(SocketBase socketBase, StreamReader reader) {
             var line = await reader.ReadLineAsync();
 
             while(line != null) {

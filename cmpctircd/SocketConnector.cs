@@ -22,29 +22,44 @@ namespace cmpctircd {
         public override void Bind() {}
         public override void Stop() {}
 
-        public async Task Connect(string password) {
+        public async void Connect(string password) {
             // TODO: started logic?
             // TODO: TLS?
-            StreamReader reader;
+            StreamReader reader = null;
 
             tc = new TcpClient(); 
             await tc.ConnectAsync(Info.Host.ToString(), Info.Port);
 
-            reader = new StreamReader(tc.GetStream());
-
             var server = new Server(_ircd, tc, this, tc.GetStream());
-            
-            var list  = new List<Server>();
-            list.Add(server);
+            _servers.Add(server);
 
-            _ircd.ServerLists.Add(list);
+            try {
+                // Call the appropriate BeginTasks
+                // Must be AFTER TLS handshake because could send text
+                if(server.Stream.CanRead) {
+                    server.BeginTasks();
+                } else {
+                    throw new InvalidOperationException("Can't read on this socket");
+                }
 
-            // Send handshake
-            server.SendHandshake();
-            server.SendCapab();
+                // Send handshake
+                server.SendHandshake();
+                server.SendCapab();
 
-            // Once we get a socket, loop indefinitely reading
-            ReadLoop(server, reader);
+                // Once we get a socket, loop indefinitely reading
+                reader = new StreamReader(server.Stream);
+
+                // Loop until socket disconnects
+                await ReadLoop(server, reader);
+            } catch(Exception) {
+                if(server != null) {
+                    server.Disconnect("Connection reset by host", true, false);
+                }
+
+                if(server != null) {
+                    reader.Dispose();
+                }
+            }
         }
 
 

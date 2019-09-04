@@ -406,7 +406,7 @@ namespace cmpctircd
 
         }
 
-        public void Write(String packet, bool transformIfServer = true) {
+        public async void Write(String packet, bool transformIfServer = true) {
             if(State.Equals(ClientState.Disconnected)) return;
 
             try {
@@ -414,11 +414,11 @@ namespace cmpctircd
                     // Need to translate any nicks into UIDs
                     packet = IRCd.ReplaceNickWithUUID(packet);
                     // TODO sock changes? (TLS?)
-                    base.Write(packet, OriginServer.Stream);
+                    await base.Write(packet, OriginServer.Stream);
                 } else {
-                    base.Write(packet);
+                    await base.Write(packet);
                 }
-            } catch(Exception e) {
+            } catch(Exception) {
                 // XXX: Was {ObjectDisposed, IO}Exception but got InvalidOperation from SslStream.Write()
                 // XXX: Not clear why given we check .CanWrite, etc
                 // XXX: See http://bugs.cmpct.info/show_bug.cgi?id=253

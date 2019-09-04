@@ -51,7 +51,7 @@ namespace cmpctircd.Packets {
             }
 
             // Check there are enough parameters
-            if (parts.Count() != 6) {
+            if (parts.Count() < 6) {
                 // TODO: send an error
                 return false;
             }

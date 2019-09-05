@@ -4,6 +4,8 @@ using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 
+using cmpctircd.Configuration;
+
 namespace cmpctircd {
     public class Server : SocketBase {
         // Internals
@@ -13,14 +15,14 @@ namespace cmpctircd {
         public string Desc { get; set; }
         public ServerState State { get; set; }
 
-        private string Password { get; set; }
+        public ServerElement ServerInfo { get; set; }
 
         public Server(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream) : base(ircd, tc, sl, stream) {
             State = ServerState.PreAuth;
         }
 
-        public Server(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream, string password) : this(ircd, tc, sl, stream) {
-            Password = password;
+        public Server(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream, ServerElement serverInfo) : this(ircd, tc, sl, stream) {
+            ServerInfo = serverInfo;
         }
 
         public new void BeginTasks() {
@@ -104,7 +106,7 @@ namespace cmpctircd {
             // Introduce ourselves
 
             // TODO: send password?
-            Write($"SERVER {IRCd.Host} {Password} 0 {IRCd.SID} :{IRCd.Desc}");
+            Write($"SERVER {IRCd.Host} {ServerInfo.Password} 0 {IRCd.SID} :{IRCd.Desc}");
 
             // Burst
             // TODO: Implement INBOUND burst

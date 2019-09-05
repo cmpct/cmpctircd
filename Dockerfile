@@ -4,7 +4,7 @@ WORKDIR /app/
 
 # Set up the project
 RUN apt-get -y install git
-RUN git clone https://git.cmpct.info/cmpct/cmpctircd.git cmpctircd
+RUN git clone --recurse-submodules https://bitbucket.org/cmpcti/cmpctircd cmpctircd
 
 # Change directory
 WORKDIR /app/cmpctircd/

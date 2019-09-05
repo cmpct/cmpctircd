@@ -110,7 +110,7 @@ namespace cmpctircd {
                     Log.Info($"==> Connecting to: {server.Destination}:{server.Port} (server.Host) ({(server.IsTls ? "TLS" : "Plain" )})");
 
                     Connectors.Add(sc);
-                    sc.Connect(server.Password);
+                    sc.Connect(server);
                 }
             }
 

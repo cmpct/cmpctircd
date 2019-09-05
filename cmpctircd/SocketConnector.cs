@@ -23,7 +23,7 @@ namespace cmpctircd {
         public override void Bind() {}
         public override void Stop() {}
 
-        public async void Connect(string password) {
+        public async void Connect(ServerElement info) {
             // TODO: started logic?
             // TODO: TLS?
             StreamReader reader = null;
@@ -36,7 +36,7 @@ namespace cmpctircd {
                 return;
             }
 
-            var server = new Server(_ircd, tc, this, tc.GetStream(), password);
+            var server = new Server(_ircd, tc, this, tc.GetStream(), info);
             _servers.Add(server);
 
             try {

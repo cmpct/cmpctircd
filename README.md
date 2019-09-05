@@ -18,12 +18,20 @@ Running
 ```
 git clone --recurse-submodules https://bitbucket.org/cmpcti/cmpctircd cmpctircd
 
-cd cmpctircd
+cd cmpctircd/cmpctircd
 
 # Fetch dependencies
 dotnet restore
 # Adjust App.config to suit your preferences
 dotnet run
+```
+
+Tests
+-----
+```
+git clone --recurse-submodules https://bitbucket.org/cmpcti/cmpctircd cmpctircd
+cd cmpctircd/cmpctircd
+dotnet tests
 ```
 
 Docker

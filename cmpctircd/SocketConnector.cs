@@ -58,13 +58,8 @@ namespace cmpctircd {
                 // Loop until socket disconnects
                 await ReadLoop(server, reader);
             } catch(Exception) {
-                if(server != null) {
-                    server.Disconnect("Connection reset by host", true, false);
-                }
-
-                if(server != null) {
-                    reader.Dispose();
-                }
+                server?.Disconnect("Connection reset by host", true, false);
+                reader?.Dispose();
             }
         }
 

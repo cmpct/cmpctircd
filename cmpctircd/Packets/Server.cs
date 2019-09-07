@@ -127,7 +127,9 @@ namespace cmpctircd.Packets {
                 args.Server.Name = hostname;
                 args.Server.SID = sid;
                 args.Server.Desc = desc;
-                args.IRCd.Log.Warn("[SERVER] Got an authed server"); // TODO: Change to Info?
+
+                // TODO: Change to Info?
+                args.IRCd.Log.Warn($"[SERVER] Got an authed server (SID: {sid}, name: {hostname})");
 
                 // Introduce ourselves
                 if(args.Server.Listener.GetType() != typeof(SocketConnector)) {

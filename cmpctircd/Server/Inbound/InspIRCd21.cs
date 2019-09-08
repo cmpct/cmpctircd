@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace cmpctircd.Packets {
-    public static class Server {
+    public static class InspIRCd21 {
+        // This class handles inbound packets for InspIRCd 2.1
+        // For outbound, see Translators/InspIRCd21.cs
+
         // TODO: three CAPAB packets
         // TODO: Handle BURST, don't process until we get them all? Group the FJOINs
 
-        [Handler("PING", ListenerType.Server)]
+        [Handler("PING", ListenerType.Server, ServerType.InspIRCd21)]
         public static bool PingHandler(HandlerArgs args) {
             // TODO: implement for hops > 1
             // TODO: could use args.Server.SID instead of SpacedArgs?
@@ -22,14 +25,14 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        [Handler("PONG", ListenerType.Server)]
+        [Handler("PONG", ListenerType.Server, ServerType.InspIRCd21)]
         public static bool PongHandler(HandlerArgs args) {
             args.Server.WaitingForPong = false;
             args.Server.LastPong       = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             return true;
         }
 
-        [Handler("CAPAB", ListenerType.Server)]
+        [Handler("CAPAB", ListenerType.Server, ServerType.InspIRCd21)]
         public static bool CapabHandler(HandlerArgs args) {
             // TODO: checked if already sent capab?
             if (args.SpacedArgs.Count > 0 && args.SpacedArgs[1] == "START" && args.Server.Listener.GetType() != typeof(SocketConnector)) {
@@ -40,9 +43,10 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        [Handler("SERVER", ListenerType.Server)]
+        [Handler("SERVER", ListenerType.Server, ServerType.InspIRCd21)]
         public static bool ServerHandler(HandlerArgs args) {
             // TODO: introduce some ServerState magic
+            ServerType type = ServerType.Unknown; // TODO: Is there a better default? Or none?
             var parts = args.Line.Split(new char[] { ' ' }, 7).ToList();
 
             // Drop :SID at the beginning (Anope does this, InspIRCd doesn't)
@@ -102,6 +106,7 @@ namespace cmpctircd.Packets {
 
                     if(foundMatch) {
                         // If we're got a match after all of the checks, stop looking
+                        type = link.Type;
                         break;
                     } else {
                         // Reset for next iteration unless we're at the end
@@ -127,9 +132,10 @@ namespace cmpctircd.Packets {
                 args.Server.Name = hostname;
                 args.Server.SID = sid;
                 args.Server.Desc = desc;
+                args.Server.Type = type;
 
                 // TODO: Change to Info?
-                args.IRCd.Log.Warn($"[SERVER] Got an authed server (SID: {sid}, name: {hostname})");
+                args.IRCd.Log.Warn($"[SERVER] Got an authed server (SID: {sid}, name: {hostname}, type: {type})");
 
                 // Introduce ourselves
                 if(args.Server.Listener.GetType() != typeof(SocketConnector)) {
@@ -148,7 +154,7 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        [Handler("UID", ListenerType.Server)]
+        [Handler("UID", ListenerType.Server, ServerType.InspIRCd21)]
         public static bool UidHandler(HandlerArgs args) {
             var parts = args.Line.Split(new char[] { ' ' }, 12);
             
@@ -196,7 +202,7 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        [Handler("FJOIN", ListenerType.Server)]
+        [Handler("FJOIN", ListenerType.Server, ServerType.InspIRCd21)]
         public static bool FjoinHandler(HandlerArgs args) {
             // TODO check if the SID is one we know, maybe specify in config? (???)
             var parts     = args.Line.Split(new char[] { ' ' }, 6);
@@ -233,12 +239,12 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        [Handler("QUIT", ListenerType.Server)]
+        [Handler("QUIT", ListenerType.Server, ServerType.InspIRCd21)]
         public static bool QuitHandler(HandlerArgs args) {
             return args.IRCd.PacketManager.FindHandler("QUIT", args, ListenerType.Client, true);
         }
 
-        [Handler("SQUIT", ListenerType.Server)]
+        [Handler("SQUIT", ListenerType.Server, ServerType.InspIRCd21)]
         public static bool SQuitHandler(HandlerArgs args) {
             // TODO: reason?
             args.Server.IRCd.Log.Info($"Server {args.Server.Name} sent SQUIT; disconnecting");
@@ -247,17 +253,17 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        [Handler("PRIVMSG", ListenerType.Server)]
+        [Handler("PRIVMSG", ListenerType.Server, ServerType.InspIRCd21)]
         public static bool PrivMsgHandler(HandlerArgs args) {
             return args.IRCd.PacketManager.FindHandler("PRIVMSG", args, ListenerType.Client, true);
         }
 
-        [Handler("NOTICE", ListenerType.Server)]
+        [Handler("NOTICE", ListenerType.Server, ServerType.InspIRCd21)]
         public static bool NoticeHandler(HandlerArgs args) {
             return args.IRCd.PacketManager.FindHandler("NOTICE", args, ListenerType.Client, true);
         }
 
-        [Handler("FMODE", ListenerType.Server)]
+        [Handler("FMODE", ListenerType.Server, ServerType.InspIRCd21)]
         public static bool FModeHandler(HandlerArgs args) {
             // Trust the server
             args.Force = true;
@@ -286,7 +292,7 @@ namespace cmpctircd.Packets {
             return args.IRCd.PacketManager.FindHandler("MODE", args, ListenerType.Client, true);
         }
 
-        [Handler("SVSNICK", ListenerType.Server)]
+        [Handler("SVSNICK", ListenerType.Server, ServerType.InspIRCd21)]
         public static bool SVSNickHandler(HandlerArgs args) {
             // SVSMODE format: :SID SVSMODE TARGET_UUID NEW_NICK TS
             // NICK    format: NICK NEW_NICK

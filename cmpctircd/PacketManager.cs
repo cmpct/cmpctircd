@@ -87,6 +87,9 @@ namespace cmpctircd {
                     registrationCommands.Add("CAPAB");
                     registrationCommands.Add("SERVER");
                     registrationCommands.Add("PING");
+
+                    _ircd.Log.Debug($"Got a server line: {args.Line}");
+
                     if(server.State.Equals(ServerState.PreAuth) && !registrationCommands.Contains(packet.ToUpper())) {
                         _ircd.Log.Error($"Server just tried to use command pre-auth: {packet.ToUpper()}");
                         server.Disconnect("ERROR: Sent command before auth (send SERVER packet!)", true);
@@ -125,10 +128,6 @@ namespace cmpctircd {
                 _ircd.Log.Debug("Exception: " + e.ToString());
                 return false;
             }
-
-            if(args.Server != null)
-                _ircd.Log.Debug($"Got a server line: {args.Line}");
-            _ircd.Log.Debug("Handler for " + packet.ToUpper() + " executed");
             return true;
         }
 

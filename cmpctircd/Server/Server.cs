@@ -108,7 +108,7 @@ namespace cmpctircd {
         public override void Disconnect(string reason = "", bool graceful = false, bool sendToSelf = false) {
             if (State.Equals(ServerState.Disconnected)) return;
 
-            IRCd.Log.Debug($"Disconnecting server: {Name}");
+            IRCd.Log.Debug($"Disconnecting server: {Name} (reason: {reason})");
 
             if (sendToSelf) {
                 Write(reason);

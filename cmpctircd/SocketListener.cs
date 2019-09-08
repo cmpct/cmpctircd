@@ -66,7 +66,7 @@ namespace cmpctircd {
             }
         }
 
-        protected async void HandshakeIfNeeded(TcpClient tc, Stream stream) {
+        protected async Task<Stream> HandshakeIfNeeded(TcpClient tc, Stream stream) {
             // Handshake with TLS if they're from a TLS port
             if (Info.IsTls) {
                 try {
@@ -76,6 +76,8 @@ namespace cmpctircd {
                     tc.Close();
                 }
             }
+
+            return stream;
         }
 
         protected SocketBase CreateClientObject(TcpClient tc, Stream stream) {
@@ -99,10 +101,12 @@ namespace cmpctircd {
 
         private async void HandleClient(TcpClient tc) {
             StreamReader reader = null;
-            var stream = tc.GetStream();
+            var stream = (Stream) tc.GetStream();
             var socketBase = CreateClientObject(tc, stream);
 
-            HandshakeIfNeeded(tc, stream);
+            // Sends the TLS handshake if we're a TLS listener
+            // Swaps out the stream for an SslStream if that's the case
+            stream = await HandshakeIfNeeded(tc, stream);
 
             try {
                 // Call the appropriate BeginTasks
@@ -116,19 +120,14 @@ namespace cmpctircd {
                 } else {
                     throw new InvalidOperationException("Can't read on this socket");
                 }
-                    
-                reader = new StreamReader(socketBase.Stream);
+
+                reader = new StreamReader(stream);
 
                 // Loop until socket disconnects
                 await ReadLoop(socketBase, reader);
             } catch(Exception) {
-                if(socketBase != null) {
-                    socketBase.Disconnect("Connection reset by host", true, false);
-                }
-
-                if(reader != null) {
-                    reader.Dispose();
-                }
+                socketBase?.Disconnect("Connection reset by host", true, false);
+                reader?.Dispose();
             }
         }
 

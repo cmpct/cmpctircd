@@ -75,6 +75,8 @@ namespace cmpctircd.Packets {
                 if(link.Port != args.Server.Listener.Info.Port) foundMatch = false;
                 if(link.IsTls != args.Server.Listener.Info.IsTls) foundMatch = false;
                 if(link.Password != password) foundMatch = false;
+
+                type = link.Type;
             } else {
                 // Check that any <server> blocks exist
                 foundMatch = args.IRCd.Config.Servers.Count > 0;

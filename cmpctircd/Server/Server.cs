@@ -41,6 +41,7 @@ namespace cmpctircd {
 
         public Server(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream) : base(ircd, tc, sl, stream) {
             State = ServerState.PreAuth;
+            Type  = sl.Info.Protocol;
         }
 
         public Server(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream, ServerElement serverInfo) : this(ircd, tc, sl, stream) {

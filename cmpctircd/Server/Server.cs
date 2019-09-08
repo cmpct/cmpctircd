@@ -129,6 +129,62 @@ namespace cmpctircd {
             Listener.Remove(this);
         }
 
+        public bool FindServerConfig(string hostname, string password) {
+            bool foundMatch = true;
+            if (ServerInfo != null) {
+                // We are connecting outbound so have a specific server to compare against
+                var link = ServerInfo;
+                if(link.Host != hostname) foundMatch = false;
+                if(link.Port != Listener.Info.Port) foundMatch = false;
+                if(link.IsTls != Listener.Info.IsTls) foundMatch = false;
+                if(link.Password != password) foundMatch = false;
+
+                Type = link.Type;
+                ServerInfo = link;
+            } else {
+                // Check that any <server> blocks exist
+                foundMatch = IRCd.Config.Servers.Count > 0;
+
+                // Check against all <server> blocks in the config
+                for(int i = 0; i < IRCd.Config.Servers.Count; i++) {
+                    var link = IRCd.Config.Servers[i];
+
+                    // TODO: Add error messages
+                    if(link.Host     != hostname) foundMatch = false;
+                    if(link.Port     != Listener.Info.Port) foundMatch = false;
+                    if(link.IsTls    != Listener.Info.IsTls) foundMatch = false;
+                    if(link.Password != password) foundMatch = false;
+
+                    var foundHostMatch = false;
+                    foreach(var mask in link.Masks) {
+                        var maskObject = Ban.CreateMask(mask);
+                        // TODO: Allow DNS in Masks (for Servers)
+                        var hostInfo   = new HostInfo {
+                            Ip = IP
+                        };
+
+                        if (Ban.CheckHost(maskObject, hostInfo)) {
+                            foundHostMatch = true;
+                            break;
+                        }
+                    }
+                    foundMatch = foundMatch && foundHostMatch;
+
+                    if(foundMatch) {
+                        // If we're got a match after all of the checks, stop looking
+                        Type = link.Type;
+                        ServerInfo = link;
+                        break;
+                    } else {
+                        // Reset for next iteration unless we're at the end
+                        if(i != IRCd.Config.Servers.Count - 1)
+                            foundMatch = true;
+                    }
+                }
+            }
+
+            return foundMatch;
+        }
 
         ~Server() {
             Stream?.Close();

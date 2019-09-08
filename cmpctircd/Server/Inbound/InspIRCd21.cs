@@ -45,56 +45,7 @@ namespace cmpctircd.Packets {
             var desc     = parts[5].Substring(1);
 
             // Compare with config
-            bool foundMatch = true;
-            if (args.Server.ServerInfo != null) {
-                // We are connecting outbound so have a specific server to compare against
-                var link = args.Server.ServerInfo;
-                if(link.Host != hostname) foundMatch = false;
-                if(link.Port != args.Server.Listener.Info.Port) foundMatch = false;
-                if(link.IsTls != args.Server.Listener.Info.IsTls) foundMatch = false;
-                if(link.Password != password) foundMatch = false;
-
-                type = link.Type;
-            } else {
-                // Check that any <server> blocks exist
-                foundMatch = args.IRCd.Config.Servers.Count > 0;
-
-                // Check against all <server> blocks in the config
-                for(int i = 0; i < args.IRCd.Config.Servers.Count; i++) {
-                    var link = args.IRCd.Config.Servers[i];
-
-                    // TODO: Add error messages
-                    if(link.Host     != hostname) foundMatch = false;
-                    if(link.Port     != args.Server.Listener.Info.Port) foundMatch = false;
-                    if(link.IsTls    != args.Server.Listener.Info.IsTls) foundMatch = false;
-                    if(link.Password != password) foundMatch = false;
-
-                    var foundHostMatch = false;
-                    foreach(var mask in link.Masks) {
-                        var maskObject = Ban.CreateMask(mask);
-                        // TODO: Allow DNS in Masks (for Servers)
-                        var hostInfo   = new HostInfo {
-                            Ip = args.Server.IP
-                        };
-
-                        if (Ban.CheckHost(maskObject, hostInfo)) {
-                            foundHostMatch = true;
-                            break;
-                        }
-                    }
-                    foundMatch = foundMatch && foundHostMatch;
-
-                    if(foundMatch) {
-                        // If we're got a match after all of the checks, stop looking
-                        type = link.Type;
-                        break;
-                    } else {
-                        // Reset for next iteration unless we're at the end
-                        if(i != args.IRCd.Config.Servers.Count - 1)
-                            foundMatch = true;
-                    }
-                }
-            }
+            var foundMatch = args.Server.FindServerConfig(hostname, password);
 
             if(foundMatch) {
                 // Check if the server is already connected
@@ -106,7 +57,6 @@ namespace cmpctircd.Packets {
                     args.IRCd.Log.Warn($"[SERVER] Ejecting server (SID: {sid}, name: {hostname}) for new connection");
                     foundServer.Disconnect("ERROR: Replaced by a new connection", true);
                 } catch (InvalidOperationException) {}
-
 
                 args.Server.State = ServerState.Auth;
                 args.Server.Name = hostname;

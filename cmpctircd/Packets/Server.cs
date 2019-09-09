@@ -102,6 +102,7 @@ namespace cmpctircd.Packets {
 
                     if(foundMatch) {
                         // If we're got a match after all of the checks, stop looking
+                        args.Server.ServerInfo = link;
                         break;
                     } else {
                         // Reset for next iteration unless we're at the end

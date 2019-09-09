@@ -94,6 +94,8 @@ namespace cmpctircd {
             }
             Log.Info($"==> Host: {Host}");
 
+            PacketManager.Load();
+
             foreach(var listener in Config.Sockets.OfType<SocketElement>()) {
                 SocketListener sl = new SocketListener(this, listener);
                 Log.Info($"==> Listening on: {listener.Host}:{listener.Port} ({listener.Type}) ({(listener.IsTls ? "TLS" : "Plain" )})");
@@ -113,8 +115,6 @@ namespace cmpctircd {
                     sc.Connect(server);
                 }
             }
-
-            PacketManager.Load();
 
             // Set create time
             CreateTime = DateTime.UtcNow;

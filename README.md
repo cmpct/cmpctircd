@@ -3,23 +3,50 @@ cmpctircd
 
 About
 -----
-The aim of this project is to provide a stable, fast, and *modern* ircd.
+The aim of this project is to provide a stable, fast, and modern ircd.
 
 Status
 -----
-Under heavy development. It'll be clear when it is production ready. Feel free to report any bugs on [bugzilla](https://bugs.cmpct.info/).
+Under heavy development. It'll be clear when it is production ready. Feel free to report any bugs on [Jira](https://cmpct.atlassian.net).
 
-Branches
---------
-*You can use Bugzilla to glean information about the direction of a series.*
+Dependencies
+-----
+* .NET Core 2.2
 
-* master: next major version
-[0.3.x](https://bugs.cmpct.info/buglist.cgi?bug_status=UNCONFIRMED&bug_status=CONFIRMED&bug_status=IN_PROGRESS&bug_status=RESOLVED&bug_status=VERIFIED&list_id=1462&product=cmpctircd.NET&query_format=advanced&resolution=---&target_milestone=0.3.0)
-series (link work, etc)
-* stable: stable improvements,
-[0.2.x](https://bugs.cmpct.info/buglist.cgi?f1=target_milestone&f2=target_milestone&f3=target_milestone&j_top=AND_G&list_id=771&o1=lessthan&o2=greaterthaneq&product=cmpctircd.NET&query_format=advanced&resolution=---&v1=0.3.0&v2=0.2.0)
-series (more minor features, bugfixes)
+Running
+-----
+```
+git clone --recurse-submodules https://bitbucket.org/cmpcti/cmpctircd cmpctircd
+
+cd cmpctircd/cmpctircd
+
+# Fetch dependencies
+dotnet restore
+# Adjust App.config to suit your preferences
+dotnet run
+```
+
+Tests
+-----
+```
+git clone --recurse-submodules https://bitbucket.org/cmpcti/cmpctircd cmpctircd
+cd cmpctircd/cmpctircd
+dotnet tests
+```
+
+Docker
+-----
+```
+wget https://bitbucket.org/cmpcti/cmpctircd/raw/master/Dockerfile
+
+mkdir cmpctircd-docker
+# Place your App.config and so on in cmpctircd-docker
+
+# Your cmpctircd-docker folder will be populated with logs once the IRCd runs
+docker build -t cmpctircd .
+docker run -v $HOME/cmpctircd-docker:/cmpctircd/ --name cmpctircd -p 6667:6667 -p 6697:6697 -d cmpctircd
+```
 
 Contact
 -------
-Email me at sam@cmpct.info if you wish to contribute or you have questions. An IRC server will be made available once the daemon is sufficiently mature (soon, we hope)!
+An IRC server will be made available once the daemon is sufficiently mature (soon, we hope)!

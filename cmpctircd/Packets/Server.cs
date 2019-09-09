@@ -63,59 +63,73 @@ namespace cmpctircd.Packets {
             var desc     = parts[5].Substring(1);
 
             // Compare with config
-            bool foundMatch = true && args.IRCd.Config.Servers.Count > 0;
-            for(int i = 0; i < args.IRCd.Config.Servers.Count; i++) {
-                var link = args.IRCd.Config.Servers[i];
-
-                // TODO: Add error messages
-                if(link.Host     != hostname) foundMatch = false;
-                if(link.Port     != args.Server.Listener.Info.Port) foundMatch = false;
-                if(link.IsTls    != args.Server.Listener.Info.IsTls) foundMatch = false;
+            bool foundMatch = true;
+            if (args.Server.ServerInfo != null) {
+                // We are connecting outbound so have a specific server to compare against
+                var link = args.Server.ServerInfo;
+                if(link.Host != hostname) foundMatch = false;
+                if(link.Port != args.Server.Listener.Info.Port) foundMatch = false;
+                if(link.IsTls != args.Server.Listener.Info.IsTls) foundMatch = false;
                 if(link.Password != password) foundMatch = false;
+            } else {
+                // Check that any <server> blocks exist
+                foundMatch = args.IRCd.Config.Servers.Count > 0;
 
-                var foundHostMatch = false;
-                foreach(var mask in link.Masks) {
-                    var maskObject = Ban.CreateMask(mask);
-                    // TODO: Allow DNS in Masks (for Servers)
-                    var hostInfo   = new HostInfo {
-                        Ip = args.Server.IP
-                    };
+                // Check against all <server> blocks in the config
+                for(int i = 0; i < args.IRCd.Config.Servers.Count; i++) {
+                    var link = args.IRCd.Config.Servers[i];
 
-                    if (Ban.CheckHost(maskObject, hostInfo)) {
-                        foundHostMatch = true;
+                    // TODO: Add error messages
+                    if(link.Host     != hostname) foundMatch = false;
+                    if(link.Port     != args.Server.Listener.Info.Port) foundMatch = false;
+                    if(link.IsTls    != args.Server.Listener.Info.IsTls) foundMatch = false;
+                    if(link.Password != password) foundMatch = false;
+
+                    var foundHostMatch = false;
+                    foreach(var mask in link.Masks) {
+                        var maskObject = Ban.CreateMask(mask);
+                        // TODO: Allow DNS in Masks (for Servers)
+                        var hostInfo   = new HostInfo {
+                            Ip = args.Server.IP
+                        };
+
+                        if (Ban.CheckHost(maskObject, hostInfo)) {
+                            foundHostMatch = true;
+                            break;
+                        }
+                    }
+                    foundMatch = foundMatch && foundHostMatch;
+
+                    if(foundMatch) {
+                        // If we're got a match after all of the checks, stop looking
                         break;
+                    } else {
+                        // Reset for next iteration unless we're at the end
+                        if(i != args.IRCd.Config.Servers.Count - 1)
+                            foundMatch = true;
                     }
                 }
-                foundMatch = foundMatch && foundHostMatch;
+            }
 
+            if(foundMatch) {
                 // Check if the server is already connected
                 // [Important that this is after all authentication checks because it has a conditional on whether server is authed]
                 try {
                     var foundServer = args.IRCd.GetServerBySID(sid);
 
-                    if(foundMatch) {
-                        // If the incoming server is authenticated, disconnect the old one (saves time waiting for ping timeouts, etc)
-                        args.IRCd.Log.Warn($"[SERVER] Ejecting server (SID: {sid}, name: {hostname}) for new connection");
-                        foundServer.Disconnect("ERROR: Replaced by a new connection", true);
-                    }
+                    // If the incoming server is authenticated, disconnect the old one (saves time waiting for ping timeouts, etc)
+                    args.IRCd.Log.Warn($"[SERVER] Ejecting server (SID: {sid}, name: {hostname}) for new connection");
+                    foundServer.Disconnect("ERROR: Replaced by a new connection", true);
                 } catch (InvalidOperationException) {}
 
-                if(foundMatch) {
-                    // If we're got a match after all of the checks, stop looking
-                    break;
-                } else {
-                    // Reset for next iteration unless we're at the end
-                    if(i != args.IRCd.Config.Servers.Count - 1)
-                        foundMatch = true;
-                }
-            }
 
-            if(foundMatch) {
                 args.Server.State = ServerState.Auth;
                 args.Server.Name = hostname;
                 args.Server.SID = sid;
                 args.Server.Desc = desc;
-                args.IRCd.Log.Warn("[SERVER] Got an authed server"); // TODO: Change to Info?
+
+                // TODO: Change to Info?
+                args.IRCd.Log.Warn($"[SERVER] Got an authed server (SID: {sid}, name: {hostname})");
 
                 // Introduce ourselves
                 if(args.Server.Listener.GetType() != typeof(SocketConnector)) {

@@ -107,10 +107,10 @@ namespace cmpctircd {
                     // <server> tag with outbound="true"
                     // We want to connect out to this server, not have them connect to us
                     var sc = new SocketConnector(this, server);
-                    Log.Info($"==> Connecting to: {server.Destination}:{server.Port} (server.Host) ({(server.IsTls ? "TLS" : "Plain" )})");
+                    Log.Info($"==> Connecting to: {server.Destination}:{server.Port} ({server.Host}) ({(server.IsTls ? "TLS" : "Plain" )})");
 
                     Connectors.Add(sc);
-                    sc.Connect(server.Password);
+                    sc.Connect(server);
                 }
             }
 

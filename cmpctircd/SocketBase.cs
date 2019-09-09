@@ -91,7 +91,7 @@ namespace cmpctircd {
         // Returns the socket's raw IP
         public IPAddress IP {
             get {
-                var EndPoint = (System.Net.IPEndPoint) TcpClient.Client.RemoteEndPoint;
+                var EndPoint = (System.Net.IPEndPoint) TcpClient?.Client?.RemoteEndPoint;
                 if(EndPoint != null) {
                     // Live socket
                     return EndPoint.Address;

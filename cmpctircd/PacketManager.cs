@@ -87,6 +87,7 @@ namespace cmpctircd {
                     registrationCommands.Add("CAPAB");
                     registrationCommands.Add("SERVER");
                     registrationCommands.Add("PING");
+                    registrationCommands.Add("PONG");
                     if(server.State.Equals(ServerState.PreAuth) && !registrationCommands.Contains(packet.ToUpper())) {
                         _ircd.Log.Error($"Server just tried to use command pre-auth: {packet.ToUpper()}");
                         server.Disconnect("ERROR: Sent command before auth (send SERVER packet!)", true);

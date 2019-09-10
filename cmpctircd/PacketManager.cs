@@ -84,9 +84,11 @@ namespace cmpctircd {
                 // Server
                 var server = args.Server;
                 try {
+                    // TODO: Per-protocol?
                     registrationCommands.Add("CAPAB");
                     registrationCommands.Add("SERVER");
                     registrationCommands.Add("PING");
+                    registrationCommands.Add("PONG");
 
                     _ircd.Log.Debug($"Got a server line: {args.Line}");
 

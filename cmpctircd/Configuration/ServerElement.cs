@@ -54,5 +54,11 @@ namespace cmpctircd.Configuration {
             get { return (string) this["destination"]; }
             set { this["destination"] = value; }
         }
+
+        [ConfigurationProperty("verify", IsRequired = false, DefaultValue = true)]
+        public bool VerifyTlsCert {
+            get { return (bool) this["verify"]; }
+            set { this["verify"] = value; }
+        }
     }
 }

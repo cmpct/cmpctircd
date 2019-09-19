@@ -70,7 +70,7 @@ namespace cmpctircd {
             // Handshake with TLS if they're from a TLS port
             if (Info.IsTls) {
                 try {
-                    stream = await HandshakeTls(tc);
+                    stream = await HandshakeTlsAsServer(tc);
                 } catch (Exception e) {
                     _ircd.Log.Debug($"Exception in HandshakeTls: {e.ToString()}");
                     tc.Close();
@@ -183,7 +183,7 @@ namespace cmpctircd {
             return args;
         }
 
-        public async Task<SslStream> HandshakeTls(TcpClient tc) {
+        public async Task<SslStream> HandshakeTlsAsServer(TcpClient tc) {
             SslStream stream = new SslStream(tc.GetStream(), true);
             // NOTE: Must use carefully constructed cert in PKCS12 format (.pfx)
             // NOTE: https://security.stackexchange.com/a/29428
@@ -191,6 +191,20 @@ namespace cmpctircd {
             // NOTE: Create a TLS certificate using openssl (or $TOOL), then:
             // NOTE:    openssl pkcs12 -export -in tls_cert.pem -inkey tls_key.pem -out server.pfx
             stream.AuthenticateAsServer(await _ircd.Certificate.GetCertificateAsync(), false, SslProtocols.Tls12, true);
+            return stream;
+        }
+
+        public async Task<SslStream> HandshakeTlsAsClient(TcpClient tc, string host, bool verifyCert = true) {
+            SslStream stream;
+
+            if (verifyCert) {
+                stream = new SslStream(tc.GetStream(), true);
+            } else {
+                _ircd.Log.Warn($"[SERVER] Connecting out to server {host} with TLS verification disabled: this is dangerous!");
+                stream = new SslStream(tc.GetStream(), true, (sender, certificate, chain, sslPolicyErrors) => true);
+            }
+
+            await stream.AuthenticateAsClientAsync(host);
             return stream;
         }
 

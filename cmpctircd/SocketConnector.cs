@@ -25,24 +25,30 @@ namespace cmpctircd {
 
         public async void Connect(ServerElement info) {
             // TODO: started logic?
-            // TODO: TLS?
             StreamReader reader = null;
+            Stream stream;
 
             tc = new TcpClient(); 
             try {
                 await tc.ConnectAsync(Info.Host.ToString(), Info.Port);
+                stream = tc.GetStream();
             } catch(SocketException) {
                 _ircd.Log.Warn($"Unable to connect to server {Info.Host.ToString()}:{Info.Port}");
                 return;
             }
 
-            var server = new Server(_ircd, tc, this, tc.GetStream(), info);
+            if (info.IsTls) {
+                // If we're TLS, we need to handshake immediately
+                stream = await HandshakeTlsAsClient(tc, info.Host, info.VerifyTlsCert);
+            }
+
+            var server = new Server(_ircd, tc, this, stream, info);
             _servers.Add(server);
 
             try {
                 // Call the appropriate BeginTasks
                 // Must be AFTER TLS handshake because could send text
-                if(server.Stream.CanRead) {
+                if(stream.CanRead) {
                     server.BeginTasks();
                 } else {
                     throw new InvalidOperationException("Can't read on this socket");
@@ -53,7 +59,7 @@ namespace cmpctircd {
                 server.SendCapab();
 
                 // Once we get a socket, loop indefinitely reading
-                reader = new StreamReader(server.Stream);
+                reader = new StreamReader(stream);
 
                 // Loop until socket disconnects
                 await ReadLoop(server, reader);

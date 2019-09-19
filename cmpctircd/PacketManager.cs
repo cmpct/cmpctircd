@@ -140,7 +140,7 @@ namespace cmpctircd {
             if (_handlers.ContainsKey(name)) {
                 functions.AddRange(_handlers[name].Where(
                     record => record.Type == type &&
-                    (record.ServerType == serverType || record.ServerType == ServerType.Any || record.ServerType == ServerType.Unknown)
+                    (record.ServerType == serverType || record.ServerType == ServerType.Any)
                 ));
             }
             return functions;

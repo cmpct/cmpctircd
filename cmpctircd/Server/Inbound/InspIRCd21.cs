@@ -24,7 +24,6 @@ namespace cmpctircd.Packets {
         [Handler("SERVER", ListenerType.Server, ServerType.InspIRCd21)]
         public static bool ServerHandler(HandlerArgs args) {
             // TODO: introduce some ServerState magic
-            ServerType type = ServerType.Unknown; // TODO: Is there a better default? Or none?
             var parts = args.Line.Split(new char[] { ' ' }, 7).ToList();
 
             // Drop :SID at the beginning (Anope does this, InspIRCd doesn't)
@@ -62,10 +61,10 @@ namespace cmpctircd.Packets {
                 args.Server.Name = hostname;
                 args.Server.SID = sid;
                 args.Server.Desc = desc;
-                args.Server.Type = type;
+                args.Server.Type = ServerType.InspIRCd21;
 
                 // TODO: Change to Info?
-                args.IRCd.Log.Warn($"[SERVER] Got an authed server (SID: {sid}, name: {hostname}, type: {type})");
+                args.IRCd.Log.Warn($"[SERVER] Got an authed server (SID: {sid}, name: {hostname}, type: {args.Server.Type})");
 
                 // Introduce ourselves
                 if(args.Server.Listener.GetType() != typeof(SocketConnector)) {

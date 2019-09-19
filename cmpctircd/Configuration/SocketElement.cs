@@ -36,6 +36,12 @@ namespace cmpctircd.Configuration {
             set { this["tls"] = value; }
         }
 
+        [ConfigurationProperty("protocol", IsRequired = false)]
+        public ServerType Protocol {
+            get { return (ServerType) this["protocol"]; }
+            set { this["protocol"] = value; }
+        }
+
         public static implicit operator SocketElement(ServerElement serverElement) {
             var se = new SocketElement();
 

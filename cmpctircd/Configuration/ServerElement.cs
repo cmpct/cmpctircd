@@ -4,6 +4,12 @@ using System.Configuration;
 
 namespace cmpctircd.Configuration {
     public class ServerElement : ConfigurationElement {
+        [ConfigurationProperty("type", IsRequired = true)]
+        public ServerType Type {
+            get { return (ServerType) this["type"]; }
+            set { this["type"] = value; }
+        }
+
         [ConfigurationProperty("host", IsRequired = true)]
         public string Host {
             get { return (string) this["host"]; }

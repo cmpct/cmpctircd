@@ -12,6 +12,7 @@ namespace cmpctircd {
             public string Packet;
             public Func<HandlerArgs, Boolean> Handler;
             public ListenerType Type;
+            public ServerType ServerType;
         }
 
         public PacketManager(IRCd ircd) {
@@ -40,7 +41,6 @@ namespace cmpctircd {
                 Type    = type
             });
         }
-
 
         public bool FindHandler(String packet, HandlerArgs args, ListenerType type, bool convertUids = false)
         {
@@ -84,10 +84,14 @@ namespace cmpctircd {
                 // Server
                 var server = args.Server;
                 try {
+                    // TODO: Per-protocol?
                     registrationCommands.Add("CAPAB");
                     registrationCommands.Add("SERVER");
                     registrationCommands.Add("PING");
                     registrationCommands.Add("PONG");
+
+                    _ircd.Log.Debug($"Got a server line: {args.Line}");
+
                     if(server.State.Equals(ServerState.PreAuth) && !registrationCommands.Contains(packet.ToUpper())) {
                         _ircd.Log.Error($"Server just tried to use command pre-auth: {packet.ToUpper()}");
                         server.Disconnect("ERROR: Sent command before auth (send SERVER packet!)", true);
@@ -100,7 +104,18 @@ namespace cmpctircd {
             }
 
             try {
-                var functions = FindHandlers(packet, type);
+                List<HandlerInfo> functions;
+
+                if (client != null) {
+                    // Client
+                    // Call handlers with no type defined (i.e. ServerType.Dummy)
+                    functions = FindHandlers(packet, type);
+                } else {
+                    // Server
+                    // Only call handlers matching our exact server type, or ServerType.Any
+                    functions = FindHandlers(packet, type, args.Server.Type);
+                }
+
                 if(functions.Count() > 0) {
                     foreach(var record in functions) {
                         // Invoke all of the handlers for the command
@@ -115,19 +130,18 @@ namespace cmpctircd {
                 _ircd.Log.Debug("Exception: " + e.ToString());
                 return false;
             }
-
-            if(args.Server != null)
-                _ircd.Log.Debug($"Got a server line: {args.Line}");
-            _ircd.Log.Debug("Handler for " + packet.ToUpper() + " executed");
             return true;
         }
 
 
-        private List<HandlerInfo> FindHandlers(string name, ListenerType type) {
+        private List<HandlerInfo> FindHandlers(string name, ListenerType type, ServerType serverType = ServerType.Dummy) {
             var functions = new List<HandlerInfo>();
             name = name.ToUpper();
             if (_handlers.ContainsKey(name)) {
-                functions.AddRange(_handlers[name].Where(record => record.Type == type));
+                functions.AddRange(_handlers[name].Where(
+                    record => record.Type == type &&
+                    (record.ServerType == serverType || record.ServerType == ServerType.Any || record.ServerType == ServerType.Unknown)
+                ));
             }
             return functions;
         }
@@ -141,12 +155,16 @@ namespace cmpctircd {
                         Handler attr = (Handler) a;
                         if(!m.IsStatic)
                             _ircd.Log.Warn($"'{m.DeclaringType.FullName}.{m.Name}' is not static. Handler methods loaded through reflection must be static.");
-                        else
-                            Register(
-                                attr.Command,
-                                (Func<HandlerArgs, bool>) Delegate.CreateDelegate(typeof(Func<HandlerArgs, bool>), m),
-                                attr.Type
-                            );
+                        else {
+                            var handler = new HandlerInfo {
+                                Packet  = attr.Command,
+                                Handler = (Func<HandlerArgs, bool>) Delegate.CreateDelegate(typeof(Func<HandlerArgs, bool>), m),
+                                Type    = attr.Type,
+                                ServerType = attr.ServerType,
+                            };
+
+                            Register(handler);
+                        }
                     })
                 );
             return true;

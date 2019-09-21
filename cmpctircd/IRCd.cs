@@ -10,7 +10,7 @@ using cmpctircd.Configuration;
 namespace cmpctircd {
     public class IRCd {
         private readonly IList<SocketListener> Listeners = new List<SocketListener>();
-        private readonly IList<SocketConnector> Connectors = new List<SocketConnector>();
+        public readonly IList<SocketConnector> Connectors = new List<SocketConnector>();
         public PacketManager PacketManager { get; }
         public ChannelManager ChannelManager { get; }
         public IList<IList<Client>> ClientLists { get; } = new List<IList<Client>>();
@@ -112,7 +112,7 @@ namespace cmpctircd {
                     Log.Info($"==> Connecting to: {server.Destination}:{server.Port} ({server.Host}) ({(server.IsTls ? "TLS" : "Plain" )})");
 
                     Connectors.Add(sc);
-                    sc.Connect(server);
+                    sc.Connect();
                 }
             }
 

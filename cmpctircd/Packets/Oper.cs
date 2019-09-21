@@ -4,6 +4,8 @@ using System.Text;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
+using cmpctircd.Configuration;
+
 namespace cmpctircd.Packets {
     public static class Oper {
         /// <summary>
@@ -82,6 +84,45 @@ namespace cmpctircd.Packets {
                 return true;
             }
             throw new IrcErrNoPrivileges(args.Client);
+        }
+
+        [Handler("CONNECT", ListenerType.Client)]
+        public static bool ConnectHandler(HandlerArgs args) {
+            if (args.SpacedArgs.Count == 1) {
+                throw new IrcErrNotEnoughParametersException(args.Client, "CONNECT");
+            }
+
+            if (!args.Client.Modes["o"].Enabled) {
+                throw new IrcErrNoPrivileges(args.Client);
+            }
+
+            var host = args.SpacedArgs[1];
+            SocketConnector connector = null;
+
+            try {
+                connector = args.IRCd.Connectors.First(iterConnector => iterConnector.ServerInfo.Host == host);
+
+                if (connector.Connected) {
+                    args.Client.Write($":{args.IRCd.Host} NOTICE {args.Client.Nick} :Already connected to: {host}");
+                    return true;
+                }
+            } catch (InvalidOperationException) {
+                // No such server was found
+                args.IRCd.Log.Warn($"Oper {args.Client.Nick} tried to connect to non-existent server: {host}");
+                args.Client.Write($":{args.IRCd.Host} NOTICE {args.Client.Nick} :Such a server does not exist in config: {host}");
+            }
+
+            args.Client.Write($":{args.IRCd.Host} NOTICE {args.Client.Nick} :Attempting to connect to: {host}");
+            try {
+                connector.Connect();
+            } catch (InvalidOperationException) {
+                // Couldn't connect
+                args.Client.Write($":{args.IRCd.Host} NOTICE {args.Client.Nick} :Unable to connect to server: {host}");
+            }
+
+            args.Client.Write($":{args.IRCd.Host} NOTICE {args.Client.Nick} :Successfully connected to: {host}");
+
+            return true;
         }
     }
 }

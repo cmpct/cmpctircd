@@ -10,12 +10,14 @@ using cmpctircd.Configuration;
 namespace cmpctircd {
     public class SocketConnector : SocketListener {
 
+        public ServerElement ServerInfo;
+        public bool Connected;
         private TcpClient tc;
         private NetworkStream stream;
 
-        public SocketConnector(IRCd ircd, SocketElement info) : base(ircd, info) {
-            // TODO
-            _ircd = ircd;
+
+        public SocketConnector(IRCd ircd, ServerElement info) : base(ircd, info) {
+            ServerInfo = info;
         }
 
         // TODO: How to sanely noop this?
@@ -23,8 +25,12 @@ namespace cmpctircd {
         public override void Bind() {}
         public override void Stop() {}
 
-        public async void Connect(ServerElement info) {
-            // TODO: started logic?
+        public async void Connect() {
+            if (Connected) {
+                _ircd.Log.Debug("Called SocketConnector.Connect() on connected SocketConnector?");;
+                return;
+            }
+
             StreamReader reader = null;
             Stream stream;
 
@@ -37,15 +43,17 @@ namespace cmpctircd {
                 return;
             }
 
-            if (info.IsTls) {
+            if (ServerInfo.IsTls) {
                 // If we're TLS, we need to handshake immediately
-                stream = await HandshakeTlsAsClient(tc, info.Host, info.VerifyTlsCert);
+                stream = await HandshakeTlsAsClient(tc, ServerInfo.Host, ServerInfo.VerifyTlsCert);
             }
 
-            var server = new Server(_ircd, tc, this, stream, info);
+            var server = new Server(_ircd, tc, this, stream, ServerInfo);
             _servers.Add(server);
 
             try {
+                Connected = true;
+
                 // Call the appropriate BeginTasks
                 // Must be AFTER TLS handshake because could send text
                 if(stream.CanRead) {
@@ -64,6 +72,7 @@ namespace cmpctircd {
                 // Loop until socket disconnects
                 await ReadLoop(server, reader);
             } catch(Exception) {
+                Connected = false;
                 server?.Disconnect("Connection reset by host", true, false);
                 reader?.Dispose();
             }

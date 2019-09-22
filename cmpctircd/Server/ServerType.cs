@@ -8,6 +8,6 @@ namespace cmpctircd {
         Any,
 
         // Actual server protocols
-        InspIRCd21
+        InspIRCd20
     }
 }

@@ -4,12 +4,12 @@ using System.Linq;
 
 namespace cmpctircd {
 
-    public class InspIRCd21 : ITranslator {
+    public class InspIRCd20 : ITranslator {
 
         private Server Server;
-        public ServerType GetOutType() => ServerType.InspIRCd21;
+        public ServerType GetOutType() => ServerType.InspIRCd20;
 
-        public InspIRCd21(Server server) {
+        public InspIRCd20(Server server) {
             this.Server = server;
         }
 

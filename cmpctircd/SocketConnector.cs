@@ -27,7 +27,7 @@ namespace cmpctircd {
 
         public async void Connect() {
             if (Connected) {
-                _ircd.Log.Debug("Called SocketConnector.Connect() on connected SocketConnector?");;
+                _ircd.Log.Debug("Called SocketConnector.Connect() on connected SocketConnector?");
                 return;
             }
 

@@ -25,8 +25,8 @@ namespace cmpctircd {
 
                 // Create an appropriate translator based on the type given
                 switch (Type) {
-                    case ServerType.InspIRCd21:
-                        Translator = new InspIRCd21(this);
+                    case ServerType.InspIRCd20:
+                        Translator = new InspIRCd20(this);
                         break;
 
                     default:

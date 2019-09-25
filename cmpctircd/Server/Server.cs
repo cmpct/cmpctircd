@@ -26,7 +26,7 @@ namespace cmpctircd {
                 // Create an appropriate translator based on the type given
                 switch (Type) {
                     case ServerType.InspIRCd20:
-                        Translator = new InspIRCd20(this);
+                        LinkProtocol = new InspIRCd20(this);
                         break;
 
                     default:
@@ -35,7 +35,7 @@ namespace cmpctircd {
                 }
             }
         }
-        public ITranslator Translator { get; private set; }
+        public ILinkProtocol LinkProtocol { get; private set; }
 
         public ServerElement ServerInfo { get; set; }
 
@@ -77,20 +77,20 @@ namespace cmpctircd {
 
         // TODO need to SyncClient, SyncChannel when they connect/are created
         public void SyncClient(Client client) {
-            Translator.SyncClient(client);
+            LinkProtocol.SyncClient(client);
         }
 
         public void SyncChannel(Channel channel) {
-            Translator.SyncChannel(channel);
+            LinkProtocol.SyncChannel(channel);
         }
 
         public void SendHandshake() {
             // Introduce ourselves
-            Translator.Handshake();
+            LinkProtocol.Handshake();
         }
 
         public void SendCapab() {
-            Translator.SendCapab();
+            LinkProtocol.SendCapab();
         }
 
         public new void Write(string message) {

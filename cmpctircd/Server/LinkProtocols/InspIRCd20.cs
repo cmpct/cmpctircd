@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace cmpctircd {
 
-    public class InspIRCd20 : ITranslator {
+    public class InspIRCd20 : ILinkProtocol {
 
         private Server Server;
         public ServerType GetOutType() => ServerType.InspIRCd20;

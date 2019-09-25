@@ -413,7 +413,6 @@ namespace cmpctircd
                 if(RemoteClient && transformIfServer) {
                     // Need to translate any nicks into UIDs
                     packet = IRCd.ReplaceNickWithUUID(packet);
-                    // TODO sock changes? (TLS?)
                     await base.Write(packet, OriginServer.Stream);
                 } else {
                     await base.Write(packet);

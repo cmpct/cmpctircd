@@ -1,7 +1,7 @@
 namespace cmpctircd {
 
-    public interface ITranslator {
-        // This interface defines a 'Translator'
+    public interface ILinkProtocol {
+        // This interface defines a 'LinkProtocol' (translator)
         // i.e. a set of functions to communicate back out to a server
 
         // It only handles what to send to the server
@@ -13,7 +13,7 @@ namespace cmpctircd {
         // e.g. a channel was made on the remote side - how do we handle it locally?
         // [See Server/Inbound/]
 
-        // Return the type of IRCd this translator is for
+        // Return the type of IRCd this LinkProtocol is for
         ServerType GetOutType();
 
         // Packets we need to be able to handle

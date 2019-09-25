@@ -102,7 +102,6 @@ namespace cmpctircd {
             }
         }
 
-        // TODO rework these? (for TLS links especially?)
         public Task Write(string packet) {
             return Write(packet, Stream);
         }

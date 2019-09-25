@@ -2,8 +2,6 @@ using System;
 
 namespace cmpctircd.Packets {
     public static class Any {
-        // TODO: PING?
-
         [Handler("ERROR", ListenerType.Server, ServerType.Any)]
         public static bool ErrorHandler(HandlerArgs args) {
             args.IRCd.Log.Error($"[SERVER] Received an error (from: {args.Server?.Name}), disconnecting: {args.Trailer}");

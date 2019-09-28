@@ -27,18 +27,17 @@ namespace cmpctircd {
 
         public async void Connect() {
             if (Connected) {
-                _ircd.Log.Debug("Called SocketConnector.Connect() on connected SocketConnector?");
-                return;
+                throw new InvalidOperationException("Called SocketConnector.Connect() on connected SocketConnector");
             }
 
             StreamReader reader = null;
             Stream stream;
 
-            tc = new TcpClient(); 
+            tc = new TcpClient();
             try {
                 await tc.ConnectAsync(Info.Host.ToString(), Info.Port);
                 stream = tc.GetStream();
-            } catch(SocketException) {
+            } catch (SocketException) {
                 _ircd.Log.Warn($"Unable to connect to server {Info.Host.ToString()}:{Info.Port}");
                 return;
             }
@@ -56,7 +55,7 @@ namespace cmpctircd {
 
                 // Call the appropriate BeginTasks
                 // Must be AFTER TLS handshake because could send text
-                if(stream.CanRead) {
+                if (stream.CanRead) {
                     server.BeginTasks();
                 } else {
                     throw new InvalidOperationException("Can't read on this socket");
@@ -71,7 +70,7 @@ namespace cmpctircd {
 
                 // Loop until socket disconnects
                 await ReadLoop(server, reader);
-            } catch(Exception) {
+            } catch (Exception) {
                 Connected = false;
                 server?.Disconnect("Connection reset by host", true, false);
                 reader?.Dispose();

@@ -130,57 +130,36 @@ namespace cmpctircd {
         }
 
         public bool FindServerConfig(string hostname, string password) {
-            bool foundMatch = true;
+            ServerElement link;
+            bool foundMatch = false;
+
             if (ServerInfo != null) {
                 // We are connecting outbound so have a specific server to compare against
-                var link = ServerInfo;
-                if(link.Host != hostname) foundMatch = false;
-                if(link.Port != Listener.Info.Port) foundMatch = false;
-                if(link.IsTls != Listener.Info.IsTls) foundMatch = false;
-                if(link.Password != password) foundMatch = false;
+                link = ServerInfo;
 
-                Type = link.Type;
-                ServerInfo = link;
-            } else {
-                // Check that any <server> blocks exist
-                foundMatch = IRCd.Config.Servers.Count > 0;
-
-                // Check against all <server> blocks in the config
-                for(int i = 0; i < IRCd.Config.Servers.Count; i++) {
-                    var link = IRCd.Config.Servers[i];
-
-                    // TODO: Add error messages
-                    if(link.Host     != hostname) foundMatch = false;
-                    if(link.Port     != Listener.Info.Port) foundMatch = false;
-                    if(link.IsTls    != Listener.Info.IsTls) foundMatch = false;
-                    if(link.Password != password) foundMatch = false;
-
-                    var foundHostMatch = false;
-                    foreach(var mask in link.Masks) {
-                        var maskObject = Ban.CreateMask(mask);
-                        // TODO: Allow DNS in Masks (for Servers)
-                        var hostInfo   = new HostInfo {
-                            Ip = IP
-                        };
-
-                        if (Ban.CheckHost(maskObject, hostInfo)) {
-                            foundHostMatch = true;
-                            break;
-                        }
-                    }
-                    foundMatch = foundMatch && foundHostMatch;
-
-                    if(foundMatch) {
-                        // If we're got a match after all of the checks, stop looking
-                        Type = link.Type;
-                        ServerInfo = link;
-                        break;
-                    } else {
-                        // Reset for next iteration unless we're at the end
-                        if(i != IRCd.Config.Servers.Count - 1)
-                            foundMatch = true;
-                    }
+                if (link.Host == hostname && link.Port == Listener.Info.Port
+                    && link.IsTls == Listener.Info.IsTls && link.Password == password) {
+                    foundMatch = true;
                 }
+            } else {
+                // Find matching <server> tag in config (or null)
+                link = IRCd.Config.Servers.Cast<ServerElement>().Where(s => s.Host == hostname
+                        && s.Port == Listener.Info.Port
+                        && s.IsTls == Listener.Info.IsTls
+                        && s.Password == password).FirstOrDefault();
+
+                // IP address needed for the block
+                var compare = new HostInfo { Ip = IP };
+
+                // Check that any found link mask matches the IP
+                if (link != null && link.Masks.Select(m => Ban.CreateMask(m)).Any(m => Ban.CheckHost(m, compare))) {
+                    foundMatch = true;
+                }
+            }
+
+            if (foundMatch) {
+                ServerInfo = link;
+                Type = link.Type;
             }
 
             return foundMatch;

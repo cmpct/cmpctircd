@@ -4,6 +4,12 @@ using System.Configuration;
 
 namespace cmpctircd.Configuration {
     public class ServerElement : ConfigurationElement {
+        [ConfigurationProperty("type", IsRequired = true)]
+        public ServerType Type {
+            get { return (ServerType) this["type"]; }
+            set { this["type"] = value; }
+        }
+
         [ConfigurationProperty("host", IsRequired = true)]
         public string Host {
             get { return (string) this["host"]; }
@@ -34,6 +40,25 @@ namespace cmpctircd.Configuration {
         public bool IsTls {
             get { return (bool) this["tls"]; }
             set { this["tls"] = value; }
+        }
+
+        // Outbound server
+        [ConfigurationProperty("outbound", IsRequired = false, DefaultValue = false)]
+        public bool IsOutbound {
+            get { return (bool) this["outbound"]; }
+            set { this["outbound"] = value; }
+        }
+
+        [ConfigurationProperty("destination", IsRequired = false)]
+        public string Destination {
+            get { return (string) this["destination"]; }
+            set { this["destination"] = value; }
+        }
+
+        [ConfigurationProperty("verify", IsRequired = false, DefaultValue = true)]
+        public bool VerifyTlsCert {
+            get { return (bool) this["verify"]; }
+            set { this["verify"] = value; }
         }
     }
 }

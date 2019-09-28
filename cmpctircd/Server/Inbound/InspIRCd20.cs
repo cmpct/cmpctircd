@@ -3,35 +3,25 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace cmpctircd.Packets {
-    public static class Server {
+    public static class InspIRCd20 {
+        // This class handles inbound packets for InspIRCd 2.0
+        // For outbound, see Translators/InspIRCd20.cs
+
         // TODO: three CAPAB packets
         // TODO: Handle BURST, don't process until we get them all? Group the FJOINs
 
-        [Handler("PING", ListenerType.Server)]
-        public static bool PingHandler(HandlerArgs args) {
-            // TODO: implement for hops > 1
-            // TODO: could use args.Server.SID instead of SpacedArgs?
-            args.Server.Write($":{args.IRCd.SID} PONG {args.IRCd.SID} {args.SpacedArgs[1]}");
-            return true;
-        }
-
-        [Handler("PONG", ListenerType.Server)]
-        public static bool PongHandler(HandlerArgs args) {
-            args.Server.WaitingForPong = false;
-            args.Server.LastPong       = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-            return true;
-        }
-
-        [Handler("CAPAB", ListenerType.Server)]
+        [Handler("CAPAB", ListenerType.Server, ServerType.InspIRCd20)]
         public static bool CapabHandler(HandlerArgs args) {
             // TODO: checked if already sent capab?
-            if (args.SpacedArgs.Count > 0 && args.SpacedArgs[1] == "START") {
+            if (args.SpacedArgs.Count > 0 && args.SpacedArgs[1] == "START" && args.Server.Listener.GetType() != typeof(SocketConnector)) {
+                // Only send if CAPAB START and if inbound connection
+                // On outbound, we send straightaway
                 args.Server.SendCapab();
             }
             return true;
         }
 
-        [Handler("SERVER", ListenerType.Server)]
+        [Handler("SERVER", ListenerType.Server, ServerType.InspIRCd20)]
         public static bool ServerHandler(HandlerArgs args) {
             // TODO: introduce some ServerState magic
             var parts = args.Line.Split(new char[] { ' ' }, 7).ToList();
@@ -42,7 +32,7 @@ namespace cmpctircd.Packets {
             }
 
             // Check there are enough parameters
-            if (parts.Count() != 6) {
+            if (parts.Count() < 6) {
                 // TODO: send an error
                 return false;
             }
@@ -54,74 +44,37 @@ namespace cmpctircd.Packets {
             var desc     = parts[5].Substring(1);
 
             // Compare with config
-            bool foundMatch = true && args.IRCd.Config.Servers.Count > 0;
-            for(int i = 0; i < args.IRCd.Config.Servers.Count; i++) {
-                var link = args.IRCd.Config.Servers[i];
+            var foundMatch = args.Server.FindServerConfig(hostname, password);
 
-                // TODO: Add error messages
-                if(link.Host     != hostname) foundMatch = false;
-                if(link.Port     != args.Server.Listener.Info.Port) foundMatch = false;
-                if(link.IsTls    != args.Server.Listener.Info.IsTls) foundMatch = false;
-                if(link.Password != password) foundMatch = false;
-
-                var foundHostMatch = false;
-                foreach(var mask in link.Masks) {
-                    var maskObject = Ban.CreateMask(mask);
-                    // TODO: Allow DNS in Masks (for Servers)
-                    var hostInfo   = new HostInfo {
-                        Ip = args.Server.IP
-                    };
-
-                    if (Ban.CheckHost(maskObject, hostInfo)) {
-                        foundHostMatch = true;
-                        break;
-                    }
-                }
-                foundMatch = foundMatch && foundHostMatch;
-
+            if(foundMatch) {
                 // Check if the server is already connected
                 // [Important that this is after all authentication checks because it has a conditional on whether server is authed]
                 try {
                     var foundServer = args.IRCd.GetServerBySID(sid);
 
-                    if(foundMatch) {
-                        // If the incoming server is authenticated, disconnect the old one (saves time waiting for ping timeouts, etc)
-                        args.IRCd.Log.Warn($"[SERVER] Ejecting server (SID: {sid}, name: {hostname}) for new connection");
-                        foundServer.Disconnect("ERROR: Replaced by a new connection", true);
-                    }
+                    // If the incoming server is authenticated, disconnect the old one (saves time waiting for ping timeouts, etc)
+                    args.IRCd.Log.Warn($"[SERVER] Ejecting server (SID: {sid}, name: {hostname}) for new connection");
+                    foundServer.Disconnect("ERROR: Replaced by a new connection", true);
                 } catch (InvalidOperationException) {}
 
-                if(foundMatch) {
-                    // If we're got a match after all of the checks, stop looking
-                    break;
-                } else {
-                    // Reset for next iteration unless we're at the end
-                    if(i != args.IRCd.Config.Servers.Count - 1)
-                        foundMatch = true;
-                }
-            }
-
-            if(foundMatch) {
                 args.Server.State = ServerState.Auth;
-                args.IRCd.Log.Warn("[SERVER] Got an authed server"); // TODO: Change to Info?
-
-                // Introduce ourselves...
-                // TODO: send password?
                 args.Server.Name = hostname;
                 args.Server.SID = sid;
                 args.Server.Desc = desc;
-                args.Server.Write($"SERVER {args.IRCd.Host} {password} 0 {args.IRCd.SID} :{args.IRCd.Desc}");
+                args.Server.Type = ServerType.InspIRCd20;
+
+                // TODO: Change to Info?
+                args.IRCd.Log.Warn($"[SERVER] Got an authed server (SID: {sid}, name: {hostname}, type: {args.Server.Type})");
+
+                // Introduce ourselves
+                if(args.Server.Listener.GetType() != typeof(SocketConnector)) {
+                    // Only introduce if we're being connected to (i.e. inbound)
+                    // This is because for outbound connections, we introduce ourselves first
+                    args.Server.SendHandshake();
+                }
 
                 // Set the ping cookie to be the SID, so we start pinging them (see CheckTimeout)
                 args.Server.PingCookie = args.Server.SID;
-
-                // Burst
-                // TODO: Implement INBOUND burst
-                // TODO: And queue up things during the BURST? (e.g. FJOINs)
-                var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                args.Server.Write($":{args.IRCd.SID} BURST {time}");
-                args.Server.Sync();
-                args.Server.Write($":{args.IRCd.SID} ENDBURST");
             } else {
                 args.IRCd.Log.Warn("[SERVER] Got an unauthed server");
                 args.Server.Disconnect("ERROR: Invalid credentials", true);
@@ -130,7 +83,7 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        [Handler("UID", ListenerType.Server)]
+        [Handler("UID", ListenerType.Server, ServerType.InspIRCd20)]
         public static bool UidHandler(HandlerArgs args) {
             var parts = args.Line.Split(new char[] { ' ' }, 12);
             
@@ -178,7 +131,7 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        [Handler("FJOIN", ListenerType.Server)]
+        [Handler("FJOIN", ListenerType.Server, ServerType.InspIRCd20)]
         public static bool FjoinHandler(HandlerArgs args) {
             // TODO check if the SID is one we know, maybe specify in config? (???)
             var parts     = args.Line.Split(new char[] { ' ' }, 6);
@@ -186,6 +139,11 @@ namespace cmpctircd.Packets {
             var userList  = parts[5].Split(new char[] { ' ' });
             foreach(var user in userList) {
                 var userParts = user.Split(new char[] { ',' });
+
+                if (userParts.Count() != 2) {
+                    continue;
+                }
+
                 var modes     = userParts[0];
                 var UID       = userParts[1];
 
@@ -210,12 +168,12 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        [Handler("QUIT", ListenerType.Server)]
+        [Handler("QUIT", ListenerType.Server, ServerType.InspIRCd20)]
         public static bool QuitHandler(HandlerArgs args) {
             return args.IRCd.PacketManager.FindHandler("QUIT", args, ListenerType.Client, true);
         }
 
-        [Handler("SQUIT", ListenerType.Server)]
+        [Handler("SQUIT", ListenerType.Server, ServerType.InspIRCd20)]
         public static bool SQuitHandler(HandlerArgs args) {
             // TODO: reason?
             args.Server.IRCd.Log.Info($"Server {args.Server.Name} sent SQUIT; disconnecting");
@@ -224,17 +182,17 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        [Handler("PRIVMSG", ListenerType.Server)]
+        [Handler("PRIVMSG", ListenerType.Server, ServerType.InspIRCd20)]
         public static bool PrivMsgHandler(HandlerArgs args) {
             return args.IRCd.PacketManager.FindHandler("PRIVMSG", args, ListenerType.Client, true);
         }
 
-        [Handler("NOTICE", ListenerType.Server)]
+        [Handler("NOTICE", ListenerType.Server, ServerType.InspIRCd20)]
         public static bool NoticeHandler(HandlerArgs args) {
             return args.IRCd.PacketManager.FindHandler("NOTICE", args, ListenerType.Client, true);
         }
 
-        [Handler("FMODE", ListenerType.Server)]
+        [Handler("FMODE", ListenerType.Server, ServerType.InspIRCd20)]
         public static bool FModeHandler(HandlerArgs args) {
             // Trust the server
             args.Force = true;
@@ -263,7 +221,7 @@ namespace cmpctircd.Packets {
             return args.IRCd.PacketManager.FindHandler("MODE", args, ListenerType.Client, true);
         }
 
-        [Handler("SVSNICK", ListenerType.Server)]
+        [Handler("SVSNICK", ListenerType.Server, ServerType.InspIRCd20)]
         public static bool SVSNickHandler(HandlerArgs args) {
             // SVSMODE format: :SID SVSMODE TARGET_UUID NEW_NICK TS
             // NICK    format: NICK NEW_NICK

@@ -33,10 +33,7 @@ namespace cmpctircd {
             IsTlsEnabled = stream is SslStream;
         }
 
-        public void BeginTasks() {
-            // Base tasks such as DNS or connections
-            // noop in base
-        }
+        public virtual void BeginTasks() {}
 
         public void CheckTimeout(bool server = false) {
             // By default, no pong cookie is required
@@ -94,7 +91,7 @@ namespace cmpctircd {
         // Returns the socket's raw IP
         public IPAddress IP {
             get {
-                var EndPoint = (System.Net.IPEndPoint) TcpClient.Client.RemoteEndPoint;
+                var EndPoint = (System.Net.IPEndPoint) TcpClient?.Client?.RemoteEndPoint;
                 if(EndPoint != null) {
                     // Live socket
                     return EndPoint.Address;
@@ -105,7 +102,6 @@ namespace cmpctircd {
             }
         }
 
-        // TODO rework these? (for TLS links especially?)
         public Task Write(string packet) {
             return Write(packet, Stream);
         }

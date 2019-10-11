@@ -5,7 +5,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>cmpctircd</RootNamespace>
     <AssemblyName>cmpctircd</AssemblyName>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
 

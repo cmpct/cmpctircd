@@ -5,7 +5,7 @@
 # - Run: docker run -v $HOME/cmpctircd-docker:/cmpctircd/ --name cmpctircd -p 6667:6667 -p 6697:6697 -d cmpctircd
 
 # Set up the base
-FROM mcr.microsoft.com/dotnet/core/sdk:2.2 AS build
+FROM mcr.microsoft.com/dotnet/core/sdk:3.0 AS build
 WORKDIR /app/
 
 # Set up the project
@@ -20,7 +20,7 @@ RUN dotnet restore
 RUN dotnet publish -c Release -o out
 
 # Runtime image
-FROM mcr.microsoft.com/dotnet/core/runtime:2.2 AS run
+FROM mcr.microsoft.com/dotnet/core/runtime:3.0 AS run
 WORKDIR /app/cmpctircd/cmpctircd
 COPY --from=build /app/cmpctircd/cmpctircd/out .
 

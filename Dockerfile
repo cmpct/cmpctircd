@@ -21,8 +21,8 @@ RUN dotnet publish -c Release -o out
 
 # Runtime image
 FROM mcr.microsoft.com/dotnet/core/runtime:3.0 AS run
-WORKDIR /app/cmpctircd/cmpctircd
-COPY --from=build /app/cmpctircd/cmpctircd/out .
+WORKDIR /app/cmpctircd/
+COPY --from=build /app/cmpctircd/out .
 
 # Default listening ports
 # You will need to expose them manually with docker run -p 6667:6667 -p 6697:6697 ...
@@ -34,13 +34,13 @@ EXPOSE 6697
 VOLUME /cmpctircd/
 
 # Copy the config over by symlinks
-RUN ln -fs /cmpctircd/App.config /app/cmpctircd/cmpctircd/cmpctircd.dll.config
-RUN ln -fs /cmpctircd/ircd.motd  /app/cmpctircd/cmpctircd/ircd.motd
-RUN ln -fs /cmpctircd/ircd.rules /app/cmpctircd/cmpctircd/ircd.rules
-RUN ln -fs /cmpctircd/server.pfx /app/cmpctircd/cmpctircd/server.pfx
+RUN ln -fs /cmpctircd/App.config /app/cmpctircd/cmpctircd.dll.config
+RUN ln -fs /cmpctircd/ircd.motd  /app/cmpctircd/ircd.motd
+RUN ln -fs /cmpctircd/ircd.rules /app/cmpctircd/ircd.rules
+RUN ln -fs /cmpctircd/server.pfx /app/cmpctircd/server.pfx
 
 # Expose the log files (may need to adjust config)
-RUN ln -s /cmpctircd/ircd.log   /app/cmpctircd/cmpctircd/ircd.log
+RUN ln -s /cmpctircd/ircd.log   /app/cmpctircd/ircd.log
 
 # Run
 ENTRYPOINT ["dotnet", "cmpctircd.dll"]

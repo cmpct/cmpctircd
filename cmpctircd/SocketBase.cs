@@ -13,7 +13,7 @@ namespace cmpctircd {
         // Internals
         public IRCd IRCd { get; }
         public TcpClient TcpClient { get; }
-        public Stream Stream { get; }
+        public Stream Stream { get; set; }
         public bool IsTlsEnabled { get; }
         // TODO: make these protected set?
         public SocketListener Listener { get; set; }

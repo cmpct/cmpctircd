@@ -106,7 +106,7 @@ namespace cmpctircd {
 
             // Sends the TLS handshake if we're a TLS listener
             // Swaps out the stream for an SslStream if that's the case
-            stream = await HandshakeIfNeeded(tc, stream);
+            socketBase.Stream = await HandshakeIfNeeded(tc, stream);
 
             try {
                 // Call the appropriate BeginTasks
@@ -121,7 +121,7 @@ namespace cmpctircd {
                     throw new InvalidOperationException("Can't read on this socket");
                 }
 
-                reader = new StreamReader(stream);
+                reader = new StreamReader(socketBase.Stream);
 
                 // Loop until socket disconnects
                 await ReadLoop(socketBase, reader);

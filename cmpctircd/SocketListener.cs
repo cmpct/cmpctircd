@@ -101,12 +101,11 @@ namespace cmpctircd {
 
         private async void HandleClient(TcpClient tc) {
             StreamReader reader = null;
-            var stream = (Stream) tc.GetStream();
-            var socketBase = CreateClientObject(tc, stream);
 
             // Sends the TLS handshake if we're a TLS listener
             // Swaps out the stream for an SslStream if that's the case
-            socketBase.Stream = await HandshakeIfNeeded(tc, stream);
+            var stream = await HandshakeIfNeeded(tc, (Stream) tc.GetStream());
+            var socketBase = CreateClientObject(tc, stream);
 
             try {
                 // Call the appropriate BeginTasks
@@ -115,13 +114,13 @@ namespace cmpctircd {
                 // XXX: Regarding the CanRead checks:
                 // XXX: Temporary fix for http://bugs.cmpct.info/show_bug.cgi?id=253
                 // XXX: May need deeper changes(?)
-                if(socketBase.Stream.CanRead) {
+                if(stream.CanRead) {
                     socketBase.BeginTasks();
                 } else {
                     throw new InvalidOperationException("Can't read on this socket");
                 }
 
-                reader = new StreamReader(socketBase.Stream);
+                reader = new StreamReader(stream);
 
                 // Loop until socket disconnects
                 await ReadLoop(socketBase, reader);

@@ -1,4 +1,4 @@
-image: microsoft/dotnet:sdk-3.0
+image: microsoft/dotnet/core/sdk:3.0
 
 pipelines:
   default:

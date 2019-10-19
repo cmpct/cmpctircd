@@ -6,6 +6,11 @@ using cmpctircd.Modes;
 
 namespace cmpctircd.Packets {
     public static class Channels {
+        [Handler("LIST", ListenerType.Client)]
+        public static bool ListHandler(HandlerArgs args) {
+            throw new NotImplementedException();
+        }
+
         [Handler("INVITE", ListenerType.Client)]
         public static bool InviteHandler(HandlerArgs args) {
             Channel channel;

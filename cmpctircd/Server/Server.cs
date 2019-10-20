@@ -63,11 +63,9 @@ namespace cmpctircd {
         public void Sync() {
             // This sends the server a copy of all of the clients and channels known to the server
             // 'Bursts'
-            foreach(var clientList in IRCd.ClientLists) {
-                foreach(var client in clientList) {
-                    // Tell the server about all of the clients
-                    SyncClient(client);
-                }
+            foreach(var client in IRCd.Clients) {
+                // Tell the server about all of the clients
+                SyncClient(client);
             }
 
             foreach(var channel in IRCd.ChannelManager.Channels) {
@@ -118,10 +116,10 @@ namespace cmpctircd {
             TcpClient.Close();
 
             // TODO: Graceful? Tell everyone we're going if they didn't send QUITs for all clients like they should?
-            foreach (var clientList in IRCd.ClientLists) {
-                foreach (var serverClient in clientList.Where(client => client.OriginServer == this)) {
+            foreach (var client in IRCd.Clients) {
+                if (client.OriginServer == this) {
                     // These are clients which were on our server
-                    serverClient.Disconnect("Server gone", true, false);
+                    client.Disconnect("Server gone", true, false);
                 }
             }
 

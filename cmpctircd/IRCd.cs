@@ -48,6 +48,8 @@ namespace cmpctircd {
         public AutomaticFileCacheRefresh Rules { get; } = new AutomaticFileCacheRefresh(new FileInfo("ircd.rules"));
         public AutomaticCertificateCacheRefresh Certificate { get; }
 
+        public List<Client> Clients => ClientLists.SelectMany(clientList => clientList).ToList();
+
         public IRCd(Log log, CmpctConfigurationSection config) {
             this.Log = log;
             this.Config = config;
@@ -169,28 +171,24 @@ namespace cmpctircd {
         }
 
         public Client GetClientByNick(String nick) {
-            foreach (var clientList in ClientLists) {
-                foreach (var clientItem in clientList) {
-                    // User may not have a nick yet
-                    if (String.IsNullOrEmpty(clientItem.Nick)) continue;
+            foreach(var client in Clients) {
+                // User may not have a nick yet
+                if (String.IsNullOrEmpty(client.Nick)) continue;
 
-                    // Check if user has the nick we're looking for
-                    if (clientItem.Nick.Equals(nick, StringComparison.OrdinalIgnoreCase)) {
-                        return clientItem;
-                    }
+                // Check if user has the nick we're looking for
+                if (client.Nick.Equals(nick, StringComparison.OrdinalIgnoreCase)) {
+                    return client;
                 }
             }
             throw new InvalidOperationException("No such user exists");
         }
 
         public Client GetClientByUUID(String UUID) {
-            foreach(var clientList in ClientLists) {
-                try {
-                    return clientList.Single(client => client.UUID == UUID);
-                    // TODO: hack?
-                } catch(Exception) { }
+            try {
+                return Clients.Single(client => client.UUID == UUID);
+            } catch(InvalidOperationException) {
+                throw new InvalidOperationException("No such user exists");
             }
-            throw new InvalidOperationException("No such user exists");
         }
 
         public Server GetServerBySID(String SID) {

@@ -114,40 +114,38 @@ namespace cmpctircd.Packets {
                 return false;
             }
             // Iterate through all of our clients if no mask
-            foreach(var list in args.IRCd.ClientLists) {
-                foreach(var client in list) {
-                    if (!(String.IsNullOrEmpty(mask) || mask.Equals("0"))) {
-                        // If mask isn't blank or 0, then we need to check if the user matches criteria.
-                        var metCriteria = false;
-                        mask = mask.Replace("*", ".*?");
+            foreach (var client in args.IRCd.Clients) {
+                if (!(String.IsNullOrEmpty(mask) || mask.Equals("0"))) {
+                    // If mask isn't blank or 0, then we need to check if the user matches criteria.
+                    var metCriteria = false;
+                    mask = mask.Replace("*", ".*?");
 
-                        // host, server, real name, nickname
-                        var criteria = new string[] { client.GetHost(), client.OriginServerName(), client.RealName, client.Nick };
-                        foreach (var criterion in criteria) {
-                            if (Regex.IsMatch(criterion, mask)) {
-                                metCriteria = true;
-                                break;
-                            }
-                        }
-
-                        if(!metCriteria) {
-                            // Failed to match on any basis, skip
-                            continue;
+                    // host, server, real name, nickname
+                    var criteria = new string[] { client.GetHost(), client.OriginServerName(), client.RealName, client.Nick };
+                    foreach (var criterion in criteria) {
+                        if (Regex.IsMatch(criterion, mask)) {
+                            metCriteria = true;
+                            break;
                         }
                     }
 
-                    // Always check if invisible users are being included in the mix
-                    if(client.Modes["i"].Enabled && !args.IRCd.ChannelManager.Channels.Any(
-                            channel => channel.Value.Inhabits(args.Client) &&
-                            channel.Value.Inhabits(client))) {
-                        // Skip if none
+                    if(!metCriteria) {
+                        // Failed to match on any basis, skip
                         continue;
                     }
-
-                    var away = String.IsNullOrEmpty(client.AwayMessage) ? "H" : "G";
-                    var ircopSymbol = client.Modes["o"].Enabled ? "*" : "";
-                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {client.Nick} {client.Ident} {client.GetHost()} {client.OriginServerName()} {client.Nick} {away}{ircopSymbol} :{hopCount} {client.RealName}");
                 }
+
+                // Always check if invisible users are being included in the mix
+                if(client.Modes["i"].Enabled && !args.IRCd.ChannelManager.Channels.Any(
+                        channel => channel.Value.Inhabits(args.Client) &&
+                        channel.Value.Inhabits(client))) {
+                    // Skip if none
+                    continue;
+                }
+
+                var away = String.IsNullOrEmpty(client.AwayMessage) ? "H" : "G";
+                var ircopSymbol = client.Modes["o"].Enabled ? "*" : "";
+                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {client.Nick} {client.Ident} {client.GetHost()} {client.OriginServerName()} {client.Nick} {away}{ircopSymbol} :{hopCount} {client.RealName}");
             }
 
             args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {args.Client.Nick} {mask} :End of /WHO list.");

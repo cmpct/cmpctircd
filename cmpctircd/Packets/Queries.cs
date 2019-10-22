@@ -65,7 +65,7 @@ namespace cmpctircd.Packets {
                     args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISHOST.Printable()} {args.Client.Nick} {targetClient.Nick} :is connecting from {targetClient.Ident}@{targetClient.GetHost(false)} {targetClient.IP}");
                 }
 
-                if(inhabitedChannels.Count() > 0) {
+                if(inhabitedChannels.Any()) {
                     // Only show if the target client resides in at least one channel
                     args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISCHANNELS.Printable()} {args.Client.Nick} {targetClient.Nick} :{string.Join(" ", inhabitedChannels)}");
                 }

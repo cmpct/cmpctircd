@@ -50,7 +50,7 @@ namespace cmpctircd.Packets {
                     Topic topic;
                     args.Client.Modes["o"].Grant("", true, true);
                     args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_YOUREOPER.Printable()} {args.Client.Nick} :You are now an IRC Operator");
-                    if(args.IRCd.OperChan.Count() == 0) {
+                    if (!args.IRCd.OperChan.Any()) {
                         return true;
                     }
                     // Create and join the oper-only chan

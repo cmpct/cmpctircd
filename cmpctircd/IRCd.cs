@@ -201,7 +201,7 @@ namespace cmpctircd {
         }
 
         public IDictionary<string, string> GetSupportedModes(bool requireSymbols) {
-            if(ModeDict != null && ModeDict.Count() > 0) {
+            if(ModeDict != null && ModeDict.Any()) {
                 // Caching because this is still a relatively expensive operation to perform on each connection
                 // (GetSupportedModesByType() is likely far more expensive given it uses reflection)
                 // This is called by SendWelcome() to provide RPL_ISUPPORT
@@ -230,7 +230,7 @@ namespace cmpctircd {
         }
 
         public IList<string> GetSupportedUModes(Client client) {
-            if(UserModes != null && UserModes.Count() > 0) {
+            if(UserModes != null && UserModes.Any()) {
                 // Caching because reflection is an expensive operation to perform on each connection
                 // This is called by SendWelcome() to provide RPL_MYINFO
                 return UserModes;
@@ -257,7 +257,7 @@ namespace cmpctircd {
         }
 
         public IDictionary<string, IList<string>> GetSupportedModesByType() {
-            if(ModeTypes != null && ModeTypes.Count() > 0) {
+            if(ModeTypes != null && ModeTypes.Any()) {
                 // Caching to only generate this list once - reflection is expensive
                 return ModeTypes;
             }

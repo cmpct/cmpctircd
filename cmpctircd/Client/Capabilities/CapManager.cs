@@ -12,7 +12,7 @@ namespace cmpctircd {
             Client = client;
 
             // Create instances of all capabilities
-            // ...
+            Caps.Add(new AwayNotify(this));
         }
 
         // CAP LS: send all available caps

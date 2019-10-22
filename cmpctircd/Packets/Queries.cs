@@ -165,9 +165,33 @@ namespace cmpctircd.Packets {
 
             args.Client.AwayMessage = message;
             if(args.Client.AwayMessage != "") {
+                // Now away
                 args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_NOWAWAY.Printable()} {args.Client.Nick} :You have been marked as being away");
             } else {
+                // No longer away
                 args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_UNAWAY.Printable()} {args.Client.Nick} :You are no longer marked as being away");
+            }
+
+            // CAP: away-notify
+            foreach (var client in args.IRCd.Clients) {
+                if (client == args.Client) {
+                    // Don't notify ourselves
+                    continue;
+                }
+
+                if (!client.CapManager.HasCap("away-notify")) {
+                    continue;
+                }
+
+                // Ensure we share a channel
+                var cohabit = args.IRCd.ChannelManager.Channels.Values.Any(
+                    channel => channel.Clients.ContainsValue(args.Client) && channel.Clients.ContainsValue(client)
+                );
+
+                if (cohabit) {
+                    // Let everyone know who has subscribed to away notifications if we share a channel
+                    client.Write($":{args.Client.Mask} AWAY :{message}");
+                }
             }
 
             return true;

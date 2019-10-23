@@ -73,14 +73,22 @@ namespace cmpctircd.Packets {
                 try {
                     // Find cap with this name
                     var capObject = manager.Caps.First(c => c.Name == cap);
-                    var success = capObject.Enable();
+                    bool success;
+
+                    if (cap.First() == '-') {
+                        // This cap needs to be disabled
+                        // e.g. CAP REQ :-away-notify
+                        success = capObject.Disable();
+                    } else {
+                        // We're enabling the capability here
+                        success = capObject.Enable();
+                    }
 
                     if (success) {
                         ackCaps.Add(cap);
                     } else {
-                        // TODO: Can it even be unsuccessful?
-                        // TODO: Yes, suppose it's already enabled? Or e.g. they're not a WEBIRC permitted person?
-                        // TODO: Review spec for this
+                        // A CAP can only be NAKed if the "requested capability change was rejected"
+                        // Where the CAP was already enabled, we must pretend it was a successful change (keep enabled); do not NAK.
                         badCaps.Add(cap);
                     }
                 } catch (InvalidOperationException) {

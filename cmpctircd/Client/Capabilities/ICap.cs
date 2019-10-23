@@ -9,7 +9,7 @@ namespace cmpctircd {
         // Client supports this capability
         bool Enable();
         // Client doesn't support this capability
-        //void Disable();
+        bool Disable();
 
     }
 

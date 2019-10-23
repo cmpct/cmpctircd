@@ -84,24 +84,37 @@ namespace cmpctircd.Packets {
             foreach (var cap in caps) {
                 try {
                     // Find cap with this name
-                    var capObject = manager.Caps.First(c => c.Name == cap);
+                    var name = cap;
+                    ICap capObject;
                     bool success;
 
                     if (cap.First() == '-') {
                         // This cap needs to be disabled
                         // e.g. CAP REQ :-away-notify
+
+                        // Skip first character (-)
+                        name = cap.Substring(1);
+
+                        // Find it
+                        capObject = manager.Caps.First(c => c.Name == name);
+
+                        // Disable
                         success = capObject.Disable();
                     } else {
                         // We're enabling the capability here
+                        // Find it
+                        capObject = manager.Caps.First(c => c.Name == name);
+
+                        // Enable
                         success = capObject.Enable();
                     }
 
                     if (success) {
-                        ackCaps.Add(cap);
+                        ackCaps.Add(name);
                     } else {
                         // A CAP can only be NAKed if the "requested capability change was rejected"
                         // Where the CAP was already enabled, we must pretend it was a successful change (keep enabled); do not NAK.
-                        badCaps.Add(cap);
+                        badCaps.Add(name);
                     }
                 } catch (InvalidOperationException) {
                     // Invalid capability requested

@@ -41,6 +41,7 @@ namespace cmpctircd
         public void SendVersion() => Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.Host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.Version));
         public string OriginServerName() => RemoteClient ? OriginServer.Name : IRCd.Host;
 
+        public string NickIfSet() => string.IsNullOrEmpty(Nick) ? "*" : Nick;
 
         public Client(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream, string UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl, stream) {
             if(ircd.Config.Advanced.ResolveHostnames)

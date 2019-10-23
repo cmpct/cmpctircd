@@ -52,7 +52,7 @@ namespace cmpctircd.Packets {
 
             var caps = string.Join(" ", args.Client.CapManager.GetAvailable(version).Select(cap => cap.Name));
 
-            args.Client.Write($"CAP * LS :{caps}");
+            args.Client.Write($"CAP {args.Client.NickIfSet()} LS :{caps}");
         }
 
         public static void CapHandleReq(HandlerArgs args) {
@@ -72,7 +72,7 @@ namespace cmpctircd.Packets {
                 if (args.SpacedArgs.Count() > 3) {
                     // Complain if they sent: CAP REQ <cap1> <cap2> ...
                     // rather than just CAP REQ <cap1>
-                    args.Client.Write($":{args.IRCd.Host} NOTICE * :Your client is sending invalid CAP REQ packets, please report this as a bug!");
+                    args.Client.Write($":{args.IRCd.Host} NOTICE {args.Client.NickIfSet()} :Your client is sending invalid CAP REQ packets, please report this as a bug!");
                 }
 
                 // Tolerate CAP REQ <cap1> <cap2> ...
@@ -124,12 +124,12 @@ namespace cmpctircd.Packets {
 
             // Send out the ACKs (successful)
             if (ackCaps.Any()) {
-                args.Client.Write($"CAP * ACK: {string.Join(" ", ackCaps)}");
+                args.Client.Write($"CAP {args.Client.NickIfSet()} ACK: {string.Join(" ", ackCaps)}");
             }
 
             // Send out the NAKs (unsuccessful)
             if (badCaps.Any()) {
-                args.Client.Write($"CAP * NAK: {string.Join(" ", badCaps)}");
+                args.Client.Write($"CAP {args.Client.NickIfSet()} NAK: {string.Join(" ", badCaps)}");
             }
             
             return;

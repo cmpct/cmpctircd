@@ -47,6 +47,15 @@ namespace cmpctircd {
                 return;
             }
 
+            if (Client.State >= ClientState.Auth) {
+                // Do nothing if already authenticated
+                // (Prevents us from sending a welcome)
+
+                // This is needed in case CAP is initiated post-registration:
+                // "The server MUST accept the CAP command at any time, including after registration."
+                return;
+            }
+
             // Called when we receive a CAP LS / CAP REQ
             // Do not send welcome messages until told to (by way of a CAP END)
 

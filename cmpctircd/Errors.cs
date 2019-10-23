@@ -182,5 +182,16 @@ namespace cmpctircd {
         }
     }
 
+    public class IrcErrInvalidCapCommandException : Exception {
+        private Client client;
+
+        public IrcErrInvalidCapCommandException(Client client, string command) {
+            this.client = client;
+            // TODO: Always (in general, not just CAP) make * the placeholder and check for that rather than blank?
+            var nick = string.IsNullOrEmpty(client.Nick) ? "*" : client.Nick;
+
+            client.Write($":{client.IRCd.Host} {IrcNumeric.ERR_INVALIDCAPCMD.Printable()} {nick} {command} :Invalid CAP command");
+        }
+    }
 
 }

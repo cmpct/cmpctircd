@@ -34,8 +34,9 @@ namespace cmpctircd.Packets {
 
                 default:
                     // Unrecognised!
-                    // TODO
-                    break;
+                    // At this point, try to recover by unstalling registration
+                    args.Client.CapManager.StallRegistration(false);
+                    throw new IrcErrInvalidCapCommandException(args.Client, subCommand);
             }
 
             return true;

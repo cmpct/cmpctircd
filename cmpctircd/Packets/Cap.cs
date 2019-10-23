@@ -65,8 +65,19 @@ namespace cmpctircd.Packets {
                 caps = args.Trailer.Split(" ").ToList();
             } else {
                 // Syntax: CAP REQ <cap1>
-                // TODO: Ignore CAP REQ <cap1> <cap2> ...?
-                caps.Add(args.SpacedArgs[2]);
+                if (args.SpacedArgs.Count() < 3) {
+                    throw new IrcErrInvalidCapCommandException(args.Client, "CAP REQ");
+                }
+
+                if (args.SpacedArgs.Count() > 3) {
+                    // Complain if they sent: CAP REQ <cap1> <cap2> ...
+                    // rather than just CAP REQ <cap1>
+                    args.Client.Write($":{args.IRCd.Host} NOTICE * :Your client is sending invalid CAP REQ packets, please report this as a bug!");
+                }
+
+                // Tolerate CAP REQ <cap1> <cap2> ...
+                // (We'd prefer a colon though)
+                caps.AddRange(args.SpacedArgs.Skip(2));
             }
 
             var manager = args.Client.CapManager;

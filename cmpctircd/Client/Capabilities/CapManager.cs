@@ -32,6 +32,8 @@ namespace cmpctircd {
             return caps;
         }
 
+        public List<ICap> GetEnabled() => Caps.Where(cap => cap.Enabled).ToList();
+
         public bool HasCap(string name) {
             return GetCap(name) != null;
         }

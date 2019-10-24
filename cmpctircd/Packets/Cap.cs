@@ -15,18 +15,25 @@ namespace cmpctircd.Packets {
             var subCommand = args.SpacedArgs[1].ToUpper();
 
             switch (subCommand) {
+                // List available capabilities on server
                 case "LS":
                     // Don't send welcome messages yet
                     args.Client.CapManager.StallRegistration(true);
                     CapHandleLS(args);
                     break;
                 
+                // Client requests to enable a capability
                 case "REQ":
                     // Don't send welcome messages yet
                     args.Client.CapManager.StallRegistration(true);
                     CapHandleReq(args);
                     break;
 
+                case "LIST":
+                    CapHandleList(args);
+                    break;
+
+                // Client requests to end negotiation
                 case "END":
                     // Allow the welcome messages to be sent (and send them)
                     args.Client.CapManager.StallRegistration(false);
@@ -134,5 +141,13 @@ namespace cmpctircd.Packets {
             
             return;
         }
+
+        public static void CapHandleList(HandlerArgs args) {
+            var enabled = args.Client.CapManager.GetEnabled().Select(cap => cap.Name);
+            var enabledString = string.Join(" ", enabled);
+
+            args.Client.Write($"CAP {args.Client.NickIfSet()} LIST :{enabledString}");
+        }
+
     }
 }

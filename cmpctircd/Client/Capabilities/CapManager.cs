@@ -7,6 +7,7 @@ namespace cmpctircd {
         public HashSet<ICap> Caps { get; private set; } = new HashSet<ICap>();
 
         public bool Negotiating { get; private set; } = false;
+        public int Version { get; set; } = 0;
 
         public CapManager(Client client) {
             Client = client;

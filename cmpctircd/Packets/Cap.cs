@@ -53,6 +53,13 @@ namespace cmpctircd.Packets {
             var version = 0;
             try {
                 version = int.Parse(args.SpacedArgs.ElementAtOrDefault(2) ?? "0");
+
+                if (version < 0) {
+                    throw new FormatException("CAP version cannot be negative");
+                }
+
+                // Set the client's version for later use too
+                args.Client.CapManager.Version = version;
             } catch (FormatException) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "CAP");
             }

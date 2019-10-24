@@ -35,13 +35,9 @@ namespace cmpctircd {
 
         public List<ICap> GetEnabled() => Caps.Where(cap => cap.Enabled).ToList();
 
-        public bool HasCap(string name) {
-            return GetCap(name) != null;
-        }
+        public bool HasCap(string name) => GetCap(name) != null;
 
-        public ICap GetCap(string name) {
-            return Caps.FirstOrDefault(cap => cap.Name == name);
-        }
+        public ICap GetCap(string name) => Caps.FirstOrDefault(cap => cap.Name == name);
 
         public void StallRegistration(bool stall) {
             if (Negotiating && stall) {

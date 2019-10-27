@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace cmpctircd {
     public interface ICap {
         string Name { get; }
@@ -7,10 +9,11 @@ namespace cmpctircd {
         CapManager Manager { get; }
 
         // Client supports this capability
+        bool CanEnable { get; }
         bool Enable();
         // Client doesn't support this capability
+        bool CanDisable { get; }
         bool Disable();
-
     }
 
 }

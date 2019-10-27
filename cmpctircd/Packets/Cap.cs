@@ -6,6 +6,28 @@ using System.Collections.Generic;
 namespace cmpctircd.Packets {
     public static class Cap {
 
+
+        public enum CapAction {
+            Enable,
+            Disable
+        }
+
+        class CapStatus {
+            public ICap Cap;
+            public CapAction Action;
+
+            public override string ToString() {
+                var cap = "";
+
+                if (Action == CapAction.Disable) {
+                    cap += '-';
+                }
+
+                cap += Cap.Name;
+                return cap;
+            }
+        }
+
         [Handler("CAP", ListenerType.Client)]
         public static bool CapHandler(HandlerArgs args) {
             if (args.SpacedArgs.Count == 0) {
@@ -71,8 +93,8 @@ namespace cmpctircd.Packets {
 
         public static void CapHandleReq(HandlerArgs args) {
             var caps = new List<string>();
-            var ackCaps = new List<string>(); // Caps we're going to ACK (successfully added)
-            var badCaps = new List<string>(); // Caps we're going to NAK (could not be added)
+            var ackCaps = new List<CapStatus>(); // Caps we're going to ACK (successfully added)
+            var badCaps = new List<CapStatus>(); // Caps we're going to NAK (could not be added)
 
             if (args.Trailer != null) {
                 // Syntax: CAP REQ :<cap1> <cap2> ...
@@ -99,40 +121,51 @@ namespace cmpctircd.Packets {
                 try {
                     // Find cap with this name
                     var name = cap;
-                    ICap capObject;
-                    bool success;
+                    var success = false;
+                    var capStatus = new CapStatus();
+                    var symbol = "";
 
                     if (cap.First() == '-') {
                         // This cap needs to be disabled
                         // e.g. CAP REQ :-away-notify
+                        capStatus.Action = CapAction.Disable;
 
                         // Skip first character (-)
                         name = cap.Substring(1);
+                        symbol = "-";
 
                         // Find it
-                        capObject = manager.Caps.First(c => c.Name == name);
+                        capStatus.Cap = manager.Caps.First(c => c.Name == name);
 
-                        // Disable
-                        success = capObject.Disable();
+                        // Disable (check if we can)
+                        success = capStatus.Cap.CanDisable;
                     } else {
                         // We're enabling the capability here
-                        // Find it
-                        capObject = manager.Caps.First(c => c.Name == name);
+                        capStatus.Action = CapAction.Enable;
 
-                        // Enable
-                        success = capObject.Enable();
+                        // Find it
+                        capStatus.Cap = manager.Caps.First(c => c.Name == name);
+
+                        // Enable (check if we can)
+                        success = capStatus.Cap.CanEnable;
                     }
 
                     if (success) {
-                        ackCaps.Add(name);
+                        ackCaps.Add(capStatus);
                     } else {
                         // A CAP can only be NAKed if the "requested capability change was rejected"
                         // Where the CAP was already enabled, we must pretend it was a successful change (keep enabled); do not NAK.
-                        badCaps.Add(name);
+                        badCaps.Add(capStatus);
                     }
                 } catch (InvalidOperationException) {
                     // Invalid capability requested
-                    badCaps.Add(cap);
+                    // Create a mock cap with the name filled in as the invalid name
+                    var mock = new MockCap(manager);
+                    var mockStatus = new CapStatus();
+
+                    mock.Name = cap;
+                    mockStatus.Cap = mock;
+                    badCaps.Add(mockStatus);
                 }
             }
 
@@ -141,11 +174,24 @@ namespace cmpctircd.Packets {
                 args.Client.Write($"CAP {args.Client.NickIfSet()} ACK: {string.Join(" ", ackCaps)}");
             }
 
+            // We've told the client which CAPs are enabled, now actually enable/disable it
+            foreach (var cap in ackCaps) {
+                switch (cap.Action) {
+                    case CapAction.Enable:
+                        cap.Cap.Enable();
+                        break;
+
+                    case CapAction.Disable:
+                        cap.Cap.Disable();
+                        break;
+                }
+            }
+
             // Send out the NAKs (unsuccessful)
             if (badCaps.Any()) {
                 args.Client.Write($"CAP {args.Client.NickIfSet()} NAK: {string.Join(" ", badCaps)}");
             }
-            
+
             return;
         }
 

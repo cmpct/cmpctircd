@@ -6,6 +6,9 @@ namespace cmpctircd {
 
         public CapManager Manager { get; private set; }
 
+        public bool CanEnable => !Enabled;
+        public bool CanDisable => Enabled;
+
         public AwayNotify(CapManager manager) {
             Manager = manager;
         }

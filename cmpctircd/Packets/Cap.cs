@@ -1,23 +1,20 @@
 using System;
 using System.Linq;
-using System.Text;
 using System.Collections.Generic;
 
 namespace cmpctircd.Packets {
     public static class Cap {
+        internal class CapStatus {
+            public enum CapAction {
+                Enable,
+                Disable,
+            }
 
-
-        public enum CapAction {
-            Enable,
-            Disable
-        }
-
-        class CapStatus {
-            public ICap Cap;
-            public CapAction Action;
+            public ICap Cap { get; set; }
+            public CapAction Action { get; set; }
 
             public override string ToString() {
-                var cap = "";
+                var cap = string.Empty;
 
                 if (Action == CapAction.Disable) {
                     cap += '-';
@@ -86,9 +83,27 @@ namespace cmpctircd.Packets {
                 throw new IrcErrNotEnoughParametersException(args.Client, "CAP");
             }
 
-            var caps = string.Join(" ", args.Client.CapManager.GetAvailable(version).Select(cap => cap.Name));
+            var caps = args.Client.CapManager.GetAvailable(version);
+            var capString = string.Empty;
+            var parameters = string.Empty;
 
-            args.Client.Write($"CAP {args.Client.NickIfSet()} LS :{caps}");
+            if (args.Client.CapManager.Version >= 302) {
+                // CAP 302: "capability values" support
+                // https://ircv3.net/specs/core/capability-negotiation#cap-ls-version-features
+                // Check if we have parameters to send
+                var capsWithArgs = caps.Where(cap => cap.Parameters.Any());
+
+                // Assemble a string like: CAP LS :sasl=PLAIN,EXTERNAL away-notify
+                foreach (var cap in capsWithArgs) {
+                    parameters = string.Join(",", cap.Parameters);
+                    capString += $"{cap.Name}={parameters}";
+                }
+            } else {
+                // Simply collect the names of the available capabilities
+                capString = string.Join(" ", caps.Select(cap => cap.Name));
+            }
+
+            args.Client.Write($"CAP {args.Client.NickIfSet()} LS :{capString}");
         }
 
         public static void CapHandleReq(HandlerArgs args) {
@@ -122,13 +137,13 @@ namespace cmpctircd.Packets {
                     // Find cap with this name
                     var name = cap;
                     var success = false;
+                    var symbol = string.Empty;
                     var capStatus = new CapStatus();
-                    var symbol = "";
 
                     if (cap.First() == '-') {
                         // This cap needs to be disabled
                         // e.g. CAP REQ :-away-notify
-                        capStatus.Action = CapAction.Disable;
+                        capStatus.Action = CapStatus.CapAction.Disable;
 
                         // Skip first character (-)
                         name = cap.Substring(1);
@@ -141,7 +156,7 @@ namespace cmpctircd.Packets {
                         success = capStatus.Cap.CanDisable;
                     } else {
                         // We're enabling the capability here
-                        capStatus.Action = CapAction.Enable;
+                        capStatus.Action = CapStatus.CapAction.Enable;
 
                         // Find it
                         capStatus.Cap = manager.Caps.First(c => c.Name == name);
@@ -177,11 +192,11 @@ namespace cmpctircd.Packets {
             // We've told the client which CAPs are enabled, now actually enable/disable it
             foreach (var cap in ackCaps) {
                 switch (cap.Action) {
-                    case CapAction.Enable:
+                    case CapStatus.CapAction.Enable:
                         cap.Cap.Enable();
                         break;
 
-                    case CapAction.Disable:
+                    case CapStatus.CapAction.Disable:
                         cap.Cap.Disable();
                         break;
                 }

@@ -16,10 +16,9 @@ namespace cmpctircd {
             Caps.Add(new AwayNotify(this));
         }
 
-        // CAP LS: send all available caps
-        // CAP LS XXX: send all caps with version <= XXX
-
         public List<ICap> GetAvailable(int version = 0) {
+            // CAP LS: send all available caps
+            // CAP LS XXX: send all caps with version <= XXX
             var caps = new List<ICap>();
 
             foreach (var cap in Caps) {
@@ -57,7 +56,6 @@ namespace cmpctircd {
 
             // Called when we receive a CAP LS / CAP REQ
             // Do not send welcome messages until told to (by way of a CAP END)
-
             if (Negotiating && !stall) {
                 // If we're stalled and now we're told to unstall,
                 // let's send the welcome messages.

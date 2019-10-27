@@ -5,6 +5,7 @@ namespace cmpctircd {
         string Name { get; }
         int MinVersion { get; }
         bool Enabled { get; }
+        List<string> Parameters { get; }
 
         CapManager Manager { get; }
 

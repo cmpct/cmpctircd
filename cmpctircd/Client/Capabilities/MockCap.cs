@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 
 namespace cmpctircd {
-    public class AwayNotify : ICap {
-        public string Name { get; private set; } = "away-notify";
+    public class MockCap : ICap {
+        public string Name { get; set; } = "";
         public bool Enabled { get; private set; } = false;
         public int MinVersion { get; private set; } = 0;
 
@@ -12,7 +12,7 @@ namespace cmpctircd {
         public bool CanEnable => !Enabled;
         public bool CanDisable => Enabled;
 
-        public AwayNotify(CapManager manager) {
+        public MockCap(CapManager manager) {
             Manager = manager;
         }
 

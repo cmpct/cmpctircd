@@ -15,10 +15,10 @@ namespace cmpctircd.Packets {
         /// <returns>TRUE to indicate success.</returns>
         [Handler("LIST", ListenerType.Client)]
         public static bool ListHandler(HandlerArgs args) {
-            Client client = args.Client;
-            IRCd ircd = args.IRCd;
-            ChannelManager manager = ircd.ChannelManager;
-            string[] selections = args.SpacedArgs.ElementAtOrDefault(1)?.Split(',');
+            var client = args.Client;
+            var ircd = args.IRCd;
+            var manager = ircd.ChannelManager;
+            var selections = args.SpacedArgs.ElementAtOrDefault(1)?.Split(',');
 
             client.Write($":{ircd.Host} {IrcNumeric.RPL_LISTSTART.Printable()} {client.Nick} Channel :Users  Name");
             (selections ?? manager.Channels.Keys.AsEnumerable())

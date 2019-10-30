@@ -24,8 +24,15 @@ namespace cmpctircd.Packets {
             (selections ?? manager.Channels.Keys.AsEnumerable())
                 .Select(n => manager.Channels[n])
                 .ForEach(c => {
-                    if(c != null)
+                    if(c != null) {
+                        var size = c.Size;
+
+                        if (c.Clients.Values.Contains(client)) {
+                            // Exclude users with invisible mode (+i) set if we're not in the same room
+                            size -= c.Clients.Values.Where(member => member.Modes["i"].Enabled).Count();
+                        }
                         client.Write($":{ircd.Host} {IrcNumeric.RPL_LIST.Printable()} {client.Nick} {c.Name} {c.Size} :{c.Topic.TopicText}");
+                    }
                 });
             client.Write($":{ircd.Host} {IrcNumeric.RPL_LISTEND.Printable()} {client.Nick} :End of /LIST");
             return true;

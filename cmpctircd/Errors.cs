@@ -182,5 +182,13 @@ namespace cmpctircd {
         }
     }
 
+    public class IrcErrInvalidCapCommandException : Exception {
+        private Client client;
+
+        public IrcErrInvalidCapCommandException(Client client, string command) {
+            this.client = client;
+            client.Write($":{client.IRCd.Host} {IrcNumeric.ERR_INVALIDCAPCMD.Printable()} {client.NickIfSet()} {command} :Invalid CAP command");
+        }
+    }
 
 }

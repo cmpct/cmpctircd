@@ -19,6 +19,7 @@ namespace cmpctircd
         public string Ident { get; set; }
         public string RealName { get; set; }
         public string AwayMessage { get; set; }
+        public CapManager CapManager { get; private set; }
         public IList<Channel> Invites { get; } = new List<Channel>();
 
         // Connection information
@@ -39,6 +40,8 @@ namespace cmpctircd
         public string UUID;
         public void SendVersion() => Write(String.Format(":{0} {1} {2} :cmpctircd-{3}", IRCd.Host, IrcNumeric.RPL_VERSION.Printable(), Nick, IRCd.Version));
         public string OriginServerName() => RemoteClient ? OriginServer.Name : IRCd.Host;
+
+        public string NickIfSet() => string.IsNullOrEmpty(Nick) ? "*" : Nick;
 
         public Client(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream, string UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl, stream) {
             if(ircd.Config.Advanced.ResolveHostnames)
@@ -79,6 +82,7 @@ namespace cmpctircd
                 ircd.Log.Debug($"Creating instance of {modeChar} - {modeInstance.Description}");
             }
 
+            CapManager = new CapManager(this);
         }
 
         ~Client() {
@@ -168,6 +172,12 @@ namespace cmpctircd
             // Refuse if the user hasn't yet authenticated (or is already)
             if(String.IsNullOrWhiteSpace(Nick) || String.IsNullOrWhiteSpace(Ident)) return;
             if(State.CompareTo(ClientState.PreAuth) > 0) return;
+
+            if (CapManager.Negotiating) {
+                // Don't send welcome at the moment because we're in the CAP negotiation
+                // This function should be called when CAP END is sent
+                return;
+            }
 
             // Henceforth, we assume user can become Authenticated!
             State = ClientState.Auth;

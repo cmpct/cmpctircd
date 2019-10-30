@@ -16,17 +16,22 @@ namespace cmpctircd {
             Manager = manager;
         }
 
-        // TODO: Base impl?
         public bool Enable() {
-            Enabled = true;
+            if (CanEnable) {
+                Enabled = true;
+                return true;
+            }
 
-            return true;
+            return false;
         }
 
         public bool Disable() {
-            Enabled = false;
+            if (CanDisable) {
+                Enabled = false;
+                return true;
+            }
 
-            return true;
+            return false;
         }
 
     }

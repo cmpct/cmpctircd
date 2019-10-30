@@ -173,16 +173,7 @@ namespace cmpctircd.Packets {
             }
 
             // CAP: away-notify
-            foreach (var client in args.IRCd.Clients) {
-                if (client == args.Client) {
-                    // Don't notify ourselves
-                    continue;
-                }
-
-                if (!client.CapManager.HasCap("away-notify")) {
-                    continue;
-                }
-
+            foreach (var client in args.IRCd.Clients.Where(c => c != args.Client && c.CapManager.HasCap("away-notify"))) {
                 // Ensure we share a channel
                 var cohabit = args.IRCd.ChannelManager.Channels.Values.Any(
                     channel => channel.Clients.ContainsValue(args.Client) && channel.Clients.ContainsValue(client)

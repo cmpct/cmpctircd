@@ -13,6 +13,20 @@ namespace cmpctircd.Packets {
             public ICap Cap { get; set; }
             public CapAction Action { get; set; }
 
+            public bool Toggle() {
+               switch (Action) {
+                    case CapAction.Enable:
+                        return Cap.Enable();
+
+                    case CapAction.Disable:
+                        return Cap.Disable();
+
+                    default:
+                        return false;
+                }
+            }
+
+
             public override string ToString() {
                 var cap = string.Empty;
 
@@ -80,6 +94,7 @@ namespace cmpctircd.Packets {
                 // Set the client's version for later use too
                 args.Client.CapManager.Version = version;
             } catch (FormatException) {
+                // TODO: Make FormatException an inner exception
                 throw new IrcErrNotEnoughParametersException(args.Client, "CAP");
             }
 
@@ -140,7 +155,7 @@ namespace cmpctircd.Packets {
                     var symbol = string.Empty;
                     var capStatus = new CapStatus();
 
-                    if (cap.First() == '-') {
+                    if (cap.StartsWith('-')) {
                         // This cap needs to be disabled
                         // e.g. CAP REQ :-away-notify
                         capStatus.Action = CapStatus.CapAction.Disable;
@@ -191,15 +206,7 @@ namespace cmpctircd.Packets {
 
             // We've told the client which CAPs are enabled, now actually enable/disable it
             foreach (var cap in ackCaps) {
-                switch (cap.Action) {
-                    case CapStatus.CapAction.Enable:
-                        cap.Cap.Enable();
-                        break;
-
-                    case CapStatus.CapAction.Disable:
-                        cap.Cap.Disable();
-                        break;
-                }
+                cap.Toggle();
             }
 
             // Send out the NAKs (unsuccessful)

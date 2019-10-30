@@ -47,6 +47,10 @@
         RPL_ENDOFWHOIS    = 318,
         RPL_WHOISCHANNELS = 319,
 
+        RPL_LISTSTART     = 321,
+        RPL_LIST          = 322,
+        RPL_LISTEND       = 323,
+
         RPL_ENDOFWHO      = 315,
         RPL_CHANNELMODEIS = 324,
         RPL_CREATIONTIME  = 329,

@@ -6,6 +6,38 @@ using cmpctircd.Modes;
 
 namespace cmpctircd.Packets {
     public static class Channels {
+        /// <summary>
+        /// Handles the LIST command sent by clients, which writes back a list of channels.
+        /// 
+        /// Defined in <a href="https://tools.ietf.org/html/rfc1459#section-4.2.6">section 4.2.6</a> of <a href="https://tools.ietf.org/html/rfc1459">RFC 1459</a>.
+        /// </summary>
+        /// <param name="args">The arguments object.</param>
+        /// <returns>TRUE to indicate success.</returns>
+        [Handler("LIST", ListenerType.Client)]
+        public static bool ListHandler(HandlerArgs args) {
+            var client = args.Client;
+            var ircd = args.IRCd;
+            var manager = ircd.ChannelManager;
+            var selections = args.SpacedArgs.ElementAtOrDefault(1)?.Split(',');
+
+            client.Write($":{ircd.Host} {IrcNumeric.RPL_LISTSTART.Printable()} {client.Nick} Channel :Users  Name");
+            (selections ?? manager.Channels.Keys.AsEnumerable())
+                .Select(n => manager.Channels[n])
+                .ForEach(c => {
+                    if(c != null) {
+                        var size = c.Size;
+
+                        if (c.Clients.Values.Contains(client)) {
+                            // Exclude users with invisible mode (+i) set if we're not in the same room
+                            size -= c.Clients.Values.Where(member => member.Modes["i"].Enabled).Count();
+                        }
+                        client.Write($":{ircd.Host} {IrcNumeric.RPL_LIST.Printable()} {client.Nick} {c.Name} {c.Size} :{c.Topic.TopicText}");
+                    }
+                });
+            client.Write($":{ircd.Host} {IrcNumeric.RPL_LISTEND.Printable()} {client.Nick} :End of /LIST");
+            return true;
+        }
+
         [Handler("INVITE", ListenerType.Client)]
         public static bool InviteHandler(HandlerArgs args) {
             Channel channel;

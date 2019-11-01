@@ -189,7 +189,12 @@ namespace cmpctircd {
             // NOTE: You will get a NotSupportedException otherwise
             // NOTE: Create a TLS certificate using openssl (or $TOOL), then:
             // NOTE:    openssl pkcs12 -export -in tls_cert.pem -inkey tls_key.pem -out server.pfx
-            stream.AuthenticateAsServer(await _ircd.Certificate.GetCertificateAsync(), false, SslProtocols.Tls12, true);
+
+            // SslProtocols.None is actually recommended, it does not mean no cipher, just no preference
+            // "Allows the operating system to choose the best protocol to use, and to block protocols that are not secure.
+            // Unless your app has a specific reason not to, you should use this field"
+            // - https://docs.microsoft.com/en-us/dotnet/api/system.security.authentication.sslprotocols?view=netcore-3.0
+            stream.AuthenticateAsServer(await _ircd.Certificate.GetCertificateAsync(), false, SslProtocols.None, true);
             return stream;
         }
 

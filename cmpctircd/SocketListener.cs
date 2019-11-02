@@ -101,13 +101,14 @@ namespace cmpctircd {
 
         private async void HandleClient(TcpClient tc) {
             StreamReader reader = null;
-
-            // Sends the TLS handshake if we're a TLS listener
-            // Swaps out the stream for an SslStream if that's the case
-            var stream = await HandshakeIfNeeded(tc, (Stream) tc.GetStream());
-            var socketBase = CreateClientObject(tc, stream);
+            SocketBase socketBase = null;
 
             try {
+                // Sends the TLS handshake if we're a TLS listener
+                // Swaps out the stream for an SslStream if that's the case
+                var stream = await HandshakeIfNeeded(tc, (Stream) tc.GetStream());
+                socketBase = CreateClientObject(tc, stream);
+
                 // Call the appropriate BeginTasks
                 // Must be AFTER TLS handshake because could send text
 

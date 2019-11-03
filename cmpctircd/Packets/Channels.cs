@@ -328,7 +328,7 @@ namespace cmpctircd.Packets {
                 }
 
                 message    = args.Trailer;
-                fmtMessage = String.Format(":{0} NOTICE {1} {2}", client.Mask, target, message);
+                fmtMessage = String.Format(":{0} NOTICE {1} :{2}", client.Mask, target, message);
                 if (target.StartsWith("#")) {
                     bool NoExternal = false;
                     bool moderated = false;

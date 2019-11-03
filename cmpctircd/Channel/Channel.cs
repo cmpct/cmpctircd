@@ -110,9 +110,9 @@ namespace cmpctircd {
             }
 
             // TODO: Don't send to the originating server
-            client.IRCd.ServerLists.ForEach(serverList => serverList.ForEach(
+            client.IRCd.Servers.ForEach(
                 server => server.SyncChannel(this)
-            ));
+            );
         }
 
 

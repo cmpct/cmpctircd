@@ -267,7 +267,7 @@ namespace cmpctircd.Packets {
                 args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_UMODEIS.Printable()} {targetClient.Nick} {userModes[0]} {userModes[1]}");
             } else if(args.SpacedArgs.Count >= 2) {
                 // Process
-                string modes = args.SpacedArgs[1];
+                string modes = args.SpacedArgs[2];
                 string[] param;
 
                 if (args.SpacedArgs.Count == 2) {

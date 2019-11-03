@@ -328,7 +328,7 @@ namespace cmpctircd.Packets {
                 }
 
                 message    = args.Trailer;
-                fmtMessage = String.Format(":{0} NOTICE {1} {2}", client.Mask, target, message);
+                fmtMessage = String.Format(":{0} NOTICE {1} :{2}", client.Mask, target, message);
                 if (target.StartsWith("#")) {
                     bool NoExternal = false;
                     bool moderated = false;
@@ -608,6 +608,12 @@ namespace cmpctircd.Packets {
                         }
                     }
                     channel.SendToRoom(args.Client, $":{args.Client.Mask} MODE {channel.Name} {modeString}");
+
+                    // TODO: Do we need to send this to all servers? Or just services?
+                    // For now, send it to all
+                    args.IRCd.Servers.Where(server => server != args.Client?.OriginServer).ForEach(
+                        server => server.Write($":{args.Client.Mask} MODE {channel.Name} {modeString}")
+                    );
                 }
             }
 

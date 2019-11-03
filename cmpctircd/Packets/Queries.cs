@@ -267,7 +267,7 @@ namespace cmpctircd.Packets {
                 args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_UMODEIS.Printable()} {targetClient.Nick} {userModes[0]} {userModes[1]}");
             } else if(args.SpacedArgs.Count >= 2) {
                 // Process
-                string modes = args.SpacedArgs[1];
+                string modes = args.SpacedArgs[2];
                 string[] param;
 
                 if (args.SpacedArgs.Count == 2) {
@@ -331,6 +331,10 @@ namespace cmpctircd.Packets {
                         return true;
                     }
                     targetClient.Write($":{args.Client.Mask} MODE {targetClient.Nick} {modeString}");
+
+                    args.IRCd.Servers.Where(server => server != args.Client?.OriginServer).ForEach(
+                        server => server.Write($":{args.Client.Mask} MODE {targetClient.Nick} {modeString}")
+                    );
                 }
             }
             return true;

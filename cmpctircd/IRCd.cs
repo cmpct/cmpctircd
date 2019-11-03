@@ -49,7 +49,7 @@ namespace cmpctircd {
         public AutomaticCertificateCacheRefresh Certificate { get; }
 
         public List<Client> Clients => ClientLists.SelectMany(clientList => clientList).ToList();
-
+        public List<Server> Servers => ServerLists.SelectMany(serverList => serverList).ToList();
         public IRCd(Log log, CmpctConfigurationSection config) {
             this.Log = log;
             this.Config = config;

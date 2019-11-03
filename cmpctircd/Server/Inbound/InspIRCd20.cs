@@ -203,7 +203,7 @@ namespace cmpctircd.Packets {
 
             // Convert all of the UUID args to nicks
             // TODO: May be moved to individual modes
-            for(int i = 0; i < args.SpacedArgs.Count(); i++) {
+            for(int i = 3; i < args.SpacedArgs.Count(); i++) {
                 var arg = args.SpacedArgs[i];
 
                 try {

@@ -331,6 +331,10 @@ namespace cmpctircd.Packets {
                         return true;
                     }
                     targetClient.Write($":{args.Client.Mask} MODE {targetClient.Nick} {modeString}");
+
+                    args.IRCd.Servers.Where(server => server != args.Client?.OriginServer).ForEach(
+                        server => server.Write($":{args.Client.Mask} MODE {targetClient.Nick} {modeString}")
+                    );
                 }
             }
             return true;

@@ -181,7 +181,7 @@ namespace cmpctircd.Packets {
 
                 if (cohabit) {
                     // Let everyone know who has subscribed to away notifications if we share a channel
-                    client.Write($":{args.Client.Mask} AWAY :{message}");
+                    client.Write($":{client.Mask} AWAY :{message}");
                 }
             }
 

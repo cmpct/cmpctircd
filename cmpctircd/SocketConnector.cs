@@ -25,7 +25,7 @@ namespace cmpctircd {
         public override void Bind() {}
         public override void Stop() {}
 
-        public async void Connect() {
+        public async Task Connect() {
             if (Connected) {
                 throw new InvalidOperationException("Called SocketConnector.Connect() on connected SocketConnector");
             }

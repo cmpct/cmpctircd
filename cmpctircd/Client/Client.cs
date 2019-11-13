@@ -416,7 +416,7 @@ namespace cmpctircd
 
         }
 
-        public async void Write(String packet, bool transformIfServer = true) {
+        public async Task Write(String packet, bool transformIfServer = true) {
             if(State.Equals(ClientState.Disconnected)) return;
 
             try {

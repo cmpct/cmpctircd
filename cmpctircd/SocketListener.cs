@@ -99,7 +99,7 @@ namespace cmpctircd {
             return server;
         }
 
-        private async void HandleClient(TcpClient tc) {
+        private async Task HandleClient(TcpClient tc) {
             StreamReader reader = null;
             SocketBase socketBase = null;
 

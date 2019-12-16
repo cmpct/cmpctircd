@@ -54,6 +54,25 @@ namespace cmpctircd {
             requirePong = !server && IRCd.RequirePong && (LastPong == 0);
 
             // Is the socket due a PING?
+            // Has the user taken too long to reply with a PONG?
+            if (WaitingForPong && (time > (LastPong + (IRCd.PingTimeout * 2)))) {
+                if (server) {
+                    // For servers, PingCookie is the SID of the server being pinged
+                    try {
+                        var name = IRCd.GetServerBySID(PingCookie).Name;
+                        IRCd.Log.Info($"Disconnecting server due to ping timeout: {name}");
+                    } catch(InvalidOperationException) {
+                        // If the server is gone, give a generic message
+                        IRCd.Log.Info($"Disconnecting server due to ping timeout: {PingCookie}");
+                    }
+                }
+
+                Disconnect("Ping timeout", true, true);
+
+                // Return so we don't queue up future calls to this
+                return;
+            }
+
             if (!WaitingForPong) {
                 if ((requirePong) || (time > period && !WaitingForPong)) {
                     if (server && !string.IsNullOrEmpty(PingCookie)) {
@@ -70,27 +89,11 @@ namespace cmpctircd {
                     if (SendPing) {
                         WaitingForPong = true;
                         Write(PingString);
-                        return;
                     }
                 }
             }
 
-            // Has the user taken too long to reply with a PONG?
-            if (WaitingForPong && (time > (LastPong + (IRCd.PingTimeout * 2)))) {
-                if (server) {
-                    // For servers, PingCookie is the SID of the server being pinged
-                    try {
-                        var name = IRCd.GetServerBySID(PingCookie).Name;
-                        IRCd.Log.Info($"Disconnecting server due to ping timeout: {name}");
-                    } catch(InvalidOperationException) {
-                        // If the server is gone, give a generic message
-                        IRCd.Log.Info($"Disconnecting server due to ping timeout: {PingCookie}");
-                    }
-                }
-                Disconnect("Ping timeout", true, true);
-                return;
-            }
-
+            // Queue again to either send more pings or check for timeouts
             Task.Delay((int)TimeSpan.FromMinutes(1).TotalMilliseconds).ContinueWith(t => CheckTimeout(server));
         }
 

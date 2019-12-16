@@ -19,6 +19,7 @@ namespace cmpctircd {
         public SocketListener Listener { get; set; }
 
         // Ping information
+        public long SignonTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         public bool WaitingForPong { get; set; } = false;
         public long LastPong { get; set; } = 0;
         public string PingCookie { get; set; } = "";
@@ -40,30 +41,37 @@ namespace cmpctircd {
             var time = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             var requirePong = false;
             var SendPing = false;
-            var period = (LastPong) + (IRCd.PingTimeout);
             var PingString = "";
+            long period = 0;
+
+            if (LastPong == 0) {
+                period = SignonTime + IRCd.PingTimeout;
+            } else {
+                period = LastPong + IRCd.PingTimeout;
+            }
 
             // This is a flag to check whether an initial pong cookie is needed
             requirePong = !server && IRCd.RequirePong && (LastPong == 0);
 
             // Is the socket due a PING?
-            if ((requirePong) || (time > period && !WaitingForPong)) {
-                if (server && !string.IsNullOrEmpty(PingCookie)) {
-                    // Here, PingCookie is the SID of the server being pinged
-                    // The server has authenticated (SID is empty if they haven't yet)
-                    PingString = $":{IRCd.SID} PING {IRCd.SID} {PingCookie}";
-                    SendPing = true;
-                } else {
-                    PingCookie = CreatePingCookie();
-                    PingString = $"PING :{PingCookie}";
-                    SendPing   = true;
-                }
+            if (!WaitingForPong) {
+                if ((requirePong) || (time > period && !WaitingForPong)) {
+                    if (server && !string.IsNullOrEmpty(PingCookie)) {
+                        // Here, PingCookie is the SID of the server being pinged
+                        // The server has authenticated (SID is empty if they haven't yet)
+                        PingString = $":{IRCd.SID} PING {IRCd.SID} {PingCookie}";
+                        SendPing = true;
+                    } else {
+                        PingCookie = CreatePingCookie();
+                        PingString = $"PING :{PingCookie}";
+                        SendPing   = true;
+                    }
 
-                if (SendPing) {
-                    // Start the clock if we're sending a ping this time
-                    LastPong = time;
-                    WaitingForPong = true;
-                    Write(PingString);
+                    if (SendPing) {
+                        WaitingForPong = true;
+                        Write(PingString);
+                        return;
+                    }
                 }
             }
 

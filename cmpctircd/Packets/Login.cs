@@ -70,8 +70,18 @@ namespace cmpctircd.Packets {
             }
 
             if(client.PingCookie == cookie) {
+                // Keep track of this so we know if this was first ever PONG
+                // Needed because SendWelcome needs to know if waiting for a pong
+                var prevLastPong = client.LastPong;
+
                 client.WaitingForPong = false;
                 client.LastPong = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+                if (args.IRCd.RequirePong && prevLastPong == 0) {
+                    // Got a correct PONG and not had one yet
+                    // So call handshake
+                    client.SendWelcome();
+                }
             }
 
             return true;

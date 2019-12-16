@@ -41,7 +41,7 @@ namespace cmpctircd.Packets {
 
         [Handler("CAP", ListenerType.Client)]
         public static bool CapHandler(HandlerArgs args) {
-            if (args.SpacedArgs.Count == 0) {
+            if (args.SpacedArgs.Count == 1) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "CAP");
             }
 
@@ -54,7 +54,7 @@ namespace cmpctircd.Packets {
                     args.Client.CapManager.StallRegistration(true);
                     CapHandleLS(args);
                     break;
-                
+
                 // Client requests to enable a capability
                 case "REQ":
                     // Don't send welcome messages yet

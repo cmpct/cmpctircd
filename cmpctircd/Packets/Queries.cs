@@ -179,9 +179,10 @@ namespace cmpctircd.Packets {
                     channel => channel.Clients.ContainsValue(args.Client) && channel.Clients.ContainsValue(client)
                 );
 
+
                 if (cohabit) {
                     // Let everyone know who has subscribed to away notifications if we share a channel
-                    client.Write($":{client.Mask} AWAY :{message}");
+                    client.Write($":{args.Client.Mask} AWAY :{message}");
                 }
             }
 
@@ -220,7 +221,7 @@ namespace cmpctircd.Packets {
                         replyBuilder.Append(" ");
                 } catch (InvalidOperationException) { // no user
                     continue;
-                } 
+                }
             }
 
             args.Client.Write(replyBuilder.ToString());

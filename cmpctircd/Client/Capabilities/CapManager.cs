@@ -34,7 +34,15 @@ namespace cmpctircd {
 
         public IEnumerable<ICap> GetEnabled() => Caps.Where(cap => cap.Enabled).ToList();
 
-        public bool HasCap(string name) => GetCap(name) != null;
+        public bool HasCap(string name) {
+            var cap = GetCap(name);
+
+            if (cap == null) {
+                return false;
+            }
+
+            return cap.Enabled;
+        }
 
         public ICap GetCap(string name) => Caps.FirstOrDefault(cap => cap.Name == name);
 

@@ -109,6 +109,14 @@ namespace cmpctircd {
                 Modes["Z"].Grant(client, client.Nick, false, true, true);
             }
 
+            // CAP: away-notify
+            // Let any users with the cap know that somebody has joined w/ away msg
+            if (!String.IsNullOrEmpty(client.AwayMessage)) {
+                foreach (var iterClient in Clients.Values.Where(c => c != client && c.CapManager.HasCap("away-notify"))) {
+                    iterClient.Write($":{client.Mask} AWAY :{client.AwayMessage}");
+                }
+            }
+
             // TODO: Don't send to the originating server
             client.IRCd.Servers.ForEach(
                 server => server.SyncChannel(this)

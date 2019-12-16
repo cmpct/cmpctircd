@@ -28,7 +28,6 @@ namespace cmpctircd
         public string Cloak { get; set; }
         public String DNSHost { get; set; }
         public long IdleTime { get; set; }
-        public long SignonTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
         public ClientState State { get; set; }
         public bool ResolvingHost { get; set; } = false;
 
@@ -182,6 +181,11 @@ namespace cmpctircd
             if (CapManager.Negotiating) {
                 // Don't send welcome at the moment because we're in the CAP negotiation
                 // This function should be called when CAP END is sent
+                return;
+            }
+
+            // Wait if we're waiting for a PONG
+            if (IRCd.RequirePong && LastPong == 0) {
                 return;
             }
 

@@ -166,6 +166,12 @@ namespace cmpctircd
 
             // Cache it anyway even if the user's host resolved to the IP
             IRCd.DNSCache[ip] = DNSHost;
+
+            if (IRCd.Config.Advanced.ResolveHostnames) {
+                // If the IRCd resolves all hostnames, then we will have
+                // delayed calling SendWelcome until DNS resolution was complete
+                SendWelcome();
+            }
         }
 
         public void SendWelcome() {
@@ -176,6 +182,11 @@ namespace cmpctircd
             if (CapManager.Negotiating) {
                 // Don't send welcome at the moment because we're in the CAP negotiation
                 // This function should be called when CAP END is sent
+                return;
+            }
+
+            // Wait if we're resolving the hostname
+            if (ResolvingHost) {
                 return;
             }
 

@@ -220,7 +220,7 @@ namespace cmpctircd.Packets {
                         replyBuilder.Append(" ");
                 } catch (InvalidOperationException) { // no user
                     continue;
-                } 
+                }
             }
 
             args.Client.Write(replyBuilder.ToString());

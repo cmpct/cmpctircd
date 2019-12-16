@@ -110,6 +110,8 @@ namespace cmpctircd
 
             bool failedResolve = false;
             var  ip            = IP.ToString();
+            var hitCache       = false;
+
             Write($":{IRCd.Host} NOTICE Auth :*** Looking up your hostname...");
 
             // Check if this IP is in the cache
@@ -123,48 +125,49 @@ namespace cmpctircd
                     DNSHost = cached;
                     Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({DNSHost}) -- cached");
                     ResolvingHost = false;
-                    return;
+                    hitCache = true;
                 }
             }
 
-            // Not in the cache, look up the IP
-            // XXX: mono won't resolve IPs -> hostnames at present
-            // XXX: so this code seems to only run on the MS .NET runtime (i.e. Windows)
-            // XXX: it is now fixed in upstream mono, not yet in a release (see bug below)
-            // XXX: http://bugs.cmpct.info/show_bug.cgi?id=246
-            try {
-                var resolver = Dns.GetHostEntry(ip);
+            if (!hitCache) {
+                // Not in the cache, look up the IP
+                // XXX: mono won't resolve IPs -> hostnames at present
+                // XXX: so this code seems to only run on the MS .NET runtime (i.e. Windows)
+                // XXX: it is now fixed in upstream mono, not yet in a release (see bug below)
+                // XXX: http://bugs.cmpct.info/show_bug.cgi?id=246
+                try {
+                    var resolver = Dns.GetHostEntry(ip);
 
-                IRCd.Log.Debug($"IP: {ip}");
-                IRCd.Log.Debug($"Host: {DNSHost}");
-                IRCd.Log.Debug($"Count: {resolver.Aliases.Count()}");
+                    IRCd.Log.Debug($"IP: {ip}");
+                    IRCd.Log.Debug($"Host: {DNSHost}");
+                    IRCd.Log.Debug($"Count: {resolver.Aliases.Count()}");
 
-                if(resolver.HostName == ip) {
-                    // Don't set the DNSHost of the user if it's the same as the IP
-                    // This is so the right cloaking is used etc
+                    if(resolver.HostName == ip) {
+                        // Don't set the DNSHost of the user if it's the same as the IP
+                        // This is so the right cloaking is used etc
+                        failedResolve = true;
+                    } else {
+                        // This is only reached if:
+                        // 1) IP != Hostname
+                        // AND
+                        // 2) No exception has been thrown by the resolver
+                        DNSHost = resolver.HostName;
+                    }
+                } catch(Exception) {
                     failedResolve = true;
-                } else {
-                    // This is only reached if:
-                    // 1) IP != Hostname
-                    // AND
-                    // 2) No exception has been thrown by the resolver
-                    DNSHost = resolver.HostName;
+                } finally {
+                    ResolvingHost = false;
                 }
-            } catch(Exception) {
-                failedResolve = true;
-            } finally {
-                ResolvingHost = false;
             }
 
             if(failedResolve) {
                 Write($"*** Could not resolve your hostname; using your IP address ({ip}) instead.");
-                return;
+            } else {
+                Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({DNSHost})");
+                // Cache it
+                // Note we don't cache if IP because would give wrong message
+                IRCd.DNSCache[ip] = DNSHost;
             }
-
-            Write($":{IRCd.Host} NOTICE Auth :*** Found your hostname ({DNSHost})");
-
-            // Cache it anyway even if the user's host resolved to the IP
-            IRCd.DNSCache[ip] = DNSHost;
 
             if (IRCd.Config.Advanced.ResolveHostnames) {
                 // If the IRCd resolves all hostnames, then we will have

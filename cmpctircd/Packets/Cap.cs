@@ -113,6 +113,9 @@ namespace cmpctircd.Packets {
                     parameters = string.Join(",", cap.Parameters);
                     capString += $"{cap.Name}={parameters}";
                 }
+
+                // Add on those without parameters
+                capString += string.Join(" ", caps.Where(cap => !cap.Parameters.Any()).Select(cap => cap.Name));
             } else {
                 // Simply collect the names of the available capabilities
                 capString = string.Join(" ", caps.Select(cap => cap.Name));

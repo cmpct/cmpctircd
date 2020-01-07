@@ -121,7 +121,7 @@ namespace cmpctircd.Packets {
                 capString = string.Join(" ", caps.Select(cap => cap.Name));
             }
 
-            args.Client.Write($"CAP {args.Client.NickIfSet()} LS :{capString}");
+            args.Client.Write($":{args.IRCd.Host} CAP {args.Client.NickIfSet()} LS :{capString}");
         }
 
         public static void CapHandleReq(HandlerArgs args) {
@@ -204,7 +204,7 @@ namespace cmpctircd.Packets {
 
             // Send out the ACKs (successful)
             if (ackCaps.Any()) {
-                args.Client.Write($"CAP {args.Client.NickIfSet()} ACK: {string.Join(" ", ackCaps)}");
+                args.Client.Write($":{args.IRCd.Host} CAP {args.Client.NickIfSet()} ACK: {string.Join(" ", ackCaps)}");
             }
 
             // We've told the client which CAPs are enabled, now actually enable/disable it
@@ -214,7 +214,7 @@ namespace cmpctircd.Packets {
 
             // Send out the NAKs (unsuccessful)
             if (badCaps.Any()) {
-                args.Client.Write($"CAP {args.Client.NickIfSet()} NAK: {string.Join(" ", badCaps)}");
+                args.Client.Write($":{args.IRCd.Host} CAP {args.Client.NickIfSet()} NAK: {string.Join(" ", badCaps)}");
             }
 
             return;
@@ -224,7 +224,7 @@ namespace cmpctircd.Packets {
             var enabled = args.Client.CapManager.GetEnabled().Select(cap => cap.Name);
             var enabledString = string.Join(" ", enabled);
 
-            args.Client.Write($"CAP {args.Client.NickIfSet()} LIST :{enabledString}");
+            args.Client.Write($":{args.IRCd.Host} CAP {args.Client.NickIfSet()} LIST :{enabledString}");
         }
 
     }

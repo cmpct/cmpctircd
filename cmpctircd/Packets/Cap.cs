@@ -204,7 +204,7 @@ namespace cmpctircd.Packets {
 
             // Send out the ACKs (successful)
             if (ackCaps.Any()) {
-                args.Client.Write($":{args.IRCd.Host} CAP {args.Client.NickIfSet()} ACK: {string.Join(" ", ackCaps)}");
+                args.Client.Write($":{args.IRCd.Host} CAP {args.Client.NickIfSet()} ACK :{string.Join(" ", ackCaps)}");
             }
 
             // We've told the client which CAPs are enabled, now actually enable/disable it
@@ -214,7 +214,7 @@ namespace cmpctircd.Packets {
 
             // Send out the NAKs (unsuccessful)
             if (badCaps.Any()) {
-                args.Client.Write($":{args.IRCd.Host} CAP {args.Client.NickIfSet()} NAK: {string.Join(" ", badCaps)}");
+                args.Client.Write($":{args.IRCd.Host} CAP {args.Client.NickIfSet()} NAK :{string.Join(" ", badCaps)}");
             }
 
             return;

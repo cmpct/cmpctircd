@@ -555,6 +555,7 @@ namespace cmpctircd.Packets {
                     if(modeStr.Equals("+") || modeStr.Equals("-")) {
                         currentModifier = modeStr;
                         modeChars += modeStr;
+                        continue;
                     }
 
                     if(channel.Modes.ContainsKey(noOperatorMode)) {

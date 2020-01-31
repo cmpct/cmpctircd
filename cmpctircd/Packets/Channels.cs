@@ -588,6 +588,9 @@ namespace cmpctircd.Packets {
                         if(modeObject.HasParameters) {
                             position += 1;
                         }
+                    } else {
+                        // If a mode doesn't exist, call it all off
+                        throw new IrcErrNotEnoughParametersException(args.Client, $"No such mode {noOperatorMode} exists");
                     }
                 }
 

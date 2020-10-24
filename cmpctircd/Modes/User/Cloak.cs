@@ -1,3 +1,5 @@
+using cmpctircd.Cloak;
+
 namespace cmpctircd.Modes {
     public class CloakMode : UserMode {
 
@@ -16,7 +18,7 @@ namespace cmpctircd.Modes {
             if (Enabled)
                 return false;
 
-            Subject.Cloak = Cloak.GetCloak(Subject.DNSHost, Subject.IP, Subject.IRCd.CloakKey, Subject.IRCd.CloakFull);
+            Subject.Cloak = Cloaking.GenerateInspCloak(new CloakOptions(Subject.DNSHost, Subject.IP, Subject.IRCd.CloakKey, Subject.IRCd.CloakFull));
 
             Enabled = true;
             Subject.Write($":{Subject.IRCd.Host} {IrcNumeric.RPL_HOSTHIDDEN.Printable()} {Subject.Nick} {Subject.Cloak} :is now your displayed host");

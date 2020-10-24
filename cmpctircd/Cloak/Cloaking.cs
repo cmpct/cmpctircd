@@ -78,22 +78,22 @@ namespace cmpctircd.Cloak
         /// <returns>Returns a hashed string</returns>
         public static string InspCloakHost(char id, string key, string host, int length) {
             string base32 = "0123456789abcdefghijklmnopqrstuv";
-            string cloak_s = "";
+            string cloakString = "";
 
-            using(MD5 hasher = MD5.Create()) {
+            using (MD5 hasher = MD5.Create()) {
                 string input = id + key + "\0" + host;
                 StringBuilder str = new StringBuilder();
                 var cloak = hasher.ComputeHash(Encoding.UTF8.GetBytes(input));
 
-                for(int i = 0; i < length; i++) {
+                for (int i = 0; i < length; i++) {
                     // In order to avoid character overflow, AND with 0x1F (31) will ensure each character is only ever <= 31
                     str.Append(base32[cloak[i] & 0x1F]);
                 }
 
-                cloak_s = str.ToString();
+                cloakString = str.ToString();
             }
 
-            return cloak_s;
+            return cloakString;
         }
     }
 }

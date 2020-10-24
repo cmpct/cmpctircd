@@ -3,6 +3,9 @@
     using System.Collections.Generic;
     using System.Linq;
 
+    /// <summary>
+    /// DNS Cloak compatible with InspIRCd.
+    /// </summary>
     public class InspDNSCloak : Cloak
     {
         /// <summary>
@@ -47,6 +50,11 @@
             return truncHost;
         }
 
+        /// <summary>
+        /// Counts the positions of dots in a DNS host string.
+        /// </summary>
+        /// <param name="host">DNS host string.</param>
+        /// <returns>A list of dot positions.</returns>
         private static List<int> CountDotPositionsInHost(string host)
         {
             List<int> dotPositions = new List<int>();
@@ -63,12 +71,22 @@
             return dotPositions;
         }
 
+        /// <summary>
+        /// Counts the amount of dots in a DNS host string.
+        /// </summary>
+        /// <param name="host">DNS host string.</param>
+        /// <returns>The number of dots found.</returns>
         private static int CountDotsInHost(string host)
         {
             var dotCount = host.Count(s => s == '.');
             return dotCount;
         }
 
+        /// <summary>
+        /// Gets a cloak string for DNS hosts compatible with InspIRCd.
+        /// </summary>
+        /// <param name="cloakOptions">The client's cloaking parameters.</param>
+        /// <returns>A cloak string.</returns>
         public override string GetCloakString(CloakOptions cloakOptions)
         {
             var prefix = IRCd.CloakPrefix;

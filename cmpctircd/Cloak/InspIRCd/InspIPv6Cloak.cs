@@ -3,6 +3,9 @@ using System.Text;
 
 namespace cmpctircd.Cloak
 {
+    /// <summary>
+    /// IPv6 Cloak compatible with InspIRCd.
+    /// </summary>
     public class InspIPv6Cloak : Cloak
     {
 

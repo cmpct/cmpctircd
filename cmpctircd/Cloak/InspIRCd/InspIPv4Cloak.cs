@@ -2,6 +2,9 @@
 {
     using System.Text;
 
+    /// <summary>
+    /// IPv4 Cloak compatible with InspIRCd.
+    /// </summary>
     public class InspIPv4Cloak : Cloak
     {
 

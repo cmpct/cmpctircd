@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace cmpctircd.Cloak
+﻿namespace cmpctircd.Cloak
 {
     public class InspIPv4Cloak : Cloak
     {

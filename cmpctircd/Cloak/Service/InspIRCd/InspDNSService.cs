@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace cmpctircd.Cloak.Service
 {
-    public class InspDNSService : CloakService
+    public class InspDnsService : CloakService
     {
         public override Cloak GetCloak()
         {

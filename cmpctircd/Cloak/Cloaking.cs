@@ -24,7 +24,7 @@ namespace cmpctircd.Cloak
             switch (cloakVersion)
             {
                 case "DNS":
-                    service = new InspDNSService();
+                    service = new InspDnsService();
                     break;
                 case "IPv4":
                     service = new InspIPv4Service();

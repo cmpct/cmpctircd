@@ -1,4 +1,6 @@
-﻿namespace cmpctircd.Cloak
+﻿using System.Text;
+
+namespace cmpctircd.Cloak
 {
     public class InspIPv4Cloak : Cloak
     {

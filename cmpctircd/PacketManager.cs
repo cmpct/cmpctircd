@@ -149,7 +149,7 @@ namespace cmpctircd {
         }
 
         public bool Load() {
-            foreach (var controllerType in AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => typeof(ControllerBase).IsAssignableFrom(t))) {
+            foreach (var controllerType in AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => !t.IsAbstract && typeof(ControllerBase).IsAssignableFrom(t))) {
                 var controllerAttribute = (ControllerAttribute)controllerType.GetCustomAttributes(typeof(ControllerAttribute), false).FirstOrDefault();
                 if (controllerAttribute != null) {
                     foreach (var method in controllerType.GetMethods()) {
@@ -165,7 +165,7 @@ namespace cmpctircd {
                         }
                     }
                 } else {
-                    _ircd.Log.Warn($"'{controllerType.Name}' does not inherit from type '{typeof(ControllerBase)}' and will be skipped.");
+                    _ircd.Log.Warn($"'{controllerType.Name}' does not have a controller attribute and will be skipped.");
                 }
             }
 

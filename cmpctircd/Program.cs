@@ -18,7 +18,7 @@
                     var log = new Log();
                     var config = CmpctConfigurationSection.GetConfiguration();
 
-                    foreach (var controllerType in AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => typeof(ControllerBase).IsAssignableFrom(t))) {
+                    foreach (var controllerType in AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => !t.IsAbstract && typeof(ControllerBase).IsAssignableFrom(t))) {
                         services.AddTransient(controllerType);
                     }
 

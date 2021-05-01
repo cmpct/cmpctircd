@@ -4,7 +4,7 @@ using System.Text;
 
 namespace cmpctircd.Controllers
 {
-    public class ControllerBase
+    public abstract class ControllerBase
     {
     }
 }

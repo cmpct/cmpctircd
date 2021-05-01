@@ -141,7 +141,7 @@ namespace cmpctircd {
                     var args  = GetHandlerArgs(socketBase, line);
                     var search_prefix = GetPacketPrefix(parts);
 
-                    _ircd.PacketManager.FindHandler(search_prefix, args, Info.Type);
+                    _ircd.PacketManager.Handle(search_prefix, args, Info.Type);
                 }
                 // Grab another line
                 line = await reader.ReadLineAsync();

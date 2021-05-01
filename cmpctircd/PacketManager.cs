@@ -38,7 +38,7 @@ namespace cmpctircd {
             return true;
         }
 
-        public bool FindHandler(String packet, HandlerArgs args, ListenerType type, bool convertUids = false)
+        public bool Handle(String packet, HandlerArgs args, ListenerType type, bool convertUids = false)
         {
             List<String> registrationCommands = new List<String>();
             List<String> idleCommands = new List<String>();

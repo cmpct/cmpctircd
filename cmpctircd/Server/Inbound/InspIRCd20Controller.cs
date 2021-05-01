@@ -182,7 +182,7 @@ namespace cmpctircd.Controllers {
 
         [Handles("QUIT")]
         public bool QuitHandler(HandlerArgs args) {
-            return ircd.PacketManager.FindHandler("QUIT", args, ListenerType.Client, true);
+            return ircd.PacketManager.Handle("QUIT", args, ListenerType.Client, true);
         }
 
         [Handles("SQUIT")]
@@ -196,12 +196,12 @@ namespace cmpctircd.Controllers {
 
         [Handles("PRIVMSG")]
         public bool PrivMsgHandler(HandlerArgs args) {
-            return ircd.PacketManager.FindHandler("PRIVMSG", args, ListenerType.Client, true);
+            return ircd.PacketManager.Handle("PRIVMSG", args, ListenerType.Client, true);
         }
 
         [Handles("NOTICE")]
         public bool NoticeHandler(HandlerArgs args) {
-            return ircd.PacketManager.FindHandler("NOTICE", args, ListenerType.Client, true);
+            return ircd.PacketManager.Handle("NOTICE", args, ListenerType.Client, true);
         }
 
         [Handles("FMODE")]
@@ -230,7 +230,7 @@ namespace cmpctircd.Controllers {
             }
 
             // Call the normal mode with the modified args
-            return ircd.PacketManager.FindHandler("MODE", args, ListenerType.Client, true);
+            return ircd.PacketManager.Handle("MODE", args, ListenerType.Client, true);
         }
 
         [Handles("SVSNICK")]
@@ -244,7 +244,7 @@ namespace cmpctircd.Controllers {
             args.Client = target;
             args.Line   = $"NICK {new_nick}";
 
-            return ircd.PacketManager.FindHandler("NICK", args, ListenerType.Client, false);
+            return ircd.PacketManager.Handle("NICK", args, ListenerType.Client, false);
         }
     }
 }

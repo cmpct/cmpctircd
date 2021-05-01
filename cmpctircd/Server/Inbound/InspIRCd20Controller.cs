@@ -14,10 +14,12 @@ namespace cmpctircd.Controllers {
     public class InspIRCd20Controller : ControllerBase {
         private readonly IRCd ircd;
         private readonly Server server;
+        private readonly Log log;
 
-        public InspIRCd20Controller(IRCd ircd, Server server) {
+        public InspIRCd20Controller(IRCd ircd, Server server, Log log) {
             this.ircd = ircd ?? throw new ArgumentNullException(nameof(ircd));
             this.server = server ?? throw new ArgumentNullException(nameof(server));
+            this.log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
         // TODO: three CAPAB packets
@@ -65,7 +67,7 @@ namespace cmpctircd.Controllers {
                     var foundServer = ircd.GetServerBySID(sid);
 
                     // If the incoming server is authenticated, disconnect the old one (saves time waiting for ping timeouts, etc)
-                    ircd.Log.Warn($"[SERVER] Ejecting server (SID: {sid}, name: {hostname}) for new connection");
+                    log.Warn($"[SERVER] Ejecting server (SID: {sid}, name: {hostname}) for new connection");
                     foundServer.Disconnect("ERROR: Replaced by a new connection", true);
                 } catch (InvalidOperationException) {}
 
@@ -76,7 +78,7 @@ namespace cmpctircd.Controllers {
                 server.Type = ServerType.InspIRCd20;
 
                 // TODO: Change to Info?
-                ircd.Log.Warn($"[SERVER] Got an authed server (SID: {sid}, name: {hostname}, type: {server.Type})");
+                log.Warn($"[SERVER] Got an authed server (SID: {sid}, name: {hostname}, type: {server.Type})");
 
                 // Introduce ourselves
                 if(server.Listener.GetType() != typeof(SocketConnector)) {
@@ -88,7 +90,7 @@ namespace cmpctircd.Controllers {
                 // Set the ping cookie to be the SID, so we start pinging them (see CheckTimeout)
                 server.PingCookie = server.SID;
             } else {
-                ircd.Log.Warn("[SERVER] Got an unauthed server");
+                log.Warn("[SERVER] Got an unauthed server");
                 server.Disconnect("ERROR: Invalid credentials", true);
                 return false;
             }
@@ -139,7 +141,7 @@ namespace cmpctircd.Controllers {
             ++server.Listener.ClientCount;
             ++server.Listener.AuthClientCount;
 
-            ircd.Log.Debug($"[SERVER] got new client {nick}");
+            log.Debug($"[SERVER] got new client {nick}");
             return true;
         }
 
@@ -172,7 +174,7 @@ namespace cmpctircd.Controllers {
                     }
                     
                 } catch(Exception e) {
-                    ircd.Log.Debug($"[SERVER] exception in FJOIN handler! {e.ToString()}");
+                    log.Debug($"[SERVER] exception in FJOIN handler! {e.ToString()}");
                 }
 
                 
@@ -188,7 +190,7 @@ namespace cmpctircd.Controllers {
         [Handles("SQUIT")]
         public bool SQuitHandler(HandlerArgs args) {
             // TODO: reason?
-            server.IRCd.Log.Info($"Server {server.Name} sent SQUIT; disconnecting");
+            log.Info($"Server {server.Name} sent SQUIT; disconnecting");
             server.Disconnect(true);
 
             return true;

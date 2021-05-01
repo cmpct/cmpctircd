@@ -5,15 +5,17 @@ namespace cmpctircd.Controllers {
     public class AnyController : ControllerBase {
         private readonly IRCd ircd;
         private readonly Server server;
+        private readonly Log log;
 
-        public AnyController(IRCd ircd, Server server) {
+        public AnyController(IRCd ircd, Server server, Log log) {
             this.ircd = ircd ?? throw new ArgumentNullException(nameof(ircd));
             this.server = server ?? throw new ArgumentNullException(nameof(server));
+            this.log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
         [Handles("ERROR")]
         public bool ErrorHandler(HandlerArgs args) {
-            ircd.Log.Error($"[SERVER] Received an error (from: {server?.Name}), disconnecting: {args.Trailer}");
+            log.Error($"[SERVER] Received an error (from: {server?.Name}), disconnecting: {args.Trailer}");
             server.Disconnect("ERROR: Received an error", false, false);
             return true;
         }

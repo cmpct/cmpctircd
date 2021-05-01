@@ -5,10 +5,12 @@ namespace cmpctircd.Controllers {
     public class LoginController : ControllerBase {
         private readonly IRCd ircd;
         private readonly Client client;
+        private readonly Log log;
 
-        public LoginController(IRCd ircd, Client client) {
+        public LoginController(IRCd ircd, Client client, Log log) {
             this.ircd = ircd ?? throw new ArgumentNullException(nameof(ircd));
             this.client = client ?? throw new ArgumentNullException(nameof(client));
+            this.log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
         [Handles("USER")]
@@ -38,7 +40,7 @@ namespace cmpctircd.Controllers {
         [Handles("NICK")]
         public bool NickHandler(HandlerArgs args) {
             var newNick = args.SpacedArgs.Count > 1 ? args.SpacedArgs[1] : args.Trailer;
-            ircd.Log.Debug($"Changing nick to {newNick}");
+            log.Debug($"Changing nick to {newNick}");
             client.SetNick(newNick);
             return true;
         }

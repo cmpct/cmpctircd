@@ -4,22 +4,22 @@ using System.Text;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-using cmpctircd.Configuration;
-
 namespace cmpctircd.Controllers {
     [Controller(ListenerType.Client)]
     public class OperController : ControllerBase {
         private readonly IRCd ircd;
         private readonly Client client;
+        private readonly Log log;
 
         /// <summary>
         /// HashAlgorithm instance cache, to reduce reflection overheads.
         /// </summary>
         private readonly Dictionary<Type, HashAlgorithm> _algorithms = new Dictionary<Type, HashAlgorithm>();
 
-        public OperController(IRCd ircd, Client client) {
+        public OperController(IRCd ircd, Client client, Log log) {
             this.ircd = ircd ?? throw new ArgumentNullException(nameof(ircd));
             this.client = client ?? throw new ArgumentNullException(nameof(client));
+            this.log = log ?? throw new ArgumentNullException(nameof(log));
         }
 
         [Handles("OPER")]
@@ -117,7 +117,7 @@ namespace cmpctircd.Controllers {
                 }
             } catch (InvalidOperationException) {
                 // No such server was found
-                ircd.Log.Warn($"Oper {client.Nick} tried to connect to non-existent server: {host}");
+                log.Warn($"Oper {client.Nick} tried to connect to non-existent server: {host}");
                 client.Write($":{ircd.Host} NOTICE {client.Nick} :Such a server does not exist in config: {host}");
             }
 

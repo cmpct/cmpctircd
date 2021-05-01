@@ -2,10 +2,16 @@
 
 namespace cmpctircd.Controllers {
     public class LoginController : ControllerBase {
+        private readonly IRCd ircd;
+        private readonly Client client;
+
+        public LoginController(IRCd ircd, Client client) {
+            this.ircd = ircd ?? throw new ArgumentNullException(nameof(ircd));
+            this.client = client ?? throw new ArgumentNullException(nameof(client));
+        }
+
         [Handler("USER", ListenerType.Client)]
         public bool UserHandler(HandlerArgs args) {
-            Client client = args.Client;
-
             string username;
             string real_name;
 
@@ -30,9 +36,6 @@ namespace cmpctircd.Controllers {
 
         [Handler("NICK", ListenerType.Client)]
         public bool NickHandler(HandlerArgs args) {
-            IRCd ircd = args.IRCd;
-            Client client = args.Client;
-
             var newNick = args.SpacedArgs.Count > 1 ? args.SpacedArgs[1] : args.Trailer;
             ircd.Log.Debug($"Changing nick to {newNick}");
             client.SetNick(newNick);
@@ -41,7 +44,6 @@ namespace cmpctircd.Controllers {
 
         [Handler("QUIT", ListenerType.Client)]
         public bool quitHandler(HandlerArgs args) {
-            Client client = args.Client;
             string reason;
             try {
                 reason = args.SpacedArgs[1];
@@ -55,7 +57,6 @@ namespace cmpctircd.Controllers {
 
         [Handler("PONG", ListenerType.Client)]
         public bool PongHandler(HandlerArgs args) {
-            Client client = args.Client;
             string rawLine = args.Line;
             string[] splitLine = rawLine.Split(new char[] { ':' }, 2);
             string cookie;
@@ -77,7 +78,7 @@ namespace cmpctircd.Controllers {
                 client.WaitingForPong = false;
                 client.LastPong = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-                if (args.IRCd.RequirePong && prevLastPong == 0) {
+                if (ircd.RequirePong && prevLastPong == 0) {
                     // Got a correct PONG and not had one yet
                     // So call handshake
                     client.SendWelcome();

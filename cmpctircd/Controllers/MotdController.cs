@@ -2,15 +2,21 @@
 
 namespace cmpctircd.Controllers {
     public class MotdController : ControllerBase {
+        private readonly Client client;
+
+        public MotdController(IRCd ircd, Client client) {
+            this.client = client ?? throw new ArgumentNullException(nameof(client));
+        }
+
         [Handler("MOTD", ListenerType.Client)]
         public bool MOTDHandler(HandlerArgs args) {
-            args.Client.SendMotd();
+            client.SendMotd();
             return true;
         }
 
         [Handler("RULES", ListenerType.Client)]
         public bool RulesHandler(HandlerArgs args) {
-            args.Client.SendRules();
+            client.SendRules();
             return true;
         }
 

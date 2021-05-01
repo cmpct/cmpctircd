@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace cmpctircd.Packets {
-    public static class Login {
+namespace cmpctircd.Controllers {
+    public static class LoginController {
         [Handler("USER", ListenerType.Client)]
         public static bool UserHandler(HandlerArgs args) {
             Client client = args.Client;

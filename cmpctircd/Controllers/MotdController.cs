@@ -1,7 +1,7 @@
 ﻿using System;
 
-namespace cmpctircd.Packets {
-    public static class Motd {
+namespace cmpctircd.Controllers {
+    public static class MotdController {
         [Handler("MOTD", ListenerType.Client)]
         public static bool MOTDHandler(HandlerArgs args) {
             args.Client.SendMotd();

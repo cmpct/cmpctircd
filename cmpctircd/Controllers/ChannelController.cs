@@ -4,8 +4,8 @@ using System.Linq;
 
 using cmpctircd.Modes;
 
-namespace cmpctircd.Packets {
-    public static class Channels {
+namespace cmpctircd.Controllers {
+    public static class ChannelController {
         /// <summary>
         /// Handles the LIST command sent by clients, which writes back a list of channels.
         /// 

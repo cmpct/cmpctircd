@@ -2,8 +2,8 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace cmpctircd.Packets {
-    public static class Cap {
+namespace cmpctircd.Controllers {
+    public static class CapController {
         internal class CapStatus {
             public enum CapAction {
                 Enable,

@@ -6,8 +6,8 @@ using System.Security.Cryptography;
 
 using cmpctircd.Configuration;
 
-namespace cmpctircd.Packets {
-    public static class Oper {
+namespace cmpctircd.Controllers {
+    public static class OperController {
         /// <summary>
         /// HashAlgorithm instance cache, to reduce reflection overheads.
         /// </summary>

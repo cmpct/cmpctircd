@@ -4,8 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace cmpctircd.Packets {
-    public static class Queries {
+namespace cmpctircd.Controllers {
+    public static class QueryController {
         [Handler("VERSION", ListenerType.Client)]
         public static bool VersionHandler(HandlerArgs args) {
             args.Client.SendVersion();

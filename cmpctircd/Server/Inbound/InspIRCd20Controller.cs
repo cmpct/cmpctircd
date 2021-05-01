@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace cmpctircd.Packets {
-    public static class InspIRCd20 {
+namespace cmpctircd.Controllers {
+    public static class InspIRCd20Controller {
         // This class handles inbound packets for InspIRCd 2.0
         // For outbound, see Translators/InspIRCd20.cs
 

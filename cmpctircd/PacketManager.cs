@@ -151,8 +151,8 @@ namespace cmpctircd {
                 .SelectMany(t => t.GetTypes())
                 .SelectMany(t => t.GetMethods())
                 .ForEach(
-                    m => m.GetCustomAttributes(typeof(Handler), false).ForEach(a => {
-                        Handler attr = (Handler) a;
+                    m => m.GetCustomAttributes(typeof(Handles), false).ForEach(a => {
+                        Handles attr = (Handles) a;
                         if(!m.IsStatic)
                             _ircd.Log.Warn($"'{m.DeclaringType.FullName}.{m.Name}' is not static. Handler methods loaded through reflection must be static.");
                         else {

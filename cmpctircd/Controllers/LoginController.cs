@@ -1,6 +1,7 @@
 ﻿using System;
 
 namespace cmpctircd.Controllers {
+    [Controller(ListenerType.Client)]
     public class LoginController : ControllerBase {
         private readonly IRCd ircd;
         private readonly Client client;
@@ -10,7 +11,7 @@ namespace cmpctircd.Controllers {
             this.client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        [Handler("USER", ListenerType.Client)]
+        [Handles("USER")]
         public bool UserHandler(HandlerArgs args) {
             string username;
             string real_name;
@@ -34,7 +35,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("NICK", ListenerType.Client)]
+        [Handles("NICK")]
         public bool NickHandler(HandlerArgs args) {
             var newNick = args.SpacedArgs.Count > 1 ? args.SpacedArgs[1] : args.Trailer;
             ircd.Log.Debug($"Changing nick to {newNick}");
@@ -42,7 +43,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("QUIT", ListenerType.Client)]
+        [Handles("QUIT")]
         public bool quitHandler(HandlerArgs args) {
             string reason;
             try {
@@ -55,7 +56,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("PONG", ListenerType.Client)]
+        [Handles("PONG")]
         public bool PongHandler(HandlerArgs args) {
             string rawLine = args.Line;
             string[] splitLine = rawLine.Split(new char[] { ':' }, 2);

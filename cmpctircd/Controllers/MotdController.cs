@@ -1,6 +1,7 @@
 ﻿using System;
 
 namespace cmpctircd.Controllers {
+    [Controller(ListenerType.Client)]
     public class MotdController : ControllerBase {
         private readonly Client client;
 
@@ -8,13 +9,13 @@ namespace cmpctircd.Controllers {
             this.client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        [Handler("MOTD", ListenerType.Client)]
+        [Handles("MOTD")]
         public bool MOTDHandler(HandlerArgs args) {
             client.SendMotd();
             return true;
         }
 
-        [Handler("RULES", ListenerType.Client)]
+        [Handles("RULES")]
         public bool RulesHandler(HandlerArgs args) {
             client.SendRules();
             return true;

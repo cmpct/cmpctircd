@@ -5,6 +5,7 @@ using System.Linq;
 using cmpctircd.Modes;
 
 namespace cmpctircd.Controllers {
+    [Controller(ListenerType.Client)]
     public class ChannelController : ControllerBase {
         private readonly IRCd ircd;
         private readonly Client client;
@@ -21,7 +22,7 @@ namespace cmpctircd.Controllers {
         /// </summary>
         /// <param name="args">The arguments object.</param>
         /// <returns>TRUE to indicate success.</returns>
-        [Handler("LIST", ListenerType.Client)]
+        [Handles("LIST")]
         public bool ListHandler(HandlerArgs args) {
             var manager = ircd.ChannelManager;
             var selections = args.SpacedArgs.ElementAtOrDefault(1)?.Split(',');
@@ -44,7 +45,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("INVITE", ListenerType.Client)]
+        [Handles("INVITE")]
         public bool InviteHandler(HandlerArgs args) {
             Channel channel;
             Client targetClient;
@@ -83,7 +84,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("KICK", ListenerType.Client)]
+        [Handles("KICK")]
         public bool KickHandler(HandlerArgs args) {
             Client targetClient;
             Channel channel;
@@ -125,7 +126,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("TOPIC", ListenerType.Client)]
+        [Handles("TOPIC")]
         public bool TopicHandler(HandlerArgs args) {
             Topic topic;
             if(args.SpacedArgs.Count == 0) {
@@ -143,7 +144,7 @@ namespace cmpctircd.Controllers {
             }
         }
 
-        [Handler("JOIN", ListenerType.Client)]
+        [Handles("JOIN")]
         public bool JoinHandler(HandlerArgs args) {
             String[] splitCommaLine;
             Channel channel;
@@ -211,7 +212,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("PRIVMSG", ListenerType.Client)]
+        [Handles("PRIVMSG")]
         public bool PrivMsgHandler(HandlerArgs args) {
             Client targetClient = null;
 
@@ -291,7 +292,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("NOTICE", ListenerType.Client)]
+        [Handles("NOTICE")]
         public bool NoticeHandler(HandlerArgs args) {
             Client targetClient = null;
 
@@ -364,7 +365,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("PART", ListenerType.Client)]
+        [Handles("PART")]
         public bool PartHandler(HandlerArgs args) {
             String rawLine = args.Line;
             String[] splitLine = rawLine.Split(new string[] { ":" }, 2, StringSplitOptions.None);
@@ -401,7 +402,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("WHO", ListenerType.Client)]
+        [Handles("WHO")]
         public Boolean WhoHandler(HandlerArgs args) {
             String target;
             Channel targetChannel;
@@ -443,7 +444,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("NAMES", ListenerType.Client)]
+        [Handles("NAMES")]
         public Boolean NamesHandler(HandlerArgs args) {
             String[] splitLineSpace = args.Line.Split(new string[] { " " }, 3, StringSplitOptions.None);
             String [] splitCommaLine;
@@ -476,7 +477,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("MODE", ListenerType.Client)]
+        [Handles("MODE")]
         public bool ModeHandler(HandlerArgs args) {
             // This handler is for Channel requests (i.e. where the target begins with a # or &)
             // TODO: update with channel validation logic (in ChannelManager?)

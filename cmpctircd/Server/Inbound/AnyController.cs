@@ -1,6 +1,7 @@
 using System;
 
 namespace cmpctircd.Controllers {
+    [Controller(ListenerType.Server, ServerType.Any)]
     public class AnyController : ControllerBase {
         private readonly IRCd ircd;
         private readonly Server server;
@@ -10,7 +11,7 @@ namespace cmpctircd.Controllers {
             this.server = server ?? throw new ArgumentNullException(nameof(server));
         }
 
-        [Handler("ERROR", ListenerType.Server, ServerType.Any)]
+        [Handles("ERROR")]
         public bool ErrorHandler(HandlerArgs args) {
             ircd.Log.Error($"[SERVER] Received an error (from: {server?.Name}), disconnecting: {args.Trailer}");
             server.Disconnect("ERROR: Received an error", false, false);
@@ -18,7 +19,7 @@ namespace cmpctircd.Controllers {
         }
 
 
-        [Handler("PING", ListenerType.Server, ServerType.Any)]
+        [Handles("PING")]
         public bool PingHandler(HandlerArgs args) {
             // TODO: implement for hops > 1
             // TODO: could use server.SID instead of SpacedArgs?
@@ -33,7 +34,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("PONG", ListenerType.Server, ServerType.Any)]
+        [Handles("PONG")]
         public bool PongHandler(HandlerArgs args) {
             server.WaitingForPong = false;
             server.LastPong       = DateTimeOffset.UtcNow.ToUnixTimeSeconds();

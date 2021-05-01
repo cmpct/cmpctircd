@@ -10,6 +10,7 @@ namespace cmpctircd.Controllers {
     /// <remarks>
     /// For outbound, see <see cref="InspIRCd20"/>.
     /// </remarks>
+    [Controller(ListenerType.Server, ServerType.InspIRCd20)]
     public class InspIRCd20Controller : ControllerBase {
         private readonly IRCd ircd;
         private readonly Server server;
@@ -21,7 +22,7 @@ namespace cmpctircd.Controllers {
 
         // TODO: three CAPAB packets
         // TODO: Handle BURST, don't process until we get them all? Group the FJOINs
-        [Handler("CAPAB", ListenerType.Server, ServerType.InspIRCd20)]
+        [Handles("CAPAB")]
         public bool CapabHandler(HandlerArgs args) {
             // TODO: checked if already sent capab?
             if (args.SpacedArgs.Count > 0 && args.SpacedArgs[1] == "START" && server.Listener.GetType() != typeof(SocketConnector)) {
@@ -32,7 +33,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("SERVER", ListenerType.Server, ServerType.InspIRCd20)]
+        [Handles("SERVER")]
         public bool ServerHandler(HandlerArgs args) {
             // TODO: introduce some ServerState magic
             var parts = args.Line.Split(new char[] { ' ' }, 7).ToList();
@@ -94,7 +95,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("UID", ListenerType.Server, ServerType.InspIRCd20)]
+        [Handles("UID")]
         public bool UidHandler(HandlerArgs args) {
             var parts = args.Line.Split(new char[] { ' ' }, 12);
             
@@ -142,7 +143,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("FJOIN", ListenerType.Server, ServerType.InspIRCd20)]
+        [Handles("FJOIN")]
         public bool FjoinHandler(HandlerArgs args) {
             // TODO check if the SID is one we know, maybe specify in config? (???)
             var parts     = args.Line.Split(new char[] { ' ' }, 6);
@@ -179,12 +180,12 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("QUIT", ListenerType.Server, ServerType.InspIRCd20)]
+        [Handles("QUIT")]
         public bool QuitHandler(HandlerArgs args) {
             return ircd.PacketManager.FindHandler("QUIT", args, ListenerType.Client, true);
         }
 
-        [Handler("SQUIT", ListenerType.Server, ServerType.InspIRCd20)]
+        [Handles("SQUIT")]
         public bool SQuitHandler(HandlerArgs args) {
             // TODO: reason?
             server.IRCd.Log.Info($"Server {server.Name} sent SQUIT; disconnecting");
@@ -193,17 +194,17 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("PRIVMSG", ListenerType.Server, ServerType.InspIRCd20)]
+        [Handles("PRIVMSG")]
         public bool PrivMsgHandler(HandlerArgs args) {
             return ircd.PacketManager.FindHandler("PRIVMSG", args, ListenerType.Client, true);
         }
 
-        [Handler("NOTICE", ListenerType.Server, ServerType.InspIRCd20)]
+        [Handles("NOTICE")]
         public bool NoticeHandler(HandlerArgs args) {
             return ircd.PacketManager.FindHandler("NOTICE", args, ListenerType.Client, true);
         }
 
-        [Handler("FMODE", ListenerType.Server, ServerType.InspIRCd20)]
+        [Handles("FMODE")]
         public bool FModeHandler(HandlerArgs args) {
             // Trust the server
             args.Force = true;
@@ -232,7 +233,7 @@ namespace cmpctircd.Controllers {
             return ircd.PacketManager.FindHandler("MODE", args, ListenerType.Client, true);
         }
 
-        [Handler("SVSNICK", ListenerType.Server, ServerType.InspIRCd20)]
+        [Handles("SVSNICK")]
         public bool SVSNickHandler(HandlerArgs args) {
             // SVSMODE format: :SID SVSMODE TARGET_UUID NEW_NICK TS
             // NICK    format: NICK NEW_NICK

@@ -7,6 +7,7 @@ using System.Security.Cryptography;
 using cmpctircd.Configuration;
 
 namespace cmpctircd.Controllers {
+    [Controller(ListenerType.Client)]
     public class OperController : ControllerBase {
         private readonly IRCd ircd;
         private readonly Client client;
@@ -21,7 +22,7 @@ namespace cmpctircd.Controllers {
             this.client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        [Handler("OPER", ListenerType.Client)]
+        [Handles("OPER")]
         public bool OperHandler(HandlerArgs args) {
             bool hostMatch = false;
             if (args.SpacedArgs.Count <= 2) {
@@ -82,7 +83,7 @@ namespace cmpctircd.Controllers {
             }
         }
 
-        [Handler("SAMODE", ListenerType.Client)]
+        [Handles("SAMODE")]
         public bool SamodeHandler(HandlerArgs args) {
             if (args.SpacedArgs.Count == 1)
                 throw new IrcErrNotEnoughParametersException(client, "SAMODE");
@@ -94,7 +95,7 @@ namespace cmpctircd.Controllers {
             throw new IrcErrNoPrivileges(client);
         }
 
-        [Handler("CONNECT", ListenerType.Client)]
+        [Handles("CONNECT")]
         public bool ConnectHandler(HandlerArgs args) {
             if (args.SpacedArgs.Count == 1) {
                 throw new IrcErrNotEnoughParametersException(client, "CONNECT");

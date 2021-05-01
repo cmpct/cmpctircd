@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 
 namespace cmpctircd.Controllers {
+    [Controller(ListenerType.Client)]
     public class QueryController : ControllerBase {
         private readonly IRCd ircd;
         private readonly Client client;
@@ -14,13 +15,13 @@ namespace cmpctircd.Controllers {
             this.client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
-        [Handler("VERSION", ListenerType.Client)]
+        [Handles("VERSION")]
         public bool VersionHandler(HandlerArgs args) {
             client.SendVersion();
             return true;
         }
 
-        [Handler("WHOIS", ListenerType.Client)]
+        [Handles("WHOIS")]
         public bool WhoisHandler(HandlerArgs args) {
             String[] splitLineComma;
             Client targetClient;
@@ -110,7 +111,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("WHO", ListenerType.Client)]
+        [Handles("WHO")]
         public bool WhoHandler(HandlerArgs args) {
             string mask = args.SpacedArgs[1];
 
@@ -160,7 +161,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("AWAY", ListenerType.Client)]
+        [Handles("AWAY")]
         public bool AwayHandler(HandlerArgs args) {
             String[] splitColonLine = args.Line.Split(new char[] { ':' }, 2);
             String message;
@@ -197,7 +198,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("LUSERS", ListenerType.Client)]
+        [Handles("LUSERS")]
         public bool LUsersHandler(HandlerArgs args) {
             // TODO: Lusers takes a server parameter
             // add this when we have linking
@@ -205,7 +206,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("USERHOST", ListenerType.Client)]
+        [Handles("USERHOST")]
         public bool UserHostHandler(HandlerArgs args) {
             // the format is USERHOST nick1 nick2; so skip the command name
             var items = args.SpacedArgs.Skip(1).ToArray();
@@ -237,7 +238,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("PING", ListenerType.Client)]
+        [Handles("PING")]
         public bool PingHandler(HandlerArgs args) {
             // TODO: Modification for multiple servers
             var cookie = "";
@@ -248,7 +249,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        [Handler("MODE", ListenerType.Client)]
+        [Handles("MODE")]
         public bool ModeHandler(HandlerArgs args) {
             string target;
 

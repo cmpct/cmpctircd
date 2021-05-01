@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 namespace cmpctircd.Controllers {
+    [Controller(ListenerType.Client)]
     public class CapController : ControllerBase {
         private readonly IRCd ircd;
         private readonly Client client;
@@ -47,7 +48,7 @@ namespace cmpctircd.Controllers {
             }
         }
 
-        [Handler("CAP", ListenerType.Client)]
+        [Handles("CAP")]
         public bool CapHandler(HandlerArgs args) {
             if (args.SpacedArgs.Count == 1) {
                 throw new IrcErrNotEnoughParametersException(client, "CAP");

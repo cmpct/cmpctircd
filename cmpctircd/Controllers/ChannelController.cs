@@ -53,14 +53,14 @@ namespace cmpctircd.Controllers {
             if (args.SpacedArgs.Count <= 2)
                 throw new IrcErrNotEnoughParametersException(client, "INVITE");
 
-            if(args.IRCd.ChannelManager.Exists(args.SpacedArgs[2])) {
-                channel = args.IRCd.ChannelManager[args.SpacedArgs[2]];
+            if(ircd.ChannelManager.Exists(args.SpacedArgs[2])) {
+                channel = ircd.ChannelManager[args.SpacedArgs[2]];
             } else {
                 throw new IrcErrNoSuchTargetNickException(client, args.SpacedArgs[2]);
             }
 
             try {
-                targetClient = args.IRCd.GetClientByNick(args.SpacedArgs[1]);
+                targetClient = ircd.GetClientByNick(args.SpacedArgs[1]);
             } catch(InvalidOperationException) {
                 throw new IrcErrNoSuchTargetNickException(client, args.SpacedArgs[1]);
             }
@@ -78,7 +78,7 @@ namespace cmpctircd.Controllers {
                 throw new IrcErrChanOpPrivsNeededException(client, channel.Name);
             }
 
-            channel.SendToRoom(client, $":{args.IRCd.Host} {IrcNumeric.RPL_INVITING.Printable()} {client.Nick} {targetClient.Nick} :{channel.Name}", true);
+            channel.SendToRoom(client, $":{ircd.Host} {IrcNumeric.RPL_INVITING.Printable()} {client.Nick} {targetClient.Nick} :{channel.Name}", true);
             targetClient.Write($":{client.Mask} INVITE {targetClient.Nick} :{channel.Name}");
             targetClient.Invites.Add(channel);
             return true;
@@ -285,7 +285,7 @@ namespace cmpctircd.Controllers {
             } else if(targetClient != null) {
                 if(!String.IsNullOrWhiteSpace(targetClient.AwayMessage)) {
                     // If the target client (recipient) is away, warn the person (source) sending the message to them.
-                    client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_AWAY.Printable()} {client.Nick} {target} :{targetClient.AwayMessage}");
+                    client.Write($":{ircd.Host} {IrcNumeric.RPL_AWAY.Printable()} {client.Nick} {target} :{targetClient.AwayMessage}");
                 }
                 targetClient.Write(String.Format(":{0} PRIVMSG {1} :{2}", client.Mask, target, message));
             }
@@ -416,7 +416,7 @@ namespace cmpctircd.Controllers {
             if(target.StartsWith("#")) {
                 // The target is a channel
                 try {
-                    targetChannel = args.IRCd.ChannelManager.Channels[target];
+                    targetChannel = ircd.ChannelManager.Channels[target];
                 } catch(KeyNotFoundException) {
                     throw new IrcErrNoSuchTargetNickException(client, target);
                 }
@@ -434,9 +434,9 @@ namespace cmpctircd.Controllers {
                     } else {
                         away = "G"; // "Gone"
                     }
-                    this.client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {this.client.Nick} {target} {client.Value.Ident} {client.Value.GetHost()} {args.IRCd.Host} {client.Value.Nick} {away}{ircopSymbol}{userSymbol} :{hopCount} {client.Value.RealName}");
+                    this.client.Write($":{ircd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {this.client.Nick} {target} {client.Value.Ident} {client.Value.GetHost()} {ircd.Host} {client.Value.Nick} {away}{ircopSymbol}{userSymbol} :{hopCount} {client.Value.RealName}");
                 }
-                client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {client.Nick} {target} :End of /WHO list.");
+                client.Write($":{ircd.Host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {client.Nick} {target} :End of /WHO list.");
             } else {
                 // The target is a user
                 // See Queries.cs for the user-WHO implementation
@@ -456,21 +456,21 @@ namespace cmpctircd.Controllers {
             }
 
             for(int i = 0; i < splitCommaLine.Length; i++) {
-                if((i + 1) > args.IRCd.MaxTargets) break;
+                if((i + 1) > ircd.MaxTargets) break;
 
                 var channel_name = splitCommaLine[i];
                 if (!ChannelManager.IsValid(channel_name)) {
                     throw new IrcErrNoSuchTargetChannelException(client, channel_name);
                 }
 
-                if(args.IRCd.ChannelManager.Exists(channel_name)) {
-                    Channel targetChannel = args.IRCd.ChannelManager[channel_name];
+                if(ircd.ChannelManager.Exists(channel_name)) {
+                    Channel targetChannel = ircd.ChannelManager[channel_name];
                     foreach(var client in targetChannel.Clients) {
                         var userPriv = targetChannel.Status(client.Value);
                         var userSymbol = targetChannel.GetUserSymbol(userPriv);
-                        this.client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_NAMREPLY.Printable()} {this.client.Nick} = {channel_name} :{userSymbol}{client.Value.Nick}");
+                        this.client.Write($":{ircd.Host} {IrcNumeric.RPL_NAMREPLY.Printable()} {this.client.Nick} = {channel_name} :{userSymbol}{client.Value.Nick}");
                     }
-                    client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFNAMES.Printable()} {client.Nick} {channel_name} :End of /NAMES list.");
+                    client.Write($":{ircd.Host} {IrcNumeric.RPL_ENDOFNAMES.Printable()} {client.Nick} {channel_name} :End of /NAMES list.");
                 }
             }
 
@@ -494,8 +494,8 @@ namespace cmpctircd.Controllers {
                 return false;
             }
 
-            if(args.IRCd.ChannelManager.Exists(target)) {
-                channel = args.IRCd.ChannelManager[target];
+            if(ircd.ChannelManager.Exists(target)) {
+                channel = ircd.ChannelManager[target];
             } else {
                 throw new IrcErrNoSuchTargetChannelException(client, target);
             }
@@ -506,9 +506,9 @@ namespace cmpctircd.Controllers {
                 string characters = channelModes[0];
                 string argsSet = channelModes[1];
                 if(!String.IsNullOrWhiteSpace(argsSet)) {
-                    client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_CHANNELMODEIS.Printable()} {client.Nick} {channel.Name} {characters} {argsSet}");
+                    client.Write($":{ircd.Host} {IrcNumeric.RPL_CHANNELMODEIS.Printable()} {client.Nick} {channel.Name} {characters} {argsSet}");
                 } else {
-                    client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_CHANNELMODEIS.Printable()} {client.Nick} {channel.Name} {characters}");
+                    client.Write($":{ircd.Host} {IrcNumeric.RPL_CHANNELMODEIS.Printable()} {client.Nick} {channel.Name} {characters}");
                 }
                 // TODO: creation time?
 
@@ -528,7 +528,7 @@ namespace cmpctircd.Controllers {
                 int position = 3; // start from spacedArgs[3]
                 ChannelMode modeObject;
                 var modesNoOperator = modes.Replace("+", "").Replace("-", "");
-                if(args.IRCd.GetSupportedModesByType()["A"].Contains(modesNoOperator)) {
+                if(ircd.GetSupportedModesByType()["A"].Contains(modesNoOperator)) {
                     // Is this mode of Type A (and listable)? See ModeType
                     // TODO: should we put this in the foreach?
 
@@ -536,9 +536,9 @@ namespace cmpctircd.Controllers {
                     if(modesNoOperator == "b" && String.IsNullOrEmpty(args.SpacedArgs[3])) {
                         var banMode = (BanMode)channel.Modes["b"];
                         foreach(Ban ban in banMode.Bans.Values) {
-                            client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_BANLIST.Printable()} {client.Nick} {channel.Name} {ban.GetBan()}");
+                            client.Write($":{ircd.Host} {IrcNumeric.RPL_BANLIST.Printable()} {client.Nick} {channel.Name} {ban.GetBan()}");
                         }
-                        client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFBANLIST.Printable()} {client.Nick} {channel.Name} :End of channel ban list");
+                        client.Write($":{ircd.Host} {IrcNumeric.RPL_ENDOFBANLIST.Printable()} {client.Nick} {channel.Name} :End of channel ban list");
                         return true;
                     }
                 }
@@ -599,8 +599,8 @@ namespace cmpctircd.Controllers {
                         if (modeString.Contains(" ")) {
                             var splitBySpaces = modeString.Split(' ');
                             foreach(var chunk in splitBySpaces) {
-                                if(args.IRCd.IsUUID(chunk)) {
-                                    modeString = modeString.Replace(chunk, args.IRCd.GetClientByUUID(chunk).Nick);
+                                if(ircd.IsUUID(chunk)) {
+                                    modeString = modeString.Replace(chunk, ircd.GetClientByUUID(chunk).Nick);
                                 }
                             }
                         }
@@ -609,7 +609,7 @@ namespace cmpctircd.Controllers {
 
                     // TODO: Do we need to send this to all servers? Or just services?
                     // For now, send it to all
-                    args.IRCd.Servers.Where(server => server != client?.OriginServer).ForEach(
+                    ircd.Servers.Where(server => server != client?.OriginServer).ForEach(
                         server => server.Write($":{client.Mask} MODE {channel.Name} {modeString}")
                     );
                 }

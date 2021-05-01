@@ -11,9 +11,6 @@ namespace cmpctircd
     {
         public IRCd IRCd { get; }
         // TODO: Make read-only
-        public Client Client { get; set; }
-        public Server Server { get; }
-        // TODO: Make read-only
         public string Line { get; set; }
         public bool Force { get; set; }
 
@@ -50,14 +47,5 @@ namespace cmpctircd
 
             SpacedArgs = SpacedArgs.TakeWhile(arg => !arg.Contains(":")).ToList<string>();
         }
-
-        public HandlerArgs(IRCd ircd, Client client, string line, bool force) : this(ircd, line, force) {
-            Client = client;
-        }
-
-        public HandlerArgs(IRCd ircd, Server server, string line, bool force) : this(ircd, line, force) {
-            Server = server;
-        }
-
     }
 }

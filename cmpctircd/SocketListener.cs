@@ -138,10 +138,10 @@ namespace cmpctircd {
                 if (!string.IsNullOrWhiteSpace(line)) {
                     // Read until there's no more left
                     var parts = Regex.Split(line, " ");
-                    var args  = GetHandlerArgs(socketBase, line);
+                    var args  = GetHandlerArgs(line);
                     var search_prefix = GetPacketPrefix(parts);
 
-                    _ircd.PacketManager.Handle(search_prefix, args, Info.Type);
+                    _ircd.PacketManager.Handle(search_prefix, socketBase, args, Info.Type);
                 }
                 // Grab another line
                 line = await reader.ReadLineAsync();
@@ -167,16 +167,16 @@ namespace cmpctircd {
             return search_prefix;
         }
 
-        public HandlerArgs GetHandlerArgs(SocketBase socketBase, string line) {
+        public HandlerArgs GetHandlerArgs(string line) {
             HandlerArgs args;
             switch (Info.Type) {
                 case ListenerType.Server:
-                    args = new HandlerArgs(_ircd, socketBase as Server, line, false);
+                    args = new HandlerArgs(_ircd, line, false);
                     break;
 
                 case ListenerType.Client:
                 default:
-                    args = new HandlerArgs(_ircd, socketBase as Client, line, false);
+                    args = new HandlerArgs(_ircd, line, false);
                     break;
             }
 

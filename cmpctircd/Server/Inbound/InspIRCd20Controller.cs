@@ -182,7 +182,7 @@ namespace cmpctircd.Controllers {
 
         [Handles("QUIT")]
         public bool QuitHandler(HandlerArgs args) {
-            return ircd.PacketManager.Handle("QUIT", args, ListenerType.Client, true);
+            return ircd.PacketManager.Handle("QUIT", args, ListenerType.Client);
         }
 
         [Handles("SQUIT")]
@@ -196,12 +196,12 @@ namespace cmpctircd.Controllers {
 
         [Handles("PRIVMSG")]
         public bool PrivMsgHandler(HandlerArgs args) {
-            return ircd.PacketManager.Handle("PRIVMSG", args, ListenerType.Client, true);
+            return ircd.PacketManager.Handle("PRIVMSG", args, ListenerType.Client);
         }
 
         [Handles("NOTICE")]
         public bool NoticeHandler(HandlerArgs args) {
-            return ircd.PacketManager.Handle("NOTICE", args, ListenerType.Client, true);
+            return ircd.PacketManager.Handle("NOTICE", args, ListenerType.Client);
         }
 
         [Handles("FMODE")]
@@ -215,7 +215,7 @@ namespace cmpctircd.Controllers {
 
             // Convert all of the UUID args to nicks
             // TODO: May be moved to individual modes
-            for(int i = 3; i < args.SpacedArgs.Count(); i++) {
+            for (int i = 3; i < args.SpacedArgs.Count(); i++) {
                 var arg = args.SpacedArgs[i];
 
                 try {
@@ -230,7 +230,7 @@ namespace cmpctircd.Controllers {
             }
 
             // Call the normal mode with the modified args
-            return ircd.PacketManager.Handle("MODE", args, ListenerType.Client, true);
+            return ircd.PacketManager.Handle("MODE", args, ListenerType.Client);
         }
 
         [Handles("SVSNICK")]
@@ -241,10 +241,9 @@ namespace cmpctircd.Controllers {
             var target   = server.IRCd.GetClientByUUID(args.SpacedArgs[1]);
             var new_nick = args.SpacedArgs[2];
 
-            args.Client = target;
             args.Line   = $"NICK {new_nick}";
 
-            return ircd.PacketManager.Handle("NICK", args, ListenerType.Client, false);
+            return ircd.PacketManager.Handle("NICK", target, args, ListenerType.Client);
         }
     }
 }

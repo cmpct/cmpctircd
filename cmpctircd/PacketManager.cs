@@ -38,18 +38,18 @@ namespace cmpctircd {
             return true;
         }
 
-        public bool Handle(String packet, HandlerArgs args, ListenerType type, bool convertUids = false)
+        public bool Handle(String packet, HandlerArgs args, ListenerType type) {
+            args.Line = _ircd.ReplaceUUIDWithNick(args.Line);
+            var sender = _ircd.GetClientByNick(_ircd.ExtractIdentifierFromMessage(args.Line, true));
+            return Handle(packet, sender, args, type);
+        }
+
+        public bool Handle(String packet, object sender, HandlerArgs args, ListenerType type)
         {
             List<String> registrationCommands = new List<String>();
             List<String> idleCommands = new List<String>();
 
-            if(convertUids) {
-                args.Line   = _ircd.ReplaceUUIDWithNick(args.Line);
-                args.Client = _ircd.GetClientByNick(_ircd.ExtractIdentifierFromMessage(args.Line, true));
-            }
-
-            var client = args.Client;
-            if (client != null) {
+            if (sender is Client client) {
                 registrationCommands.Add("USER");
                 registrationCommands.Add("NICK");
                 registrationCommands.Add("CAP"); // TODO: NOT YET IMPLEMENTED
@@ -64,7 +64,7 @@ namespace cmpctircd {
 
                 try {
                     // Restrict the commands which non-registered (i.e. pre PONG, pre USER/NICK) users can execute
-                    if ((client.State.Equals(ClientState.PreAuth) || (args.IRCd.Config.Advanced.ResolveHostnames && args.Client.ResolvingHost)) && !registrationCommands.Contains(packet.ToUpper())) {
+                    if ((client.State.Equals(ClientState.PreAuth) || (args.IRCd.Config.Advanced.ResolveHostnames && client.ResolvingHost)) && !registrationCommands.Contains(packet.ToUpper())) {
                         throw new IrcErrNotRegisteredException(client);
                     }
 
@@ -76,9 +76,7 @@ namespace cmpctircd {
                     _ircd.Log.Debug($"Exception (client): {e.ToString()}");
                     return false;
                 }
-            } else {
-                // Server
-                var server = args.Server;
+            } else if (sender is Server server) {
                 try {
                     // TODO: Per-protocol?
                     registrationCommands.Add("CAPAB");
@@ -100,16 +98,16 @@ namespace cmpctircd {
             }
 
             try {
-                List<HandlerInfo> functions;
+                List<HandlerInfo> functions = new List<HandlerInfo>();
 
-                if (client != null) {
+                if (sender is Client) {
                     // Client
                     // Call handlers with no type defined (i.e. ServerType.Dummy)
                     functions = FindHandlers(packet, type);
-                } else {
+                } else if(sender is Server server) {
                     // Server
                     // Only call handlers matching our exact server type, or ServerType.Any
-                    functions = FindHandlers(packet, type, args.Server.Type);
+                    functions = FindHandlers(packet, type, server.Type);
                 }
 
                 if (functions.Any()) {
@@ -117,7 +115,7 @@ namespace cmpctircd {
                     foreach (var handler in functions) {
                         using (var scope = _services.CreateScope()) {
                             var context = scope.ServiceProvider.GetRequiredService<IrcContext>();
-                            context.Sender = (object)args.Client ?? args.Server;
+                            context.Sender = sender;
                             context.Args = args;
 
                             var controller = scope.ServiceProvider.GetRequiredService(handler.ControllerType);
@@ -126,8 +124,8 @@ namespace cmpctircd {
                     }
                 } else {
                     _ircd.Log.Debug("No handler for " + packet.ToUpper());
-                    if(client != null)
-                        throw new IrcErrUnknownCommandException(client, packet.ToUpper());
+                    if(sender is Client)
+                        throw new IrcErrUnknownCommandException((Client)sender, packet.ToUpper());
                 }
             } catch(Exception e) {
                 _ircd.Log.Debug("Exception: " + e.ToString());

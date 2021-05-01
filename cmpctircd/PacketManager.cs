@@ -1,22 +1,27 @@
 ﻿using cmpctircd.Controllers;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace cmpctircd {
     public class PacketManager {
-        private IRCd _ircd;
-        private IDictionary<String, IList<HandlerInfo>> _handlers = new Dictionary<string, IList<HandlerInfo>>();
+        private readonly IRCd _ircd;
+        private readonly IDictionary<string, IList<HandlerInfo>> _handlers = new Dictionary<string, IList<HandlerInfo>>();
+        private readonly IServiceProvider _services;
 
         public struct HandlerInfo {
             public string Packet;
-            public Func<HandlerArgs, Boolean> Handler;
-            public ListenerType Type;
+            public MethodInfo Method;
+            public Type ControllerType;
+            public ListenerType ListenerType;
             public ServerType ServerType;
         }
 
-        public PacketManager(IRCd ircd) {
+        public PacketManager(IRCd ircd, IServiceProvider services) {
             _ircd = ircd;
+            _services = services;
         }
 
         public bool Register(HandlerInfo info) {
@@ -31,15 +36,6 @@ namespace cmpctircd {
                 _handlers.Add(info.Packet.ToUpper(), list);
             }
             return true;
-        }
-
-        public bool Register(string packet, Func<HandlerArgs, Boolean> handler, ListenerType type = ListenerType.Client) {
-            // Legacy function, defaults to registering ListenerType.Client packets
-            return Register(new HandlerInfo {
-                Packet  = packet,
-                Handler = handler,
-                Type    = type
-            });
         }
 
         public bool FindHandler(String packet, HandlerArgs args, ListenerType type, bool convertUids = false)
@@ -68,12 +64,12 @@ namespace cmpctircd {
 
                 try {
                     // Restrict the commands which non-registered (i.e. pre PONG, pre USER/NICK) users can execute
-                    if((client.State.Equals(ClientState.PreAuth) || (args.IRCd.Config.Advanced.ResolveHostnames && args.Client.ResolvingHost)) && !registrationCommands.Contains(packet.ToUpper())) {
+                    if ((client.State.Equals(ClientState.PreAuth) || (args.IRCd.Config.Advanced.ResolveHostnames && args.Client.ResolvingHost)) && !registrationCommands.Contains(packet.ToUpper())) {
                         throw new IrcErrNotRegisteredException(client);
                     }
 
                     // Only certain commands should reset the idle clock
-                    if(!idleCommands.Contains(packet.ToUpper())) {
+                    if (!idleCommands.Contains(packet.ToUpper())) {
                         client.IdleTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
                     }
                 } catch(Exception e) {
@@ -92,7 +88,7 @@ namespace cmpctircd {
 
                     _ircd.Log.Debug($"Got a server line: {args.Line}");
 
-                    if(server.State.Equals(ServerState.PreAuth) && !registrationCommands.Contains(packet.ToUpper())) {
+                    if (server.State.Equals(ServerState.PreAuth) && !registrationCommands.Contains(packet.ToUpper())) {
                         _ircd.Log.Error($"Server just tried to use command pre-auth: {packet.ToUpper()}");
                         server.Disconnect("ERROR: Sent command before auth (send SERVER packet!)", true);
                         return false;
@@ -116,10 +112,17 @@ namespace cmpctircd {
                     functions = FindHandlers(packet, type, args.Server.Type);
                 }
 
-                if(functions.Count() > 0) {
-                    foreach(var record in functions) {
-                        // Invoke all of the handlers for the command
-                        record.Handler.Invoke(args);
+                if (functions.Any()) {
+                    // Invoke all of the handlers for the command
+                    foreach (var handler in functions) {
+                        using (var scope = _services.CreateScope()) {
+                            var context = scope.ServiceProvider.GetRequiredService<IrcContext>();
+                            context.Sender = (object)args.Client ?? args.Server;
+                            context.Args = args;
+
+                            var controller = scope.ServiceProvider.GetRequiredService(handler.ControllerType);
+                            handler.Method.Invoke(controller, new[] { args });
+                        }
                     }
                 } else {
                     _ircd.Log.Debug("No handler for " + packet.ToUpper());
@@ -139,7 +142,7 @@ namespace cmpctircd {
             name = name.ToUpper();
             if (_handlers.ContainsKey(name)) {
                 functions.AddRange(_handlers[name].Where(
-                    record => record.Type == type &&
+                    record => record.ListenerType == type &&
                     (record.ServerType == serverType || record.ServerType == ServerType.Any)
                 ));
             }
@@ -147,26 +150,26 @@ namespace cmpctircd {
         }
 
         public bool Load() {
-            AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(t => t.GetTypes())
-                .SelectMany(t => t.GetMethods())
-                .ForEach(
-                    m => m.GetCustomAttributes(typeof(Handles), false).ForEach(a => {
-                        Handles attr = (Handles) a;
-                        if(!m.IsStatic)
-                            _ircd.Log.Warn($"'{m.DeclaringType.FullName}.{m.Name}' is not static. Handler methods loaded through reflection must be static.");
-                        else {
-                            var handler = new HandlerInfo {
-                                Packet  = attr.Command,
-                                Handler = (Func<HandlerArgs, bool>) Delegate.CreateDelegate(typeof(Func<HandlerArgs, bool>), m),
-                                Type    = attr.Type,
-                                ServerType = attr.ServerType,
-                            };
-
-                            Register(handler);
+            foreach (var controllerType in AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => typeof(ControllerBase).IsAssignableFrom(t))) {
+                var controllerAttribute = (ControllerAttribute)controllerType.GetCustomAttributes(typeof(ControllerAttribute), false).FirstOrDefault();
+                if (controllerAttribute != null) {
+                    foreach (var method in controllerType.GetMethods()) {
+                        foreach (HandlesAttribute handlerAttribute in method.GetCustomAttributes(typeof(HandlesAttribute), false).Cast<HandlesAttribute>())
+                        {
+                            Register(new HandlerInfo {
+                                Packet = handlerAttribute.Command,
+                                Method = method,
+                                ListenerType = controllerAttribute.Type,
+                                ServerType = controllerAttribute.ServerType,
+                                ControllerType = controllerType,
+                            });
                         }
-                    })
-                );
+                    }
+                } else {
+                    _ircd.Log.Warn($"'{controllerType.Name}' does not inherit from type '{typeof(ControllerBase)}' and will be skipped.");
+                }
+            }
+
             return true;
         }
     }

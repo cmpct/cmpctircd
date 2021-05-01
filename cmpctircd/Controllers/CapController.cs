@@ -3,7 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 
 namespace cmpctircd.Controllers {
-    public static class CapController {
+    public class CapController : ControllerBase {
         internal class CapStatus {
             public enum CapAction {
                 Enable,
@@ -40,7 +40,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("CAP", ListenerType.Client)]
-        public static bool CapHandler(HandlerArgs args) {
+        public bool CapHandler(HandlerArgs args) {
             if (args.SpacedArgs.Count == 1) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "CAP");
             }
@@ -82,7 +82,7 @@ namespace cmpctircd.Controllers {
             return true;
         }
 
-        public static void CapHandleLS(HandlerArgs args) {
+        public void CapHandleLS(HandlerArgs args) {
             var version = 0;
             try {
                 version = int.Parse(args.SpacedArgs.ElementAtOrDefault(2) ?? "0");
@@ -124,7 +124,7 @@ namespace cmpctircd.Controllers {
             args.Client.Write($":{args.IRCd.Host} CAP {args.Client.NickIfSet()} LS :{capString}");
         }
 
-        public static void CapHandleReq(HandlerArgs args) {
+        public void CapHandleReq(HandlerArgs args) {
             var caps = new List<string>();
             var ackCaps = new List<CapStatus>(); // Caps we're going to ACK (successfully added)
             var badCaps = new List<CapStatus>(); // Caps we're going to NAK (could not be added)
@@ -220,7 +220,7 @@ namespace cmpctircd.Controllers {
             return;
         }
 
-        public static void CapHandleList(HandlerArgs args) {
+        public void CapHandleList(HandlerArgs args) {
             var enabled = args.Client.CapManager.GetEnabled().Select(cap => cap.Name);
             var enabledString = string.Join(" ", enabled);
 

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 namespace cmpctircd.Controllers {
-    public static class InspIRCd20Controller {
+    public class InspIRCd20Controller : ControllerBase {
         // This class handles inbound packets for InspIRCd 2.0
         // For outbound, see Translators/InspIRCd20.cs
 
@@ -11,7 +11,7 @@ namespace cmpctircd.Controllers {
         // TODO: Handle BURST, don't process until we get them all? Group the FJOINs
 
         [Handler("CAPAB", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool CapabHandler(HandlerArgs args) {
+        public bool CapabHandler(HandlerArgs args) {
             // TODO: checked if already sent capab?
             if (args.SpacedArgs.Count > 0 && args.SpacedArgs[1] == "START" && args.Server.Listener.GetType() != typeof(SocketConnector)) {
                 // Only send if CAPAB START and if inbound connection
@@ -22,7 +22,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("SERVER", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool ServerHandler(HandlerArgs args) {
+        public bool ServerHandler(HandlerArgs args) {
             // TODO: introduce some ServerState magic
             var parts = args.Line.Split(new char[] { ' ' }, 7).ToList();
 
@@ -84,7 +84,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("UID", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool UidHandler(HandlerArgs args) {
+        public bool UidHandler(HandlerArgs args) {
             var parts = args.Line.Split(new char[] { ' ' }, 12);
             
             // TODO: check parts count
@@ -132,7 +132,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("FJOIN", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool FjoinHandler(HandlerArgs args) {
+        public bool FjoinHandler(HandlerArgs args) {
             // TODO check if the SID is one we know, maybe specify in config? (???)
             var parts     = args.Line.Split(new char[] { ' ' }, 6);
             var channel   = parts[2];
@@ -169,12 +169,12 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("QUIT", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool QuitHandler(HandlerArgs args) {
+        public bool QuitHandler(HandlerArgs args) {
             return args.IRCd.PacketManager.FindHandler("QUIT", args, ListenerType.Client, true);
         }
 
         [Handler("SQUIT", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool SQuitHandler(HandlerArgs args) {
+        public bool SQuitHandler(HandlerArgs args) {
             // TODO: reason?
             args.Server.IRCd.Log.Info($"Server {args.Server.Name} sent SQUIT; disconnecting");
             args.Server.Disconnect(true);
@@ -183,17 +183,17 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("PRIVMSG", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool PrivMsgHandler(HandlerArgs args) {
+        public bool PrivMsgHandler(HandlerArgs args) {
             return args.IRCd.PacketManager.FindHandler("PRIVMSG", args, ListenerType.Client, true);
         }
 
         [Handler("NOTICE", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool NoticeHandler(HandlerArgs args) {
+        public bool NoticeHandler(HandlerArgs args) {
             return args.IRCd.PacketManager.FindHandler("NOTICE", args, ListenerType.Client, true);
         }
 
         [Handler("FMODE", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool FModeHandler(HandlerArgs args) {
+        public bool FModeHandler(HandlerArgs args) {
             // Trust the server
             args.Force = true;
 
@@ -222,7 +222,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("SVSNICK", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool SVSNickHandler(HandlerArgs args) {
+        public bool SVSNickHandler(HandlerArgs args) {
             // SVSMODE format: :SID SVSMODE TARGET_UUID NEW_NICK TS
             // NICK    format: NICK NEW_NICK
 

@@ -7,14 +7,14 @@ using System.Security.Cryptography;
 using cmpctircd.Configuration;
 
 namespace cmpctircd.Controllers {
-    public static class OperController {
+    public class OperController : ControllerBase {
         /// <summary>
         /// HashAlgorithm instance cache, to reduce reflection overheads.
         /// </summary>
-        private static readonly Dictionary<Type, HashAlgorithm> _algorithms = new Dictionary<Type, HashAlgorithm>();
+        private readonly Dictionary<Type, HashAlgorithm> _algorithms = new Dictionary<Type, HashAlgorithm>();
 
         [Handler("OPER", ListenerType.Client)]
-        public static bool OperHandler(HandlerArgs args) {
+        public bool OperHandler(HandlerArgs args) {
             bool hostMatch = false;
             if (args.SpacedArgs.Count <= 2) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "OPER");
@@ -75,7 +75,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("SAMODE", ListenerType.Client)]
-        public static bool SamodeHandler(HandlerArgs args) {
+        public bool SamodeHandler(HandlerArgs args) {
             if (args.SpacedArgs.Count == 1)
                 throw new IrcErrNotEnoughParametersException(args.Client, "SAMODE");
             if(args.Client.Modes["o"].Enabled) {
@@ -87,7 +87,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("CONNECT", ListenerType.Client)]
-        public static bool ConnectHandler(HandlerArgs args) {
+        public bool ConnectHandler(HandlerArgs args) {
             if (args.SpacedArgs.Count == 1) {
                 throw new IrcErrNotEnoughParametersException(args.Client, "CONNECT");
             }

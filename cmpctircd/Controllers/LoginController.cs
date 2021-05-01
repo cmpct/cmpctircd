@@ -1,9 +1,9 @@
 ﻿using System;
 
 namespace cmpctircd.Controllers {
-    public static class LoginController {
+    public class LoginController : ControllerBase {
         [Handler("USER", ListenerType.Client)]
-        public static bool UserHandler(HandlerArgs args) {
+        public bool UserHandler(HandlerArgs args) {
             Client client = args.Client;
 
             string username;
@@ -29,7 +29,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("NICK", ListenerType.Client)]
-        public static bool NickHandler(HandlerArgs args) {
+        public bool NickHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
 
@@ -40,7 +40,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("QUIT", ListenerType.Client)]
-        public static bool quitHandler(HandlerArgs args) {
+        public bool quitHandler(HandlerArgs args) {
             Client client = args.Client;
             string reason;
             try {
@@ -54,7 +54,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("PONG", ListenerType.Client)]
-        public static bool PongHandler(HandlerArgs args) {
+        public bool PongHandler(HandlerArgs args) {
             Client client = args.Client;
             string rawLine = args.Line;
             string[] splitLine = rawLine.Split(new char[] { ':' }, 2);

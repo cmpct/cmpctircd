@@ -1,9 +1,9 @@
 using System;
 
 namespace cmpctircd.Controllers {
-    public static class AnyController {
+    public class AnyController : ControllerBase {
         [Handler("ERROR", ListenerType.Server, ServerType.Any)]
-        public static bool ErrorHandler(HandlerArgs args) {
+        public bool ErrorHandler(HandlerArgs args) {
             args.IRCd.Log.Error($"[SERVER] Received an error (from: {args.Server?.Name}), disconnecting: {args.Trailer}");
             args.Server.Disconnect("ERROR: Received an error", false, false);
             return true;
@@ -11,7 +11,7 @@ namespace cmpctircd.Controllers {
 
 
         [Handler("PING", ListenerType.Server, ServerType.Any)]
-        public static bool PingHandler(HandlerArgs args) {
+        public bool PingHandler(HandlerArgs args) {
             // TODO: implement for hops > 1
             // TODO: could use args.Server.SID instead of SpacedArgs?
             var pingCookie = "";
@@ -26,7 +26,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("PONG", ListenerType.Server, ServerType.Any)]
-        public static bool PongHandler(HandlerArgs args) {
+        public bool PongHandler(HandlerArgs args) {
             args.Server.WaitingForPong = false;
             args.Server.LastPong       = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             return true;

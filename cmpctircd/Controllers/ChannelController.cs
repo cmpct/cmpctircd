@@ -5,7 +5,7 @@ using System.Linq;
 using cmpctircd.Modes;
 
 namespace cmpctircd.Controllers {
-    public static class ChannelController {
+    public class ChannelController : Contro {
         /// <summary>
         /// Handles the LIST command sent by clients, which writes back a list of channels.
         /// 
@@ -14,7 +14,7 @@ namespace cmpctircd.Controllers {
         /// <param name="args">The arguments object.</param>
         /// <returns>TRUE to indicate success.</returns>
         [Handler("LIST", ListenerType.Client)]
-        public static bool ListHandler(HandlerArgs args) {
+        public bool ListHandler(HandlerArgs args) {
             var client = args.Client;
             var ircd = args.IRCd;
             var manager = ircd.ChannelManager;
@@ -39,7 +39,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("INVITE", ListenerType.Client)]
-        public static bool InviteHandler(HandlerArgs args) {
+        public bool InviteHandler(HandlerArgs args) {
             Channel channel;
             Client targetClient;
 
@@ -78,7 +78,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("KICK", ListenerType.Client)]
-        public static bool KickHandler(HandlerArgs args) {
+        public bool KickHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
             Client targetClient;
@@ -122,7 +122,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("TOPIC", ListenerType.Client)]
-        public static bool TopicHandler(HandlerArgs args) {
+        public bool TopicHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
             Topic topic;
@@ -142,7 +142,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("JOIN", ListenerType.Client)]
-        public static bool JoinHandler(HandlerArgs args) {
+        public bool JoinHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
 
@@ -213,7 +213,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("PRIVMSG", ListenerType.Client)]
-        public static bool PrivMsgHandler(HandlerArgs args) {
+        public bool PrivMsgHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
             Client targetClient = null;
@@ -295,7 +295,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("NOTICE", ListenerType.Client)]
-        public static bool NoticeHandler(HandlerArgs args) {
+        public bool NoticeHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
             Client targetClient = null;
@@ -370,7 +370,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("PART", ListenerType.Client)]
-        public static bool PartHandler(HandlerArgs args) {
+        public bool PartHandler(HandlerArgs args) {
             IRCd ircd = args.IRCd;
             Client client = args.Client;
             String rawLine = args.Line;
@@ -409,7 +409,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("WHO", ListenerType.Client)]
-        public static Boolean WhoHandler(HandlerArgs args) {
+        public Boolean WhoHandler(HandlerArgs args) {
             String target;
             Channel targetChannel;
 
@@ -451,7 +451,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("NAMES", ListenerType.Client)]
-        public static Boolean NamesHandler(HandlerArgs args) {
+        public Boolean NamesHandler(HandlerArgs args) {
             String[] splitLineSpace = args.Line.Split(new string[] { " " }, 3, StringSplitOptions.None);
             String [] splitCommaLine;
 
@@ -484,7 +484,7 @@ namespace cmpctircd.Controllers {
         }
 
         [Handler("MODE", ListenerType.Client)]
-        public static bool ModeHandler(HandlerArgs args) {
+        public bool ModeHandler(HandlerArgs args) {
             // This handler is for Channel requests (i.e. where the target begins with a # or &)
             // TODO: update with channel validation logic (in ChannelManager?)
             string target;

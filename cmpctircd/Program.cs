@@ -1,20 +1,24 @@
-﻿using System.Linq;
-using System.Threading;
-using cmpctircd.Threading;
-using cmpctircd.Configuration;
+﻿namespace cmpctircd {
+    using cmpctircd.Configuration;
+    using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
 
-namespace cmpctircd {
-     class Program {
-         static void Main(string[] args) {
-            var log = new Log();
-            var config = CmpctConfigurationSection.GetConfiguration();
-            using(var sc = new QueuedSynchronizationContext()) {
-                SynchronizationContext.SetSynchronizationContext(sc);
-                IRCd ircd = new cmpctircd.IRCd(log, config);
-                log.Initialise(ircd, config.Loggers.OfType<LoggerElement>().ToList());
-                ircd.Run();
-                sc.Run();
-            }
-         }
-     }
+    class Program {
+        static void Main(string[] args) {
+            CreateHostBuilder(args)
+                .Build().Run();
+        }
+
+        static IHostBuilder CreateHostBuilder(string[] args) {
+            return Host.CreateDefaultBuilder(args)
+                .ConfigureServices((hostContext, services) => {
+                    var log = new Log();
+                    var config = CmpctConfigurationSection.GetConfiguration();
+                    services.AddSingleton(config);
+                    services.AddSingleton(log);
+                    services.AddSingleton<IRCd>();
+                    services.AddHostedService<IrcApplicationLifecycle>();
+                });
+        }
+    }
  }

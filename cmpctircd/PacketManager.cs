@@ -38,13 +38,13 @@ namespace cmpctircd {
             return true;
         }
 
-        public bool Handle(String packet, HandlerArgs args, ListenerType type) {
+        public bool Handle(String packet, IRCd ircd, HandlerArgs args, ListenerType type) {
             args.Line = _ircd.ReplaceUUIDWithNick(args.Line);
             var sender = _ircd.GetClientByNick(_ircd.ExtractIdentifierFromMessage(args.Line, true));
-            return Handle(packet, sender, args, type);
+            return Handle(packet, ircd, sender, args, type);
         }
 
-        public bool Handle(String packet, object sender, HandlerArgs args, ListenerType type)
+        public bool Handle(String packet, IRCd ircd, object sender, HandlerArgs args, ListenerType type)
         {
             List<String> registrationCommands = new List<String>();
             List<String> idleCommands = new List<String>();
@@ -64,7 +64,7 @@ namespace cmpctircd {
 
                 try {
                     // Restrict the commands which non-registered (i.e. pre PONG, pre USER/NICK) users can execute
-                    if ((client.State.Equals(ClientState.PreAuth) || (args.IRCd.Config.Advanced.ResolveHostnames && client.ResolvingHost)) && !registrationCommands.Contains(packet.ToUpper())) {
+                    if ((client.State.Equals(ClientState.PreAuth) || (ircd.Config.Advanced.ResolveHostnames && client.ResolvingHost)) && !registrationCommands.Contains(packet.ToUpper())) {
                         throw new IrcErrNotRegisteredException(client);
                     }
 
@@ -116,6 +116,7 @@ namespace cmpctircd {
                         using (var scope = _services.CreateScope()) {
                             var context = scope.ServiceProvider.GetRequiredService<IrcContext>();
                             context.Sender = sender;
+                            context.Daemon = ircd;
                             context.Args = args;
 
                             var controller = scope.ServiceProvider.GetRequiredService(handler.ControllerType);

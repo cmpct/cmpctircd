@@ -141,7 +141,7 @@ namespace cmpctircd {
                     var args  = GetHandlerArgs(line);
                     var search_prefix = GetPacketPrefix(parts);
 
-                    _ircd.PacketManager.Handle(search_prefix, socketBase, args, Info.Type);
+                    _ircd.PacketManager.Handle(search_prefix, _ircd, socketBase, args, Info.Type);
                 }
                 // Grab another line
                 line = await reader.ReadLineAsync();
@@ -171,12 +171,12 @@ namespace cmpctircd {
             HandlerArgs args;
             switch (Info.Type) {
                 case ListenerType.Server:
-                    args = new HandlerArgs(_ircd, line, false);
+                    args = new HandlerArgs(line, false);
                     break;
 
                 case ListenerType.Client:
                 default:
-                    args = new HandlerArgs(_ircd, line, false);
+                    args = new HandlerArgs(line, false);
                     break;
             }
 

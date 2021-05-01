@@ -182,7 +182,7 @@ namespace cmpctircd.Controllers {
 
         [Handles("QUIT")]
         public bool QuitHandler(HandlerArgs args) {
-            return ircd.PacketManager.Handle("QUIT", args, ListenerType.Client);
+            return ircd.PacketManager.Handle("QUIT", ircd, args, ListenerType.Client);
         }
 
         [Handles("SQUIT")]
@@ -196,12 +196,12 @@ namespace cmpctircd.Controllers {
 
         [Handles("PRIVMSG")]
         public bool PrivMsgHandler(HandlerArgs args) {
-            return ircd.PacketManager.Handle("PRIVMSG", args, ListenerType.Client);
+            return ircd.PacketManager.Handle("PRIVMSG", ircd, args, ListenerType.Client);
         }
 
         [Handles("NOTICE")]
         public bool NoticeHandler(HandlerArgs args) {
-            return ircd.PacketManager.Handle("NOTICE", args, ListenerType.Client);
+            return ircd.PacketManager.Handle("NOTICE", ircd, args, ListenerType.Client);
         }
 
         [Handles("FMODE")]
@@ -225,12 +225,12 @@ namespace cmpctircd.Controllers {
                 } catch(InvalidOperationException) {
                     // We normally check if the user exists in the normal handler
                     // But because MODE could have nicks at any point, the alternative is to check for UUIDs in individual MODEs
-                    throw new IrcErrNoSuchTargetNickException(args.Client, args.SpacedArgs[3]);
+                    //throw new IrcErrNoSuchTargetNickException(args.Client, args.SpacedArgs[3]);
                 }
             }
 
             // Call the normal mode with the modified args
-            return ircd.PacketManager.Handle("MODE", args, ListenerType.Client);
+            return ircd.PacketManager.Handle("MODE", ircd, args, ListenerType.Client);
         }
 
         [Handles("SVSNICK")]
@@ -243,7 +243,7 @@ namespace cmpctircd.Controllers {
 
             args.Line   = $"NICK {new_nick}";
 
-            return ircd.PacketManager.Handle("NICK", target, args, ListenerType.Client);
+            return ircd.PacketManager.Handle("NICK", ircd, target, args, ListenerType.Client);
         }
     }
 }

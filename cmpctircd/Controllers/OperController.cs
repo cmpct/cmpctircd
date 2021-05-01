@@ -89,7 +89,7 @@ namespace cmpctircd.Controllers {
                 throw new IrcErrNotEnoughParametersException(client, "SAMODE");
             if(client.Modes["o"].Enabled) {
                 args.Force = true;
-                ircd.PacketManager.Handle("MODE", client, args, ListenerType.Client);
+                ircd.PacketManager.Handle("MODE", ircd, client, args, ListenerType.Client);
                 return true;
             }
             throw new IrcErrNoPrivileges(client);

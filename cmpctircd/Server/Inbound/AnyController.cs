@@ -30,7 +30,7 @@ namespace cmpctircd.Controllers {
                 pingCookie = args.SpacedArgs[1];
             }
 
-            server.Write($":{ircd.SID} PONG {args.IRCd.SID} {pingCookie}");
+            server.Write($":{ircd.SID} PONG {ircd.SID} {pingCookie}");
             return true;
         }
 

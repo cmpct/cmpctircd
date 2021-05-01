@@ -9,7 +9,6 @@ namespace cmpctircd
     /// </summary>
     public class HandlerArgs
     {
-        public IRCd IRCd { get; }
         // TODO: Make read-only
         public string Line { get; set; }
         public bool Force { get; set; }
@@ -17,8 +16,7 @@ namespace cmpctircd
         public IList<string> SpacedArgs { get; }
         public string       Trailer { get; }
 
-        public HandlerArgs(IRCd ircd, string line, bool force) {
-            IRCd = ircd;
+        public HandlerArgs(string line, bool force) {
             Line = line;
             Force = force;
 

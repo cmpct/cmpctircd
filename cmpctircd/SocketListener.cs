@@ -138,7 +138,7 @@ namespace cmpctircd {
                 if (!string.IsNullOrWhiteSpace(line)) {
                     // Read until there's no more left
                     var parts = Regex.Split(line, " ");
-                    var args  = GetHandlerArgs(line);
+                    var args  = new HandlerArgs(line, false);
                     var search_prefix = GetPacketPrefix(parts);
 
                     _ircd.PacketManager.Handle(search_prefix, _ircd, socketBase, args, Info.Type);
@@ -165,22 +165,6 @@ namespace cmpctircd {
             }
 
             return search_prefix;
-        }
-
-        public HandlerArgs GetHandlerArgs(string line) {
-            HandlerArgs args;
-            switch (Info.Type) {
-                case ListenerType.Server:
-                    args = new HandlerArgs(line, false);
-                    break;
-
-                case ListenerType.Client:
-                default:
-                    args = new HandlerArgs(line, false);
-                    break;
-            }
-
-            return args;
         }
 
         public async Task<SslStream> HandshakeTlsAsServer(TcpClient tc) {

@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace cmpctircd {
@@ -13,7 +14,7 @@ namespace cmpctircd {
 
         public struct HandlerInfo {
             public string Packet;
-            public MethodInfo Method;
+            public Func<object, HandlerArgs, bool> Delegate;
             public Type ControllerType;
             public ListenerType ListenerType;
             public ServerType ServerType;
@@ -120,7 +121,7 @@ namespace cmpctircd {
                             context.Args = args;
 
                             var controller = scope.ServiceProvider.GetRequiredService(handler.ControllerType);
-                            handler.Method.Invoke(controller, new[] { args });
+                            handler.Delegate.Invoke(controller, args);
                         }
                     }
                 } else {
@@ -149,15 +150,23 @@ namespace cmpctircd {
         }
 
         public bool Load() {
+            var instance = Expression.Parameter(typeof(object));
+            var args = Expression.Parameter(typeof(HandlerArgs));
+
             foreach (var controllerType in AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => !t.IsAbstract && typeof(ControllerBase).IsAssignableFrom(t))) {
                 var controllerAttribute = (ControllerAttribute)controllerType.GetCustomAttributes(typeof(ControllerAttribute), false).FirstOrDefault();
                 if (controllerAttribute != null) {
-                    foreach (var method in controllerType.GetMethods()) {
+                    foreach (var method in controllerType.GetMethods().Where(m => m.ReturnType == typeof(bool))) {
                         foreach (HandlesAttribute handlerAttribute in method.GetCustomAttributes(typeof(HandlesAttribute), false).Cast<HandlesAttribute>())
                         {
+                            Func<object, HandlerArgs, bool> d = Expression.Lambda<Func<object, HandlerArgs, bool>>(
+                                Expression.Call(Expression.Convert(instance, controllerType), method, args),
+                                instance,
+                                args).Compile();
+
                             Register(new HandlerInfo {
                                 Packet = handlerAttribute.Command,
-                                Method = method,
+                                Delegate = d,
                                 ListenerType = controllerAttribute.Type,
                                 ServerType = controllerAttribute.ServerType,
                                 ControllerType = controllerType,

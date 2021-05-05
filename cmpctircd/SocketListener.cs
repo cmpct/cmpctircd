@@ -59,20 +59,20 @@ namespace cmpctircd {
             while(_started) {
                 try {
                     TcpClient tc = await _listener.AcceptTcpClientAsync();
-                    HandleClient(tc); // this should split off execution
+                    HandleClientAsync(tc); // this should split off execution
                 } catch(Exception e) {
                     _ircd.Log.Error($"Exception in ListenToClients(): {e.ToString()}");
                 }
             }
         }
 
-        protected async Task<Stream> HandshakeIfNeeded(TcpClient tc, Stream stream) {
+        protected async Task<Stream> HandshakeIfNeededAsync(TcpClient tc, Stream stream) {
             // Handshake with TLS if they're from a TLS port
             if (Info.IsTls) {
                 try {
-                    stream = await HandshakeTlsAsServer(tc);
+                    stream = await HandshakeTlsAsServerAsync(tc);
                 } catch (Exception e) {
-                    _ircd.Log.Debug($"Exception in HandshakeTls: {e.ToString()}");
+                    _ircd.Log.Debug($"Exception in {nameof(HandshakeTlsAsServerAsync)}: {e}");
                     tc.Close();
                 }
             }
@@ -99,14 +99,14 @@ namespace cmpctircd {
             return server;
         }
 
-        private async Task HandleClient(TcpClient tc) {
+        private async Task HandleClientAsync(TcpClient tc) {
             StreamReader reader = null;
             SocketBase socketBase = null;
 
             try {
                 // Sends the TLS handshake if we're a TLS listener
                 // Swaps out the stream for an SslStream if that's the case
-                var stream = await HandshakeIfNeeded(tc, (Stream) tc.GetStream());
+                var stream = await HandshakeIfNeededAsync(tc, (Stream) tc.GetStream());
                 socketBase = CreateClientObject(tc, stream);
 
                 // Call the appropriate BeginTasks
@@ -124,14 +124,14 @@ namespace cmpctircd {
                 reader = new StreamReader(stream);
 
                 // Loop until socket disconnects
-                await ReadLoop(socketBase, reader);
+                await ReadLoopAsync(socketBase, reader);
             } catch(Exception) {
                 socketBase?.Disconnect("Connection reset by host", true, false);
                 reader?.Dispose();
             }
         }
 
-        public async Task ReadLoop(SocketBase socketBase, StreamReader reader) {
+        public async Task ReadLoopAsync(SocketBase socketBase, StreamReader reader) {
             var line = await reader.ReadLineAsync();
 
             while(line != null) {
@@ -167,7 +167,7 @@ namespace cmpctircd {
             return search_prefix;
         }
 
-        public async Task<SslStream> HandshakeTlsAsServer(TcpClient tc) {
+        public async Task<SslStream> HandshakeTlsAsServerAsync(TcpClient tc) {
             SslStream stream = new SslStream(tc.GetStream(), true);
             // NOTE: Must use carefully constructed cert in PKCS12 format (.pfx)
             // NOTE: https://security.stackexchange.com/a/29428
@@ -179,7 +179,7 @@ namespace cmpctircd {
             // "Allows the operating system to choose the best protocol to use, and to block protocols that are not secure.
             // Unless your app has a specific reason not to, you should use this field"
             // - https://docs.microsoft.com/en-us/dotnet/api/system.security.authentication.sslprotocols?view=netcore-3.0
-            stream.AuthenticateAsServer(await _ircd.Certificate.GetCertificateAsync(), false, SslProtocols.None, true);
+            await stream.AuthenticateAsServerAsync(await _ircd.Certificate.GetCertificateAsync(), false, SslProtocols.None, true);
             return stream;
         }
 

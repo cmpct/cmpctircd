@@ -69,7 +69,7 @@ namespace cmpctircd {
                 reader = new StreamReader(stream);
 
                 // Loop until socket disconnects
-                await ReadLoop(server, reader);
+                await ReadLoopAsync(server, reader);
             } catch (Exception) {
                 Connected = false;
                 server?.Disconnect("Connection reset by host", true, false);

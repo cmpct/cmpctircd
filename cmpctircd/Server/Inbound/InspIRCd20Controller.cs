@@ -2,27 +2,41 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace cmpctircd.Packets {
-    public static class InspIRCd20 {
-        // This class handles inbound packets for InspIRCd 2.0
-        // For outbound, see Translators/InspIRCd20.cs
+namespace cmpctircd.Controllers {
+
+    /// <summary>
+    /// Handles inbound packets for InspIRCd 2.0.
+    /// </summary>
+    /// <remarks>
+    /// For outbound, see <see cref="InspIRCd20"/>.
+    /// </remarks>
+    [Controller(ListenerType.Server, ServerType.InspIRCd20)]
+    public class InspIRCd20Controller : ControllerBase {
+        private readonly IRCd ircd;
+        private readonly Server server;
+        private readonly Log log;
+
+        public InspIRCd20Controller(IRCd ircd, Server server, Log log) {
+            this.ircd = ircd ?? throw new ArgumentNullException(nameof(ircd));
+            this.server = server ?? throw new ArgumentNullException(nameof(server));
+            this.log = log ?? throw new ArgumentNullException(nameof(log));
+        }
 
         // TODO: three CAPAB packets
         // TODO: Handle BURST, don't process until we get them all? Group the FJOINs
-
-        [Handler("CAPAB", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool CapabHandler(HandlerArgs args) {
+        [Handles("CAPAB")]
+        public bool CapabHandler(HandlerArgs args) {
             // TODO: checked if already sent capab?
-            if (args.SpacedArgs.Count > 0 && args.SpacedArgs[1] == "START" && args.Server.Listener.GetType() != typeof(SocketConnector)) {
+            if (args.SpacedArgs.Count > 0 && args.SpacedArgs[1] == "START" && server.Listener.GetType() != typeof(SocketConnector)) {
                 // Only send if CAPAB START and if inbound connection
                 // On outbound, we send straightaway
-                args.Server.SendCapab();
+                server.SendCapab();
             }
             return true;
         }
 
-        [Handler("SERVER", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool ServerHandler(HandlerArgs args) {
+        [Handles("SERVER")]
+        public bool ServerHandler(HandlerArgs args) {
             // TODO: introduce some ServerState magic
             var parts = args.Line.Split(new char[] { ' ' }, 7).ToList();
 
@@ -44,47 +58,47 @@ namespace cmpctircd.Packets {
             var desc     = parts[5].Substring(1);
 
             // Compare with config
-            var foundMatch = args.Server.FindServerConfig(hostname, password);
+            var foundMatch = server.FindServerConfig(hostname, password);
 
             if(foundMatch) {
                 // Check if the server is already connected
                 // [Important that this is after all authentication checks because it has a conditional on whether server is authed]
                 try {
-                    var foundServer = args.IRCd.GetServerBySID(sid);
+                    var foundServer = ircd.GetServerBySID(sid);
 
                     // If the incoming server is authenticated, disconnect the old one (saves time waiting for ping timeouts, etc)
-                    args.IRCd.Log.Warn($"[SERVER] Ejecting server (SID: {sid}, name: {hostname}) for new connection");
+                    log.Warn($"[SERVER] Ejecting server (SID: {sid}, name: {hostname}) for new connection");
                     foundServer.Disconnect("ERROR: Replaced by a new connection", true);
                 } catch (InvalidOperationException) {}
 
-                args.Server.State = ServerState.Auth;
-                args.Server.Name = hostname;
-                args.Server.SID = sid;
-                args.Server.Desc = desc;
-                args.Server.Type = ServerType.InspIRCd20;
+                server.State = ServerState.Auth;
+                server.Name = hostname;
+                server.SID = sid;
+                server.Desc = desc;
+                server.Type = ServerType.InspIRCd20;
 
                 // TODO: Change to Info?
-                args.IRCd.Log.Warn($"[SERVER] Got an authed server (SID: {sid}, name: {hostname}, type: {args.Server.Type})");
+                log.Warn($"[SERVER] Got an authed server (SID: {sid}, name: {hostname}, type: {server.Type})");
 
                 // Introduce ourselves
-                if(args.Server.Listener.GetType() != typeof(SocketConnector)) {
+                if(server.Listener.GetType() != typeof(SocketConnector)) {
                     // Only introduce if we're being connected to (i.e. inbound)
                     // This is because for outbound connections, we introduce ourselves first
-                    args.Server.SendHandshake();
+                    server.SendHandshake();
                 }
 
                 // Set the ping cookie to be the SID, so we start pinging them (see CheckTimeout)
-                args.Server.PingCookie = args.Server.SID;
+                server.PingCookie = server.SID;
             } else {
-                args.IRCd.Log.Warn("[SERVER] Got an unauthed server");
-                args.Server.Disconnect("ERROR: Invalid credentials", true);
+                log.Warn("[SERVER] Got an unauthed server");
+                server.Disconnect("ERROR: Invalid credentials", true);
                 return false;
             }
             return true;
         }
 
-        [Handler("UID", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool UidHandler(HandlerArgs args) {
+        [Handles("UID")]
+        public bool UidHandler(HandlerArgs args) {
             var parts = args.Line.Split(new char[] { ' ' }, 12);
             
             // TODO: check parts count
@@ -108,31 +122,31 @@ namespace cmpctircd.Packets {
 
             // TODO: needed for FJOIN (???)
             var uid = user_uuid.Substring(3); // Drop the first 2 characters of UUID to make it a UID
-            var client = new Client(args.IRCd, args.Server.TcpClient, null, args.Server.Stream, uid, args.Server, true) {
+            var client = new Client(ircd, server.TcpClient, null, server.Stream, uid, server, true) {
                 Nick  = nick,
                 Ident = ident,
                 SignonTime = Int32.Parse(signon_time),
                 RealName = realname,
-                OriginServer = args.Server,
+                OriginServer = server,
                 State = ClientState.Auth,
                 ResolvingHost = false,
-                Listener = args.Server.Listener
+                Listener = server.Listener
                 // TODO IP
                 // client.IP = System.Net.IPAddress.Parse(ip)
             };
 
             // TODO modes
-            args.Server.Listener.Clients.Add(client);
+            server.Listener.Clients.Add(client);
 
-            ++args.Server.Listener.ClientCount;
-            ++args.Server.Listener.AuthClientCount;
+            ++server.Listener.ClientCount;
+            ++server.Listener.AuthClientCount;
 
-            args.IRCd.Log.Debug($"[SERVER] got new client {nick}");
+            log.Debug($"[SERVER] got new client {nick}");
             return true;
         }
 
-        [Handler("FJOIN", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool FjoinHandler(HandlerArgs args) {
+        [Handles("FJOIN")]
+        public bool FjoinHandler(HandlerArgs args) {
             // TODO check if the SID is one we know, maybe specify in config? (???)
             var parts     = args.Line.Split(new char[] { ' ' }, 6);
             var channel   = parts[2];
@@ -149,18 +163,18 @@ namespace cmpctircd.Packets {
 
                 try {
                     Channel chan = null;
-                    var client = args.IRCd.GetClientByUUID(UID);
+                    var client = ircd.GetClientByUUID(UID);
                     try {
                         // Use the channel if it already exists (very unlikely)
-                        chan = args.IRCd.ChannelManager.Channels[channel];
+                        chan = ircd.ChannelManager.Channels[channel];
                     } catch(KeyNotFoundException) {
-                        chan = args.IRCd.ChannelManager.Create(channel);
+                        chan = ircd.ChannelManager.Create(channel);
                     } finally {
                         chan.AddClient(client);
                     }
                     
                 } catch(Exception e) {
-                    args.IRCd.Log.Debug($"[SERVER] exception in FJOIN handler! {e.ToString()}");
+                    log.Debug($"[SERVER] exception in FJOIN handler! {e.ToString()}");
                 }
 
                 
@@ -168,32 +182,32 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        [Handler("QUIT", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool QuitHandler(HandlerArgs args) {
-            return args.IRCd.PacketManager.FindHandler("QUIT", args, ListenerType.Client, true);
+        [Handles("QUIT")]
+        public bool QuitHandler(HandlerArgs args) {
+            return ircd.PacketManager.Handle("QUIT", ircd, args, ListenerType.Client);
         }
 
-        [Handler("SQUIT", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool SQuitHandler(HandlerArgs args) {
+        [Handles("SQUIT")]
+        public bool SQuitHandler(HandlerArgs args) {
             // TODO: reason?
-            args.Server.IRCd.Log.Info($"Server {args.Server.Name} sent SQUIT; disconnecting");
-            args.Server.Disconnect(true);
+            log.Info($"Server {server.Name} sent SQUIT; disconnecting");
+            server.Disconnect(true);
 
             return true;
         }
 
-        [Handler("PRIVMSG", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool PrivMsgHandler(HandlerArgs args) {
-            return args.IRCd.PacketManager.FindHandler("PRIVMSG", args, ListenerType.Client, true);
+        [Handles("PRIVMSG")]
+        public bool PrivMsgHandler(HandlerArgs args) {
+            return ircd.PacketManager.Handle("PRIVMSG", ircd, args, ListenerType.Client);
         }
 
-        [Handler("NOTICE", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool NoticeHandler(HandlerArgs args) {
-            return args.IRCd.PacketManager.FindHandler("NOTICE", args, ListenerType.Client, true);
+        [Handles("NOTICE")]
+        public bool NoticeHandler(HandlerArgs args) {
+            return ircd.PacketManager.Handle("NOTICE", ircd, args, ListenerType.Client);
         }
 
-        [Handler("FMODE", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool FModeHandler(HandlerArgs args) {
+        [Handles("FMODE")]
+        public bool FModeHandler(HandlerArgs args) {
             // Trust the server
             args.Force = true;
 
@@ -203,36 +217,35 @@ namespace cmpctircd.Packets {
 
             // Convert all of the UUID args to nicks
             // TODO: May be moved to individual modes
-            for(int i = 3; i < args.SpacedArgs.Count(); i++) {
+            for (int i = 3; i < args.SpacedArgs.Count(); i++) {
                 var arg = args.SpacedArgs[i];
 
                 try {
-                    if(args.IRCd.IsUUID(arg)) {
-                        args.SpacedArgs[i] = args.IRCd.GetClientByUUID(arg).Nick;
+                    if(ircd.IsUUID(arg)) {
+                        args.SpacedArgs[i] = ircd.GetClientByUUID(arg).Nick;
                     }
                 } catch(InvalidOperationException) {
                     // We normally check if the user exists in the normal handler
                     // But because MODE could have nicks at any point, the alternative is to check for UUIDs in individual MODEs
-                    throw new IrcErrNoSuchTargetNickException(args.Client, args.SpacedArgs[3]);
+                    //throw new IrcErrNoSuchTargetNickException(args.Client, args.SpacedArgs[3]);
                 }
             }
 
             // Call the normal mode with the modified args
-            return args.IRCd.PacketManager.FindHandler("MODE", args, ListenerType.Client, true);
+            return ircd.PacketManager.Handle("MODE", ircd, args, ListenerType.Client);
         }
 
-        [Handler("SVSNICK", ListenerType.Server, ServerType.InspIRCd20)]
-        public static bool SVSNickHandler(HandlerArgs args) {
+        [Handles("SVSNICK")]
+        public bool SVSNickHandler(HandlerArgs args) {
             // SVSMODE format: :SID SVSMODE TARGET_UUID NEW_NICK TS
             // NICK    format: NICK NEW_NICK
 
-            var target   = args.Server.IRCd.GetClientByUUID(args.SpacedArgs[1]);
+            var target   = server.IRCd.GetClientByUUID(args.SpacedArgs[1]);
             var new_nick = args.SpacedArgs[2];
 
-            args.Client = target;
             args.Line   = $"NICK {new_nick}";
 
-            return args.IRCd.PacketManager.FindHandler("NICK", args, ListenerType.Client, false);
+            return ircd.PacketManager.Handle("NICK", ircd, target, args, ListenerType.Client);
         }
     }
 }

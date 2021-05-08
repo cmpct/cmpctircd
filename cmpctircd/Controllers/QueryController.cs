@@ -4,16 +4,25 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
-namespace cmpctircd.Packets {
-    public static class Queries {
-        [Handler("VERSION", ListenerType.Client)]
-        public static bool VersionHandler(HandlerArgs args) {
-            args.Client.SendVersion();
+namespace cmpctircd.Controllers {
+    [Controller(ListenerType.Client)]
+    public class QueryController : ControllerBase {
+        private readonly IRCd ircd;
+        private readonly Client client;
+
+        public QueryController(IRCd ircd, Client client) {
+            this.ircd = ircd ?? throw new ArgumentNullException(nameof(ircd));
+            this.client = client ?? throw new ArgumentNullException(nameof(client));
+        }
+
+        [Handles("VERSION")]
+        public bool VersionHandler(HandlerArgs args) {
+            client.SendVersion();
             return true;
         }
 
-        [Handler("WHOIS", ListenerType.Client)]
-        public static bool WhoisHandler(HandlerArgs args) {
+        [Handles("WHOIS")]
+        public bool WhoisHandler(HandlerArgs args) {
             String[] splitLineComma;
             Client targetClient;
             long idleTime;
@@ -21,37 +30,37 @@ namespace cmpctircd.Packets {
             try {
                 splitLineComma = args.SpacedArgs[1].Split(new char[] { ','});
             } catch(ArgumentOutOfRangeException) {
-                throw new IrcErrNotEnoughParametersException(args.Client, "WHOIS");
+                throw new IrcErrNotEnoughParametersException(client, "WHOIS");
             }
 
             // Need the client object of the target...
             for(int i = 0; i < splitLineComma.Count(); i++) {
-                if((i + 1) > args.IRCd.MaxTargets) break;
+                if((i + 1) > ircd.MaxTargets) break;
 
                 var target = splitLineComma[i];
                 try {
-                    targetClient = args.IRCd.GetClientByNick(target);
+                    targetClient = ircd.GetClientByNick(target);
                 } catch(InvalidOperationException) {
-                    throw new IrcErrNoSuchTargetNickException(args.Client, target);
+                    throw new IrcErrNoSuchTargetNickException(client, target);
                 }
 
                 idleTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds() - targetClient.IdleTime;
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISUSER.Printable()} {args.Client.Nick} {targetClient.Nick} {targetClient.Ident} {targetClient.GetHost()} * :{targetClient.RealName}");
+                client.Write($":{ircd.Host} {IrcNumeric.RPL_WHOISUSER.Printable()} {client.Nick} {targetClient.Nick} {targetClient.Ident} {targetClient.GetHost()} * :{targetClient.RealName}");
 
                 // Generate a list of all the channels inhabited by the target
                 // XXX: no LINQ for now because of strange bug where LINQ in Packet/dynamic classes causes an exception
                 //Predicate<Channel> channelFinder = (Channel chan) => { return chan.Inhabits(targetClient); };
-                //List<Channel> inhabitedChannels = args.IRCd.ChannelManager.Channels.Values.ToList().FindAll(channelFinder);
+                //List<Channel> inhabitedChannels = ircd.ChannelManager.Channels.Values.ToList().FindAll(channelFinder);
 
                 var inhabitedChannels = new List<string>();
-                var channelList       = args.IRCd.ChannelManager.Channels.Values;
+                var channelList       = ircd.ChannelManager.Channels.Values;
 
                 foreach(var channel in channelList) {
                     if(channel.Inhabits(targetClient)) {
                         if(targetClient.Modes["i"].Enabled) {
                             // If the user has +i, we can only tell the originator of the query about common channels
                             // Grab all of the inhabited channels, check we're both in them, and make a list of the names of those channels
-                            if(!channel.Inhabits(args.Client)) continue;
+                            if(!channel.Inhabits(client)) continue;
                         }
 
                         var userPriv = channel.Status(targetClient);
@@ -60,50 +69,50 @@ namespace cmpctircd.Packets {
                     }
                 }
 
-                if(targetClient == args.Client || args.Client.Modes["o"].Enabled) {
+                if(targetClient == client || client.Modes["o"].Enabled) {
                     // Only allow the target client's sensitive connection info if WHOISing themselves
-                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISHOST.Printable()} {args.Client.Nick} {targetClient.Nick} :is connecting from {targetClient.Ident}@{targetClient.GetHost(false)} {targetClient.IP}");
+                    client.Write($":{ircd.Host} {IrcNumeric.RPL_WHOISHOST.Printable()} {client.Nick} {targetClient.Nick} :is connecting from {targetClient.Ident}@{targetClient.GetHost(false)} {targetClient.IP}");
                 }
 
                 if(inhabitedChannels.Any()) {
                     // Only show if the target client resides in at least one channel
-                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISCHANNELS.Printable()} {args.Client.Nick} {targetClient.Nick} :{string.Join(" ", inhabitedChannels)}");
+                    client.Write($":{ircd.Host} {IrcNumeric.RPL_WHOISCHANNELS.Printable()} {client.Nick} {targetClient.Nick} :{string.Join(" ", inhabitedChannels)}");
                 }
 
                 // Deal with the remote case
-                var targetServerDesc = args.IRCd.Desc;
+                var targetServerDesc = ircd.Desc;
                 if (targetClient.RemoteClient) {
                     targetServerDesc = targetClient.OriginServer.Desc;
                 }
 
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISSERVER.Printable()} {args.Client.Nick} {targetClient.Nick} {targetClient.OriginServerName()} :{targetServerDesc}");
+                client.Write($":{ircd.Host} {IrcNumeric.RPL_WHOISSERVER.Printable()} {client.Nick} {targetClient.Nick} {targetClient.OriginServerName()} :{targetServerDesc}");
 
                 if (targetClient.Modes["o"].Enabled) {
-                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISOPERATOR.Printable()} {args.Client.Nick} {targetClient.Nick} :is an IRC Operator on {args.IRCd.Network}");
+                    client.Write($":{ircd.Host} {IrcNumeric.RPL_WHOISOPERATOR.Printable()} {client.Nick} {targetClient.Nick} :is an IRC Operator on {ircd.Network}");
                 }
 
 
                 if (targetClient.Modes["z"].Enabled) {
-                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISSECURE.Printable()} {args.Client.Nick} {targetClient.Nick} :is using a secure connection");
+                    client.Write($":{ircd.Host} {IrcNumeric.RPL_WHOISSECURE.Printable()} {client.Nick} {targetClient.Nick} :is using a secure connection");
                 }
 
                 if(!String.IsNullOrWhiteSpace(targetClient.AwayMessage)) {
                     // Only show if the user is away
-                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_AWAY.Printable()} {args.Client.Nick} {targetClient.Nick} :{targetClient.AwayMessage}");
+                    client.Write($":{ircd.Host} {IrcNumeric.RPL_AWAY.Printable()} {client.Nick} {targetClient.Nick} :{targetClient.AwayMessage}");
                 }
 
                 if (targetClient.Modes["B"].Enabled) {
                     // TODO: Unreal bolds the 'Bot', not sure about that for us
-                    args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISBOT.Printable()} {args.Client.Nick} {targetClient.Nick} :is a Bot on {args.IRCd.Network}");
+                    client.Write($":{ircd.Host} {IrcNumeric.RPL_WHOISBOT.Printable()} {client.Nick} {targetClient.Nick} :is a Bot on {ircd.Network}");
                 }
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOISIDLE.Printable()} {args.Client.Nick} {targetClient.Nick} {idleTime} {targetClient.SignonTime} :seconds idle, signon time");
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFWHOIS.Printable()} {args.Client.Nick} {targetClient.Nick} :End of /WHOIS list");
+                client.Write($":{ircd.Host} {IrcNumeric.RPL_WHOISIDLE.Printable()} {client.Nick} {targetClient.Nick} {idleTime} {targetClient.SignonTime} :seconds idle, signon time");
+                client.Write($":{ircd.Host} {IrcNumeric.RPL_ENDOFWHOIS.Printable()} {client.Nick} {targetClient.Nick} :End of /WHOIS list");
             }
             return true;
         }
 
-        [Handler("WHO", ListenerType.Client)]
-        public static bool WhoHandler(HandlerArgs args) {
+        [Handles("WHO")]
+        public bool WhoHandler(HandlerArgs args) {
             string mask = args.SpacedArgs[1];
 
             // TODO: may be another change as with channel WHO?
@@ -114,7 +123,7 @@ namespace cmpctircd.Packets {
                 return false;
             }
             // Iterate through all of our clients if no mask
-            foreach (var client in args.IRCd.Clients) {
+            foreach (var client in ircd.Clients) {
                 if (!(String.IsNullOrEmpty(mask) || mask.Equals("0"))) {
                     // If mask isn't blank or 0, then we need to check if the user matches criteria.
                     var metCriteria = false;
@@ -136,8 +145,8 @@ namespace cmpctircd.Packets {
                 }
 
                 // Always check if invisible users are being included in the mix
-                if(client.Modes["i"].Enabled && !args.IRCd.ChannelManager.Channels.Any(
-                        channel => channel.Value.Inhabits(args.Client) &&
+                if(client.Modes["i"].Enabled && !ircd.ChannelManager.Channels.Any(
+                        channel => channel.Value.Inhabits(client) &&
                         channel.Value.Inhabits(client))) {
                     // Skip if none
                     continue;
@@ -145,15 +154,15 @@ namespace cmpctircd.Packets {
 
                 var away = String.IsNullOrEmpty(client.AwayMessage) ? "H" : "G";
                 var ircopSymbol = client.Modes["o"].Enabled ? "*" : "";
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {args.Client.Nick} {client.Nick} {client.Ident} {client.GetHost()} {client.OriginServerName()} {client.Nick} {away}{ircopSymbol} :{hopCount} {client.RealName}");
+                client.Write($":{ircd.Host} {IrcNumeric.RPL_WHOREPLY.Printable()} {client.Nick} {client.Nick} {client.Ident} {client.GetHost()} {client.OriginServerName()} {client.Nick} {away}{ircopSymbol} :{hopCount} {client.RealName}");
             }
 
-            args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {args.Client.Nick} {mask} :End of /WHO list.");
+            client.Write($":{ircd.Host} {IrcNumeric.RPL_ENDOFWHO.Printable()} {client.Nick} {mask} :End of /WHO list.");
             return true;
         }
 
-        [Handler("AWAY", ListenerType.Client)]
-        public static bool AwayHandler(HandlerArgs args) {
+        [Handles("AWAY")]
+        public bool AwayHandler(HandlerArgs args) {
             String[] splitColonLine = args.Line.Split(new char[] { ':' }, 2);
             String message;
 
@@ -163,54 +172,54 @@ namespace cmpctircd.Packets {
                 message = "";
             }
 
-            args.Client.AwayMessage = message;
-            if(args.Client.AwayMessage != "") {
+            client.AwayMessage = message;
+            if(client.AwayMessage != "") {
                 // Now away
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_NOWAWAY.Printable()} {args.Client.Nick} :You have been marked as being away");
+                client.Write($":{ircd.Host} {IrcNumeric.RPL_NOWAWAY.Printable()} {client.Nick} :You have been marked as being away");
             } else {
                 // No longer away
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_UNAWAY.Printable()} {args.Client.Nick} :You are no longer marked as being away");
+                client.Write($":{ircd.Host} {IrcNumeric.RPL_UNAWAY.Printable()} {client.Nick} :You are no longer marked as being away");
             }
 
             // CAP: away-notify
-            foreach (var client in args.IRCd.Clients.Where(c => c != args.Client && c.CapManager.HasCap("away-notify"))) {
+            foreach (var client in ircd.Clients.Where(c => c != client && c.CapManager.HasCap("away-notify"))) {
                 // Ensure we share a channel
-                var cohabit = args.IRCd.ChannelManager.Channels.Values.Any(
-                    channel => channel.Clients.ContainsValue(args.Client) && channel.Clients.ContainsValue(client)
+                var cohabit = ircd.ChannelManager.Channels.Values.Any(
+                    channel => channel.Clients.ContainsValue(client) && channel.Clients.ContainsValue(client)
                 );
 
 
                 if (cohabit) {
                     // Let everyone know who has subscribed to away notifications if we share a channel
-                    client.Write($":{args.Client.Mask} AWAY :{message}");
+                    client.Write($":{client.Mask} AWAY :{message}");
                 }
             }
 
             return true;
         }
 
-        [Handler("LUSERS", ListenerType.Client)]
-        public static bool LUsersHandler(HandlerArgs args) {
+        [Handles("LUSERS")]
+        public bool LUsersHandler(HandlerArgs args) {
             // TODO: Lusers takes a server parameter
             // add this when we have linking
-            args.Client.SendLusers();
+            client.SendLusers();
             return true;
         }
 
-        [Handler("USERHOST", ListenerType.Client)]
-        public static bool UserHostHandler(HandlerArgs args) {
+        [Handles("USERHOST")]
+        public bool UserHostHandler(HandlerArgs args) {
             // the format is USERHOST nick1 nick2; so skip the command name
             var items = args.SpacedArgs.Skip(1).ToArray();
             if (items.Length == 0 || items.Length > 5) {
-                throw new IrcErrNotEnoughParametersException(args.Client, "USERHOST");
+                throw new IrcErrNotEnoughParametersException(client, "USERHOST");
             }
 
-            var replyBase = $":{args.IRCd.Host} {IrcNumeric.RPL_USERHOST.Printable()} {args.Client.Nick} :";
+            var replyBase = $":{ircd.Host} {IrcNumeric.RPL_USERHOST.Printable()} {client.Nick} :";
             var replyBuilder = new StringBuilder(replyBase);
             for (int i = 0; i < items.Length; i++) {
                 // <nick>['*'] '=' <'+'|'-'><hostname>
                 try {
-                    var userClient = args.IRCd.GetClientByNick(items[i]);
+                    var userClient = ircd.GetClientByNick(items[i]);
 
                     var isOp = userClient.Modes["o"].Enabled ? "*" : "";
                     var isAway = !string.IsNullOrEmpty(userClient.AwayMessage) ? "-" : "+";
@@ -224,30 +233,30 @@ namespace cmpctircd.Packets {
                 }
             }
 
-            args.Client.Write(replyBuilder.ToString());
+            client.Write(replyBuilder.ToString());
 
             return true;
         }
 
-        [Handler("PING", ListenerType.Client)]
-        public static bool PingHandler(HandlerArgs args) {
+        [Handles("PING")]
+        public bool PingHandler(HandlerArgs args) {
             // TODO: Modification for multiple servers
             var cookie = "";
             if(args.SpacedArgs.Count > 1) {
                 cookie = args.SpacedArgs[1];
             }
-            args.Client.Write($":{args.IRCd.Host} PONG {args.IRCd.Host} :{cookie}");
+            client.Write($":{ircd.Host} PONG {ircd.Host} :{cookie}");
             return true;
         }
 
-        [Handler("MODE", ListenerType.Client)]
-        public static bool ModeHandler(HandlerArgs args) {
+        [Handles("MODE")]
+        public bool ModeHandler(HandlerArgs args) {
             string target;
 
             try {
                 target = args.SpacedArgs[1];
             } catch (ArgumentOutOfRangeException) {
-                throw new IrcErrNotEnoughParametersException(args.Client, "MODE");
+                throw new IrcErrNotEnoughParametersException(client, "MODE");
             }
 
             if (target.StartsWith("#") || target.StartsWith("&")) {
@@ -255,17 +264,17 @@ namespace cmpctircd.Packets {
             }
 
             // Only allow the user to set their own modes
-            Client targetClient = args.Client;
+            Client targetClient = client;
 
             if (args.SpacedArgs.Count == 1) {
                 // This is a MODE request of the form: MODE <nick>
-                if (targetClient != args.Client) {
+                if (targetClient != client) {
                     // Can only request own modes
                     return false;
                 }
 
                 var userModes = targetClient.GetModeStrings("+");
-                args.Client.Write($":{args.IRCd.Host} {IrcNumeric.RPL_UMODEIS.Printable()} {targetClient.Nick} {userModes[0]} {userModes[1]}");
+                client.Write($":{ircd.Host} {IrcNumeric.RPL_UMODEIS.Printable()} {targetClient.Nick} {userModes[0]} {userModes[1]}");
             } else if(args.SpacedArgs.Count >= 2) {
                 // Process
                 string modes = args.SpacedArgs[2];
@@ -331,10 +340,10 @@ namespace cmpctircd.Packets {
                         // Return if the mode string doesn't contain an operator
                         return true;
                     }
-                    targetClient.Write($":{args.Client.Mask} MODE {targetClient.Nick} {modeString}");
+                    targetClient.Write($":{client.Mask} MODE {targetClient.Nick} {modeString}");
 
-                    args.IRCd.Servers.Where(server => server != args.Client?.OriginServer).ForEach(
-                        server => server.Write($":{args.Client.Mask} MODE {targetClient.Nick} {modeString}")
+                    ircd.Servers.Where(server => server != client?.OriginServer).ForEach(
+                        server => server.Write($":{client.Mask} MODE {targetClient.Nick} {modeString}")
                     );
                 }
             }

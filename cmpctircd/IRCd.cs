@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
-using System.IO;
+﻿namespace cmpctircd {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text.RegularExpressions;
 
-using cmpctircd.Modes;
-using cmpctircd.Configuration;
+    using cmpctircd.Configuration;
+    using cmpctircd.Modes;
 
-namespace cmpctircd {
     public class IRCd {
         private readonly IList<SocketListener> Listeners = new List<SocketListener>();
         public readonly IList<SocketConnector> Connectors = new List<SocketConnector>();
@@ -50,7 +50,7 @@ namespace cmpctircd {
 
         public List<Client> Clients => ClientLists.SelectMany(clientList => clientList).ToList();
         public List<Server> Servers => ServerLists.SelectMany(serverList => serverList).ToList();
-        public IRCd(Log log, CmpctConfigurationSection config) {
+        public IRCd(Log log, CmpctConfigurationSection config, IServiceProvider services) {
             this.Log = log;
             this.Config = config;
 
@@ -79,7 +79,7 @@ namespace cmpctircd {
             Opers = config.Operators.OfType<OperatorElement>().ToList();
             OperChan = config.Operators.Channels;
 
-            PacketManager = new PacketManager(this);
+            PacketManager = new PacketManager(this, services);
             ChannelManager = new ChannelManager(this);
 
             // Create certificate refresh

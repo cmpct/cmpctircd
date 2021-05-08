@@ -9,10 +9,6 @@ namespace cmpctircd
     /// </summary>
     public class HandlerArgs
     {
-        public IRCd IRCd { get; }
-        // TODO: Make read-only
-        public Client Client { get; set; }
-        public Server Server { get; }
         // TODO: Make read-only
         public string Line { get; set; }
         public bool Force { get; set; }
@@ -20,8 +16,7 @@ namespace cmpctircd
         public IList<string> SpacedArgs { get; }
         public string       Trailer { get; }
 
-        public HandlerArgs(IRCd ircd, string line, bool force) {
-            IRCd = ircd;
+        public HandlerArgs(string line, bool force) {
             Line = line;
             Force = force;
 
@@ -50,14 +45,5 @@ namespace cmpctircd
 
             SpacedArgs = SpacedArgs.TakeWhile(arg => !arg.Contains(":")).ToList<string>();
         }
-
-        public HandlerArgs(IRCd ircd, Client client, string line, bool force) : this(ircd, line, force) {
-            Client = client;
-        }
-
-        public HandlerArgs(IRCd ircd, Server server, string line, bool force) : this(ircd, line, force) {
-            Server = server;
-        }
-
     }
 }

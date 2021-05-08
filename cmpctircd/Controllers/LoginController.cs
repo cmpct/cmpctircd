@@ -1,11 +1,20 @@
 ﻿using System;
 
-namespace cmpctircd.Packets {
-    public static class Login {
-        [Handler("USER", ListenerType.Client)]
-        public static bool UserHandler(HandlerArgs args) {
-            Client client = args.Client;
+namespace cmpctircd.Controllers {
+    [Controller(ListenerType.Client)]
+    public class LoginController : ControllerBase {
+        private readonly IRCd ircd;
+        private readonly Client client;
+        private readonly Log log;
 
+        public LoginController(IRCd ircd, Client client, Log log) {
+            this.ircd = ircd ?? throw new ArgumentNullException(nameof(ircd));
+            this.client = client ?? throw new ArgumentNullException(nameof(client));
+            this.log = log ?? throw new ArgumentNullException(nameof(log));
+        }
+
+        [Handles("USER")]
+        public bool UserHandler(HandlerArgs args) {
             string username;
             string real_name;
 
@@ -28,20 +37,16 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        [Handler("NICK", ListenerType.Client)]
-        public static bool NickHandler(HandlerArgs args) {
-            IRCd ircd = args.IRCd;
-            Client client = args.Client;
-
+        [Handles("NICK")]
+        public bool NickHandler(HandlerArgs args) {
             var newNick = args.SpacedArgs.Count > 1 ? args.SpacedArgs[1] : args.Trailer;
-            ircd.Log.Debug($"Changing nick to {newNick}");
+            log.Debug($"Changing nick to {newNick}");
             client.SetNick(newNick);
             return true;
         }
 
-        [Handler("QUIT", ListenerType.Client)]
-        public static bool quitHandler(HandlerArgs args) {
-            Client client = args.Client;
+        [Handles("QUIT")]
+        public bool quitHandler(HandlerArgs args) {
             string reason;
             try {
                 reason = args.SpacedArgs[1];
@@ -53,9 +58,8 @@ namespace cmpctircd.Packets {
             return true;
         }
 
-        [Handler("PONG", ListenerType.Client)]
-        public static bool PongHandler(HandlerArgs args) {
-            Client client = args.Client;
+        [Handles("PONG")]
+        public bool PongHandler(HandlerArgs args) {
             string rawLine = args.Line;
             string[] splitLine = rawLine.Split(new char[] { ':' }, 2);
             string cookie;
@@ -77,7 +81,7 @@ namespace cmpctircd.Packets {
                 client.WaitingForPong = false;
                 client.LastPong = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-                if (args.IRCd.RequirePong && prevLastPong == 0) {
+                if (ircd.RequirePong && prevLastPong == 0) {
                     // Got a correct PONG and not had one yet
                     // So call handshake
                     client.SendWelcome();

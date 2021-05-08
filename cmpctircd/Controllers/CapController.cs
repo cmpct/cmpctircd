@@ -2,8 +2,17 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 
-namespace cmpctircd.Packets {
-    public static class Cap {
+namespace cmpctircd.Controllers {
+    [Controller(ListenerType.Client)]
+    public class CapController : ControllerBase {
+        private readonly IRCd ircd;
+        private readonly Client client;
+
+        public CapController(IRCd ircd, Client client) {
+            this.ircd = ircd ?? throw new ArgumentNullException(nameof(ircd));
+            this.client = client ?? throw new ArgumentNullException(nameof(client));
+        }
+
         internal class CapStatus {
             public enum CapAction {
                 Enable,
@@ -39,10 +48,10 @@ namespace cmpctircd.Packets {
             }
         }
 
-        [Handler("CAP", ListenerType.Client)]
-        public static bool CapHandler(HandlerArgs args) {
+        [Handles("CAP")]
+        public bool CapHandler(HandlerArgs args) {
             if (args.SpacedArgs.Count == 1) {
-                throw new IrcErrNotEnoughParametersException(args.Client, "CAP");
+                throw new IrcErrNotEnoughParametersException(client, "CAP");
             }
 
             var subCommand = args.SpacedArgs[1].ToUpper();
@@ -51,14 +60,14 @@ namespace cmpctircd.Packets {
                 // List available capabilities on server
                 case "LS":
                     // Don't send welcome messages yet
-                    args.Client.CapManager.StallRegistration(true);
+                    client.CapManager.StallRegistration(true);
                     CapHandleLS(args);
                     break;
 
                 // Client requests to enable a capability
                 case "REQ":
                     // Don't send welcome messages yet
-                    args.Client.CapManager.StallRegistration(true);
+                    client.CapManager.StallRegistration(true);
                     CapHandleReq(args);
                     break;
 
@@ -69,20 +78,20 @@ namespace cmpctircd.Packets {
                 // Client requests to end negotiation
                 case "END":
                     // Allow the welcome messages to be sent (and send them)
-                    args.Client.CapManager.StallRegistration(false);
+                    client.CapManager.StallRegistration(false);
                     break;
 
                 default:
                     // Unrecognised!
                     // At this point, try to recover by unstalling registration
-                    args.Client.CapManager.StallRegistration(false);
-                    throw new IrcErrInvalidCapCommandException(args.Client, subCommand);
+                    client.CapManager.StallRegistration(false);
+                    throw new IrcErrInvalidCapCommandException(client, subCommand);
             }
 
             return true;
         }
 
-        public static void CapHandleLS(HandlerArgs args) {
+        public void CapHandleLS(HandlerArgs args) {
             var version = 0;
             try {
                 version = int.Parse(args.SpacedArgs.ElementAtOrDefault(2) ?? "0");
@@ -92,17 +101,17 @@ namespace cmpctircd.Packets {
                 }
 
                 // Set the client's version for later use too
-                args.Client.CapManager.Version = version;
+                client.CapManager.Version = version;
             } catch (FormatException) {
                 // TODO: Make FormatException an inner exception
-                throw new IrcErrNotEnoughParametersException(args.Client, "CAP");
+                throw new IrcErrNotEnoughParametersException(client, "CAP");
             }
 
-            var caps = args.Client.CapManager.GetAvailable(version);
+            var caps = client.CapManager.GetAvailable(version);
             var capString = string.Empty;
             var parameters = string.Empty;
 
-            if (args.Client.CapManager.Version >= 302) {
+            if (client.CapManager.Version >= 302) {
                 // CAP 302: "capability values" support
                 // https://ircv3.net/specs/core/capability-negotiation#cap-ls-version-features
                 // Check if we have parameters to send
@@ -121,10 +130,10 @@ namespace cmpctircd.Packets {
                 capString = string.Join(" ", caps.Select(cap => cap.Name));
             }
 
-            args.Client.Write($":{args.IRCd.Host} CAP {args.Client.NickIfSet()} LS :{capString}");
+            client.Write($":{ircd.Host} CAP {client.NickIfSet()} LS :{capString}");
         }
 
-        public static void CapHandleReq(HandlerArgs args) {
+        public void CapHandleReq(HandlerArgs args) {
             var caps = new List<string>();
             var ackCaps = new List<CapStatus>(); // Caps we're going to ACK (successfully added)
             var badCaps = new List<CapStatus>(); // Caps we're going to NAK (could not be added)
@@ -135,13 +144,13 @@ namespace cmpctircd.Packets {
             } else {
                 // Syntax: CAP REQ <cap1>
                 if (args.SpacedArgs.Count() < 3) {
-                    throw new IrcErrInvalidCapCommandException(args.Client, "CAP REQ");
+                    throw new IrcErrInvalidCapCommandException(client, "CAP REQ");
                 }
 
                 if (args.SpacedArgs.Count() > 3) {
                     // Complain if they sent: CAP REQ <cap1> <cap2> ...
                     // rather than just CAP REQ <cap1>
-                    args.Client.Write($":{args.IRCd.Host} NOTICE {args.Client.NickIfSet()} :Your client is sending invalid CAP REQ packets, please report this as a bug!");
+                    client.Write($":{ircd.Host} NOTICE {client.NickIfSet()} :Your client is sending invalid CAP REQ packets, please report this as a bug!");
                 }
 
                 // Tolerate CAP REQ <cap1> <cap2> ...
@@ -149,7 +158,7 @@ namespace cmpctircd.Packets {
                 caps.AddRange(args.SpacedArgs.Skip(2));
             }
 
-            var manager = args.Client.CapManager;
+            var manager = client.CapManager;
             foreach (var cap in caps) {
                 try {
                     // Find cap with this name
@@ -204,7 +213,7 @@ namespace cmpctircd.Packets {
 
             // Send out the ACKs (successful)
             if (ackCaps.Any()) {
-                args.Client.Write($":{args.IRCd.Host} CAP {args.Client.NickIfSet()} ACK :{string.Join(" ", ackCaps)}");
+                client.Write($":{ircd.Host} CAP {client.NickIfSet()} ACK :{string.Join(" ", ackCaps)}");
             }
 
             // We've told the client which CAPs are enabled, now actually enable/disable it
@@ -214,17 +223,17 @@ namespace cmpctircd.Packets {
 
             // Send out the NAKs (unsuccessful)
             if (badCaps.Any()) {
-                args.Client.Write($":{args.IRCd.Host} CAP {args.Client.NickIfSet()} NAK :{string.Join(" ", badCaps)}");
+                client.Write($":{ircd.Host} CAP {client.NickIfSet()} NAK :{string.Join(" ", badCaps)}");
             }
 
             return;
         }
 
-        public static void CapHandleList(HandlerArgs args) {
-            var enabled = args.Client.CapManager.GetEnabled().Select(cap => cap.Name);
+        public void CapHandleList(HandlerArgs args) {
+            var enabled = client.CapManager.GetEnabled().Select(cap => cap.Name);
             var enabledString = string.Join(" ", enabled);
 
-            args.Client.Write($":{args.IRCd.Host} CAP {args.Client.NickIfSet()} LIST :{enabledString}");
+            client.Write($":{ircd.Host} CAP {client.NickIfSet()} LIST :{enabledString}");
         }
 
     }

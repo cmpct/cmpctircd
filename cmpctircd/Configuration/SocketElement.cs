@@ -8,7 +8,6 @@ namespace cmpctircd.Configuration
     {
         public ListenerType Type { get; set; }
 
-        [TypeConverter(typeof(IpAddressConverter))]
         public string Host { get; set; }
 
         public int Port { get; set; }

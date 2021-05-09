@@ -47,7 +47,6 @@
 
 
   <ItemGroup>
-    <None Include="App.config" />
     <None Include="ircd.motd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -56,5 +55,10 @@
     <EmbeddedResource Include="ircd.rules">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

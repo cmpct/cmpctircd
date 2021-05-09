@@ -1,4 +1,7 @@
-﻿namespace cmpctircd {
+﻿using System.IO;
+using Microsoft.Extensions.Configuration;
+
+namespace cmpctircd {
     using System;
     using System.Linq;
     using cmpctircd.Configuration;
@@ -16,13 +19,16 @@
             return Host.CreateDefaultBuilder(args)
                 .ConfigureServices((hostContext, services) => {
                     var log = new Log();
-                    var config = CmpctConfigurationSection.GetConfiguration();
+                    var configuration = new ConfigurationBuilder()
+                        .SetBasePath(Directory.GetParent(AppContext.BaseDirectory).FullName)
+                        .AddJsonFile("appsettings.json", false)
+                        .Build();
 
                     foreach (var controllerType in AppDomain.CurrentDomain.GetAssemblies().SelectMany(t => t.GetTypes()).Where(t => !t.IsAbstract && typeof(ControllerBase).IsAssignableFrom(t))) {
                         services.AddTransient(controllerType);
                     }
 
-                    services.AddSingleton(config);
+                    services.AddSingleton(configuration);
                     services.AddSingleton(log);
                     services.AddSingleton<IRCd>();
                     services.AddScoped<IrcContext>();

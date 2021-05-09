@@ -42,7 +42,7 @@ namespace cmpctircd {
                 return;
             }
 
-            if (ServerInfo.IsTls) {
+            if (ServerInfo.Tls) {
                 // If we're TLS, we need to handshake immediately
                 stream = await HandshakeTlsAsClient(tc, ServerInfo.Host, ServerInfo.VerifyTlsCert);
             }

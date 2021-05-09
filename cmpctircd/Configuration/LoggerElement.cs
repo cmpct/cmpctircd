@@ -1,36 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+﻿using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
-namespace cmpctircd.Configuration {
-    public class LoggerElement : ConfigurationElement {
-        private readonly Dictionary<string, string> _attributes = new Dictionary<string, string>();
+namespace cmpctircd.Configuration
+{
+    public class LoggerElement : ConfigurationElement
+    {
+        [JsonExtensionData] private Dictionary<string, JsonElement> _attributes { get; set; }
 
-        // Guid, due to a lack of other unique properties for this element type.
-        public Guid InstanceGuid {
-            get;
-        } = Guid.NewGuid();
+        public LoggerType Type { get; set; }
+        public LogType Level { get; set; }
+        public string Channel { get; set; }
+        public string Modes { get; set; }
 
-        public IReadOnlyDictionary<string, string> Attributes {
-            get { return new ReadOnlyDictionary<string, string>(_attributes); }
-        }
-
-        [ConfigurationProperty("type", IsRequired = true)]
-        public LoggerType Type {
-            get { return (LoggerType) this["type"]; }
-            set { this["type"] = value; }
-        }
-
-        [ConfigurationProperty("level", IsRequired = true)]
-        public LogType Level {
-            get { return (LogType) this["level"]; }
-            set { this["level"] = value; }
-        }
-
-        protected override bool OnDeserializeUnrecognizedAttribute(string name, string value) {
-            _attributes.Add(name, value);
-            return true;
+        public Dictionary<string, string> Attributes
+        {
+            get { return _attributes.ToDictionary(x => x.Key, x => x.Value.ToString()); }
         }
     }
 }

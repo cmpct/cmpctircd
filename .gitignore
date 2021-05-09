@@ -3,3 +3,6 @@ obj/
 bin/
 .vs
 .vscode/*
+/cmpctircd.sln.DotSettings.user
+/cmpctircd.v3.ncrunchsolution
+/_NCrunch_cmpctircd

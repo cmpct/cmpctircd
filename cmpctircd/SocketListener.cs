@@ -43,7 +43,7 @@ namespace cmpctircd {
         }
         public virtual void Stop() {
             if (_started) {
-                _ircd.Log.Debug($"Shutting down listener [IP: {Info.Host}, Port: {Info.Port}, TLS: {Info.IsTls}]");
+                _ircd.Log.Debug($"Shutting down listener [IP: {Info.Host}, Port: {Info.Port}, TLS: {Info.Tls}]");
                 _listener.Stop();
                 _started = false;
             }
@@ -68,7 +68,7 @@ namespace cmpctircd {
 
         protected async Task<Stream> HandshakeIfNeededAsync(TcpClient tc, Stream stream) {
             // Handshake with TLS if they're from a TLS port
-            if (Info.IsTls) {
+            if (Info.Tls) {
                 try {
                     stream = await HandshakeTlsAsServerAsync(tc);
                 } catch (Exception e) {

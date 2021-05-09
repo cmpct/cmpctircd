@@ -7,6 +7,7 @@ using System.Timers;
 using cmpctircd.Configuration;
 using cmpctircd.Modes;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 
 namespace cmpctircd
 {
@@ -17,10 +18,11 @@ namespace cmpctircd
         public readonly IList<SocketConnector> Connectors = new List<SocketConnector>();
         private readonly IList<SocketListener> Listeners = new List<SocketListener>();
 
-        public IRCd(Log log, IConfiguration config, IServiceProvider services)
+        public IRCd(Log log, IConfiguration config, IServiceProvider services, IOptions<SocketOptions> socketOptions)
         {
             Log = log;
             Config = config;
+            SocketOptions = socketOptions;
 
             // Interpret the ConfigData
             SID = config.GetValue<string>("SID");
@@ -64,6 +66,7 @@ namespace cmpctircd
 
         public Log Log { get; }
         public IConfiguration Config { get; }
+        public IOptions<SocketOptions> SocketOptions { get; }
         public string SID { get; }
         public string Host { get; }
         public string Desc { get; }
@@ -107,7 +110,8 @@ namespace cmpctircd
 
             PacketManager.Load();
 
-            foreach (var listener in Config.GetSection("Sockets").Get<List<SocketElement>>())
+            var sockets = SocketOptions.Value;
+            foreach (var listener in sockets.Sockets)
             {
                 var sl = new SocketListener(this, listener);
                 Log.Info(

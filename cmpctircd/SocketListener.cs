@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using System.IO;
+using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
@@ -28,7 +29,7 @@ namespace cmpctircd {
         public SocketListener(IRCd ircd, SocketElement info) {
             this._ircd = ircd;
             this.Info = info;
-            _listener = new TcpListener(info.Host, info.Port);
+            _listener = new TcpListener(info.EndPoint.Address, info.Port);
             _ircd.ClientLists.Add(Clients);
             _ircd.ServerLists.Add(_servers);
         }

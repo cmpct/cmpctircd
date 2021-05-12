@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Timers;
 using cmpctircd.Configuration;
 using cmpctircd.Modes;
+using cmpctircd.Validation;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
@@ -97,6 +98,16 @@ namespace cmpctircd
 
         public void Run()
         {
+            // Validate configuration file
+            var configurationValidator = new ConfigurationValidator(Config);
+            var validationResult = configurationValidator.ValidateConfiguration();
+
+            if (!validationResult.IsValid) {
+                Log.Error("Configuration file is incorrectly set up");
+                Log.Error($"{string.Join("\n", validationResult.Errors.Select(e => e.ErrorMessage))}");
+                return;
+            }
+
             Log.Info($"==> Starting cmpctircd-{Version}");
             if (Version.Contains("-dev"))
             {

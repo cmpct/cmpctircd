@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using cmpctircd.Configuration;
-using FluentValidation;
 using FluentValidation.Results;
 using Microsoft.Extensions.Configuration;
 
@@ -22,17 +21,15 @@ namespace cmpctircd.Validation {
             var modeValidationResult = ValidateModeElement();
             result.Errors.AddRange(modeValidationResult.Errors);
 
+            var operatorValidationResult = ValidateOperatorElement();
+            result.Errors.AddRange(operatorValidationResult.Errors);
+
             return result;
         }
 
         private ValidationResult ValidateLoggerElement() {
             var validationResult = new ValidationResult();
             var loggers = _config.GetSection("Logging:Loggers").Get<List<LoggerElement>>();
-
-            if (!loggers.Any()) {
-                validationResult.Errors.Add(new ValidationFailure("Log Section",
-                    "There were no loggers found in the configuration"));
-            }
 
             var validator = new LoggerElementValidator();
 
@@ -54,6 +51,22 @@ namespace cmpctircd.Validation {
 
             foreach (var mode in modes) {
                 var result = validator.Validate(mode);
+                validationResult.Errors.AddRange(result.Errors);
+            }
+
+            return validationResult;
+        }
+
+        private ValidationResult ValidateOperatorElement() {
+            var validationResult = new ValidationResult();
+
+            var opers = _config.GetSection("Opers").Get<List<OperatorElement>>();
+
+
+            var validator = new OperatorElementValidator();
+
+            foreach (var oper in opers) {
+                var result = validator.Validate(oper);
                 validationResult.Errors.AddRange(result.Errors);
             }
 

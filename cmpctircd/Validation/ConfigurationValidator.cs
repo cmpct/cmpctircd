@@ -24,6 +24,9 @@ namespace cmpctircd.Validation {
             var operatorValidationResult = ValidateOperatorElement();
             result.Errors.AddRange(operatorValidationResult.Errors);
 
+            var serverValidationResult = ValidateServerElement();
+            result.Errors.AddRange(serverValidationResult.Errors);
+
             return result;
         }
 
@@ -67,6 +70,22 @@ namespace cmpctircd.Validation {
 
             foreach (var oper in opers) {
                 var result = validator.Validate(oper);
+                validationResult.Errors.AddRange(result.Errors);
+            }
+
+            return validationResult;
+        }
+
+        private ValidationResult ValidateServerElement() {
+            var validationResult = new ValidationResult();
+
+            var servers = _config.GetSection("Servers").Get<List<ServerElement>>();
+
+
+            var validator = new ServerElementValidator();
+
+            foreach(var server in servers) {
+                var result = validator.Validate(server);
                 validationResult.Errors.AddRange(result.Errors);
             }
 

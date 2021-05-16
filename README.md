@@ -60,19 +60,21 @@ git remote add upstream https://bitbucket.org/cmpcti/cmpctircd cmpctircd
 git pull upstream master
 ```
 
-You must make your changes in a [new branch](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging) with a name related to the task you are performing:
+You must make your changes in a **[new branch](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging) with a name related to the task** you are performing:
 ```
 # Create a new branch for your task
-git checkout -b feature/list-command
+git checkout -b feature/IRCD-17-Implement-LIST
 ```
-Branches are usually prefixed with their task type, such as *bugfix* and *feature*, as above.
+Branches are usually **prefixed with the corresponding task type**, such as *bugfix* or *feature*, as above.
+
+Please **start your commit messages with the task number** (e.g. *IRCD-40*) to which it relates. It is useful for our record keeping to know which task each change relates to.
 
 When you are finished making your changes, push them to your remote repository and [create a pull request](https://support.atlassian.com/bitbucket-cloud/docs/create-a-pull-request-to-merge-your-change/) for us to review.
 
 ### Tests
 This project uses NUnit for testing. Tests are located in the `cmpctircd-tests` folder.
 
-Please run the tests *before and after* making changes, to make sure you have not broken anything before submitting your pull request:
+Please run the tests **before and after** making changes, to make sure you have not broken anything before submitting your pull request:
 
 ```
 # Run all tests

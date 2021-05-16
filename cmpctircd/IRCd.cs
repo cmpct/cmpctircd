@@ -99,7 +99,7 @@ namespace cmpctircd
         public void Run()
         {
             Log.Info("==> Validating appsettings.json");
-            var configurationValidator = new ConfigurationValidator(Config);
+            var configurationValidator = new ConfigurationValidator(Config, SocketOptions);
             var validationResult = configurationValidator.ValidateConfiguration();
 
             if (!validationResult.IsValid) {

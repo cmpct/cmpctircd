@@ -98,13 +98,12 @@ namespace cmpctircd
 
         public void Run()
         {
-            // Validate configuration file
+            Log.Info("==> Validating appsettings.json");
             var configurationValidator = new ConfigurationValidator(Config);
             var validationResult = configurationValidator.ValidateConfiguration();
 
             if (!validationResult.IsValid) {
-                Log.Error("Configuration file is incorrectly set up");
-                Log.Error($"{string.Join("\n", validationResult.Errors.Select(e => e.ErrorMessage))}");
+                Log.Error($"==> {string.Join("\n", validationResult.Errors.Select(e => e.ErrorMessage))}");
                 return;
             }
 

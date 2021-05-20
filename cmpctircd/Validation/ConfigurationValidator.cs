@@ -16,22 +16,19 @@ namespace cmpctircd.Validation {
         }
 
         public ValidationResult ValidateConfiguration() {
+            var validators = new List<ValidationResult> {
+                ValidateServerElement(),
+                ValidateSocketElement(),
+                ValidateOperatorElement(),
+                ValidateLoggerElement(),
+                ValidateModeElement(),
+            };
+
             var result = new ValidationResult();
 
-            var loggerValidationResult = ValidateLoggerElement();
-            result.Errors.AddRange(loggerValidationResult.Errors);
-
-            var modeValidationResult = ValidateModeElement();
-            result.Errors.AddRange(modeValidationResult.Errors);
-
-            var operatorValidationResult = ValidateOperatorElement();
-            result.Errors.AddRange(operatorValidationResult.Errors);
-
-            var serverValidationResult = ValidateServerElement();
-            result.Errors.AddRange(serverValidationResult.Errors);
-
-            var socketValidationResult = ValidateSocketElement();
-            result.Errors.AddRange(socketValidationResult.Errors);
+            foreach (var validationResult in validators) {
+                result.Errors.AddRange(validationResult.Errors);
+            }
 
             return result;
         }

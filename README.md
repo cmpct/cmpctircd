@@ -13,7 +13,7 @@ We run a live server at [irc://irc.cmpct.info:+6697/stratcom](irc://irc.cmpct.in
 
 ## Quickstart
 ### Dependencies
-* .NET Core 3.0
+* .NET Core 5.0
 
 ### Clone and run
 ```

@@ -11,7 +11,7 @@ namespace cmpctircd.Validation
     public class ModeElementValidator : AbstractValidator<ModeElement>
     {
         public ModeElementValidator() {
-            RuleFor(m => m.Name).NotEmpty();
+            RuleFor(m => m.Name).NotEmpty().MaximumLength(1);
         }
     }
 }

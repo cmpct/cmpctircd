@@ -14,7 +14,7 @@ namespace cmpctircd.Validation
             RuleFor(s => s.Host).NotEmpty();
             RuleFor(s => s.Type).NotEmpty();
             RuleFor(s => s.Masks).NotEmpty();
-            RuleFor(s => s.Port).NotEmpty();
+            RuleFor(s => s.Port).NotEmpty().ExclusiveBetween(0, 65535);
             RuleFor(s => s.Password).NotEmpty();
         }
     }

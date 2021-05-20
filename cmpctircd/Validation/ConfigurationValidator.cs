@@ -16,7 +16,7 @@ namespace cmpctircd.Validation {
         }
 
         public ValidationResult ValidateConfiguration() {
-            var validators = new List<ValidationResult> {
+            var validators = new[] {
                 ValidateServerElement(),
                 ValidateSocketElement(),
                 ValidateOperatorElement(),

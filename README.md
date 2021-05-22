@@ -17,7 +17,7 @@ We run a live server at [irc://irc.cmpct.info:+6697/stratcom](irc://irc.cmpct.in
 
 ### Clone and run
 ```
-git clone --recurse-submodules https://github.com/cmpct/cmpctircd
+git clone https://github.com/cmpct/cmpctircd
 
 cd cmpctircd/cmpctircd
 
@@ -49,7 +49,7 @@ Before you start working, check in on the project's [issues](https://github.com/
 If you're new here, we recommend that you [create a fork](https://docs.github.com/en/github/getting-started-with-github/quickstart/fork-a-repo) of the project in order to commit your changes to it. After creating a fork, you can clone the repository from your own account:
 ```
 # Clone the repository from your own account
-git clone --recurse-submodules https://github.com/<YOUR_USERNAME>/cmpctircd cmpctircd
+git clone https://github.com/<YOUR_USERNAME>/cmpctircd cmpctircd
 ```
 It is also recommended that you add the main repository as a remote, so that you can keep up to date with the project:
 ```

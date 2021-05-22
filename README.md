@@ -1,6 +1,13 @@
 <img src="./cmpct-icon-round.png" alt="cmpct logo" align="right" width="20%"/>
 
 # cmpctircd
+[![Open Source Love](https://badges.frapsoft.com/os/v3/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
+[![GitHub](https://img.shields.io/github/license/cmpct/cmpctircd)](https://github.com/cmpct/cmpctircd/blob/master/LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![GitHub issues](https://img.shields.io/github/issues/cmpct/cmpctircd)](https://github.com/cmpct/cmpctircd/issues)
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/cmpct/cmpctircd/.NET/master)](https://github.com/cmpct/cmpctircd/actions/workflows/dotnet.yml)
+[![GitHub Repo stars](https://img.shields.io/github/stars/cmpct/cmpctircd?style=social)](https://github.com/cmpct/cmpctircd/stargazers)
+
 *compact eye-are-see-dee*  
 An [IRC](https://simple.wikipedia.org/wiki/Internet_Relay_Chat) server software; written with modern tools.
 

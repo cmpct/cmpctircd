@@ -17,7 +17,7 @@ We run a live server at [irc://irc.cmpct.info:+6697/stratcom](irc://irc.cmpct.in
 
 ### Clone and run
 ```
-git clone --recurse-submodules https://bitbucket.org/cmpcti/cmpctircd cmpctircd
+git clone --recurse-submodules https://github.com/cmpct/cmpctircd
 
 cd cmpctircd/cmpctircd
 
@@ -30,7 +30,7 @@ dotnet run
 
 ### Docker container
 ```
-wget https://bitbucket.org/cmpcti/cmpctircd/raw/master/Dockerfile
+wget https://raw.githubusercontent.com/cmpct/cmpctircd/master/Dockerfile
 
 mkdir cmpctircd-docker
 # Place your App.config and so on in cmpctircd-docker
@@ -49,12 +49,12 @@ Before you start working, check in on the project's [issues](https://github.com/
 If you're new here, we recommend that you [create a fork](https://docs.github.com/en/github/getting-started-with-github/quickstart/fork-a-repo) of the project in order to commit your changes to it. After creating a fork, you can clone the repository from your own account:
 ```
 # Clone the repository from your own account
-git clone --recurse-submodules https://bitbucket.org/<YOUR_USERNAME>/cmpctircd cmpctircd
+git clone --recurse-submodules https://github.com/<YOUR_USERNAME>/cmpctircd cmpctircd
 ```
 It is also recommended that you add the main repository as a remote, so that you can keep up to date with the project:
 ```
 # Add the main repository as "upstream"
-git remote add upstream https://bitbucket.org/cmpcti/cmpctircd cmpctircd
+git remote add upstream https://github.com/cmpct/cmpctircd cmpctircd
 
 # Pull from the upstream repository
 git pull upstream master

@@ -63,11 +63,11 @@ git pull upstream master
 You must make your changes in a **[new branch](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging) with a name related to the task** you are performing:
 ```
 # Create a new branch for your task
-git checkout -b feature/IRCD-17-Implement-LIST
+git checkout -b feature/17-Implement-LIST
 ```
 Branches are usually **prefixed with the corresponding task type**, such as *bugfix* or *feature*, as above.
 
-Please **start your commit messages with the task number** (e.g. *IRCD-40*) to which it relates. It is useful for our record keeping to know which task each change relates to.
+Please **start your commit messages with the issue number** (e.g. *40*) to which it relates. It is useful for our record keeping to know which task each change relates to.
 
 When you are finished making your changes, push them to your remote repository and [create a pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) for us to review.
 

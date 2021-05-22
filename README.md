@@ -46,7 +46,7 @@ Many hands make light work, we welcome you to help us out.
 Before you start working, check in on the project's [issues](https://github.com/cmpct/cmpctircd/issues) and discuss your plans in order to avoid repeated or unnecessary work.
 
 ### Workflow
-If you're new here, we recommend that you [create a fork](https://support.atlassian.com/bitbucket-cloud/docs/fork-a-repository/) of the project in order to commit your changes to it. After creating a fork, you can clone the repository from your own account:
+If you're new here, we recommend that you [create a fork](https://docs.github.com/en/github/getting-started-with-github/quickstart/fork-a-repo) of the project in order to commit your changes to it. After creating a fork, you can clone the repository from your own account:
 ```
 # Clone the repository from your own account
 git clone --recurse-submodules https://bitbucket.org/<YOUR_USERNAME>/cmpctircd cmpctircd
@@ -69,7 +69,7 @@ Branches are usually **prefixed with the corresponding task type**, such as *bug
 
 Please **start your commit messages with the task number** (e.g. *IRCD-40*) to which it relates. It is useful for our record keeping to know which task each change relates to.
 
-When you are finished making your changes, push them to your remote repository and [create a pull request](https://support.atlassian.com/bitbucket-cloud/docs/create-a-pull-request-to-merge-your-change/) for us to review.
+When you are finished making your changes, push them to your remote repository and [create a pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) for us to review.
 
 ### Tests
 This project uses NUnit for testing. Tests are located in the `cmpctircd-tests` folder.

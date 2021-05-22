@@ -67,7 +67,22 @@ git checkout -b feature/17-Implement-LIST
 ```
 Branches are usually **prefixed with the corresponding task type**, such as *bugfix* or *feature*, as above.
 
-Please **start your commit messages with the issue number** (e.g. *40*) to which it relates. It is useful for our record keeping to know which task each change relates to.
+Please follow the below convention for commit messages:
+```
+<component>: <description>
+
+<remarks>
+
+<task type>: #<task number>
+```
+For example:
+```
+Handlers: Add LIST command handler.
+
+New users will now be able to find a channel to join.
+
+feature: #17
+```
 
 When you are finished making your changes, push them to your remote repository and [create a pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) for us to review.
 

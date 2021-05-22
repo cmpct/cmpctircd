@@ -7,7 +7,7 @@ An [IRC](https://simple.wikipedia.org/wiki/Internet_Relay_Chat) server software;
 Under heavy development. It'll be clear when it is production ready.
 
 ## Contact
-Feel free to report any bugs on [Jira](https://cmpct.atlassian.net).
+Feel free to report any bugs as an [issue](https://github.com/cmpct/cmpctircd/issues).
 
 We run a live server at [irc://irc.cmpct.info:+6697/stratcom](irc://irc.cmpct.info:+6697/stratcom), come and join us!
 
@@ -43,7 +43,7 @@ docker run -v $HOME/cmpctircd-docker:/cmpctircd/ --name cmpctircd -p 6667:6667 -
 ## Contributing
 Many hands make light work, we welcome you to help us out.
 
-Before you start working, check in on the [Jira issues](https://bitbucket.org/cmpcti/cmpctircd/jira) and discuss your plans in order to avoid repeated or unnecessary work.
+Before you start working, check in on the project's [issues](https://github.com/cmpct/cmpctircd/issues) and discuss your plans in order to avoid repeated or unnecessary work.
 
 ### Workflow
 If you're new here, we recommend that you [create a fork](https://support.atlassian.com/bitbucket-cloud/docs/fork-a-repository/) of the project in order to commit your changes to it. After creating a fork, you can clone the repository from your own account:

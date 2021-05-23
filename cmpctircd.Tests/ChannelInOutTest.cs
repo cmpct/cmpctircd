@@ -50,7 +50,6 @@ namespace cmpctircd.Tests {
         }
         
         [SetUp]
-        [Ignore("Ignoring integration style test as per task #10")]
         public void SetUp() {
             if(setup) {
                 return;
@@ -85,7 +84,6 @@ namespace cmpctircd.Tests {
         }
 
         [TearDown]
-        [Ignore("Ignoring integration style test as per task #10")]
         public void TearDown() {
             setup = false;
             irc.Disconnect();

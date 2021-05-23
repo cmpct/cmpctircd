@@ -45,7 +45,7 @@ namespace cmpctircd {
         }
         public virtual void Stop() {
             if (_started) {
-                _ircd.Log.Debug($"Shutting down listener [IP: {Info.Host}, Port: {Info.Port}, TLS: {Info.IsTls}]");
+                log.Debug($"Shutting down listener [IP: {Info.Host}, Port: {Info.Port}, TLS: {Info.IsTls}]");
                 _listener.Stop();
                 _started = false;
             }
@@ -63,7 +63,7 @@ namespace cmpctircd {
                     TcpClient tc = await _listener.AcceptTcpClientAsync();
                     HandleClientAsync(tc); // this should split off execution
                 } catch(Exception e) {
-                    _ircd.Log.Error($"Exception in ListenToClients(): {e.ToString()}");
+                    log.Error($"Exception in ListenToClients(): {e.ToString()}");
                 }
             }
         }
@@ -74,7 +74,7 @@ namespace cmpctircd {
                 try {
                     stream = await HandshakeTlsAsServerAsync(tc);
                 } catch (Exception e) {
-                    _ircd.Log.Debug($"Exception in {nameof(HandshakeTlsAsServerAsync)}: {e}");
+                    log.Debug($"Exception in {nameof(HandshakeTlsAsServerAsync)}: {e}");
                     tc.Close();
                 }
             }
@@ -191,7 +191,7 @@ namespace cmpctircd {
             if (verifyCert) {
                 stream = new SslStream(tc.GetStream(), true);
             } else {
-                _ircd.Log.Warn($"[SERVER] Connecting out to server {host} with TLS verification disabled: this is dangerous!");
+                log.Warn($"[SERVER] Connecting out to server {host} with TLS verification disabled: this is dangerous!");
                 stream = new SslStream(tc.GetStream(), true, (sender, certificate, chain, sslPolicyErrors) => true);
             }
 

@@ -1,20 +1,21 @@
-cmpctircd
-=========
+<img src="./cmpct-icon-round.png" alt="cmpct logo" align="right" width="20%"/>
 
-About
------
-The aim of this project is to provide a stable, fast, and modern ircd.
+# cmpctircd
+*compact eye-are-see-dee*  
+An [IRC](https://simple.wikipedia.org/wiki/Internet_Relay_Chat) server software; written with modern tools.
 
-Status
------
-Under heavy development. It'll be clear when it is production ready. Feel free to report any bugs on [Jira](https://cmpct.atlassian.net).
+Under heavy development. It'll be clear when it is production ready.
 
-Dependencies
------
-* .NET Core 2.2
+## Contact
+Feel free to report any bugs on [Jira](https://cmpct.atlassian.net).
 
-Running
------
+We run a live server at [irc://irc.cmpct.info:+6697/stratcom](irc://irc.cmpct.info:+6697/stratcom), come and join us!
+
+## Quickstart
+### Dependencies
+* .NET Core 5.0
+
+### Clone and run
 ```
 git clone --recurse-submodules https://bitbucket.org/cmpcti/cmpctircd cmpctircd
 
@@ -22,20 +23,12 @@ cd cmpctircd/cmpctircd
 
 # Fetch dependencies
 dotnet restore
+
 # Adjust App.config to suit your preferences
 dotnet run
 ```
 
-Tests
------
-```
-git clone --recurse-submodules https://bitbucket.org/cmpcti/cmpctircd cmpctircd
-cd cmpctircd/cmpctircd
-dotnet tests
-```
-
-Docker
------
+### Docker container
 ```
 wget https://bitbucket.org/cmpcti/cmpctircd/raw/master/Dockerfile
 
@@ -47,6 +40,48 @@ docker build -t cmpctircd .
 docker run -v $HOME/cmpctircd-docker:/cmpctircd/ --name cmpctircd -p 6667:6667 -p 6697:6697 -d cmpctircd
 ```
 
-Contact
--------
-An IRC server will be made available once the daemon is sufficiently mature (soon, we hope)!
+## Contributing
+Many hands make light work, we welcome you to help us out.
+
+Before you start working, check in on the [Jira issues](https://bitbucket.org/cmpcti/cmpctircd/jira) and discuss your plans in order to avoid repeated or unnecessary work.
+
+### Workflow
+If you're new here, we recommend that you [create a fork](https://support.atlassian.com/bitbucket-cloud/docs/fork-a-repository/) of the project in order to commit your changes to it. After creating a fork, you can clone the repository from your own account:
+```
+# Clone the repository from your own account
+git clone --recurse-submodules https://bitbucket.org/<YOUR_USERNAME>/cmpctircd cmpctircd
+```
+It is also recommended that you add the main repository as a remote, so that you can keep up to date with the project:
+```
+# Add the main repository as "upstream"
+git remote add upstream https://bitbucket.org/cmpcti/cmpctircd cmpctircd
+
+# Pull from the upstream repository
+git pull upstream master
+```
+
+You must make your changes in a **[new branch](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging) with a name related to the task** you are performing:
+```
+# Create a new branch for your task
+git checkout -b feature/IRCD-17-Implement-LIST
+```
+Branches are usually **prefixed with the corresponding task type**, such as *bugfix* or *feature*, as above.
+
+Please **start your commit messages with the task number** (e.g. *IRCD-40*) to which it relates. It is useful for our record keeping to know which task each change relates to.
+
+When you are finished making your changes, push them to your remote repository and [create a pull request](https://support.atlassian.com/bitbucket-cloud/docs/create-a-pull-request-to-merge-your-change/) for us to review.
+
+### Tests
+This project uses NUnit for testing. Tests are located in the `cmpctircd-tests` folder.
+
+Please run the tests **before and after** making changes, to make sure you have not broken anything before submitting your pull request:
+
+```
+# Run all tests
+dotnet tests
+```
+If you are adding a feature, please write tests for the feature's components. If you are writing a bugfix, where possible, please write a regression test for it.
+
+---
+
+a prjct by frnds @ [cmpct](https://cmpct.info/).

@@ -287,7 +287,7 @@ namespace cmpctircd
                 .SelectMany(t => t.GetTypes())
                 .Where(
                     t => t.IsClass &&
-                         t.Namespace == "cmpctircd.UModes" &&
+                         t.Namespace == "cmpctircd.Modes" &&
                          t.BaseType.Equals(typeof(UserMode)) &&
                          !badClasses.Contains(t.Name)
                 );
@@ -321,7 +321,7 @@ namespace cmpctircd
                 .SelectMany(t => t.GetTypes())
                 .Where(
                     t => t.IsClass &&
-                         t.Namespace == "cmpctircd.UModes" &&
+                         t.Namespace == "cmpctircd.Modes" &&
                          t.BaseType.Equals(typeof(ChannelMode)) &&
                          !badClasses.Contains(t.Name)
                 );

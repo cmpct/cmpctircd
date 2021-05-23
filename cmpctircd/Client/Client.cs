@@ -65,7 +65,7 @@ namespace cmpctircd
                                    .SelectMany(t => t.GetTypes())
                                    .Where(
                                        t => t.IsClass &&
-                                       t.Namespace == "cmpctircd.UModes" &&
+                                       t.Namespace == "cmpctircd.Modes" &&
                                        t.BaseType.Equals(typeof(UserMode)) &&
                                        !except.Contains(t)
                                     );

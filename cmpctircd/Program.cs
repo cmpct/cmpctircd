@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using cmpctircd.Configuration;
+using cmpctircd.Configuration.Options;
 using cmpctircd.Controllers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +42,7 @@ namespace cmpctircd
                     services.AddHostedService<IrcApplicationLifecycle>();
 
                     services.AddOptions<SocketOptions>().Bind(configuration);
+                    services.AddOptions<LoggerOptions>().Bind(configuration);
                 });
         }
     }

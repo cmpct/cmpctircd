@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using cmpctircd.Configuration;
+using cmpctircd.Configuration.Options;
 using FluentValidation.Results;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
@@ -9,8 +10,10 @@ namespace cmpctircd.Validation {
     public class ConfigurationValidator {
         private readonly IConfiguration _config;
         private readonly IOptions<SocketOptions> _socketOptions;
+        private IOptions<LoggerOptions> _loggerOptions;
 
-        public ConfigurationValidator(IConfiguration config, IOptions<SocketOptions> socketOptions) {
+        public ConfigurationValidator(IConfiguration config, IOptions<SocketOptions> socketOptions, IOptions<LoggerOptions> loggerOptions) {
+            _loggerOptions = loggerOptions;
             _config = config;
             _socketOptions = socketOptions;
         }
@@ -35,7 +38,7 @@ namespace cmpctircd.Validation {
 
         private ValidationResult ValidateLoggerElement() {
             var validationResult = new ValidationResult();
-            var loggers = _config.GetSection("Logging:Loggers").Get<List<LoggerElement>>();
+            var loggers = _loggerOptions.Value.Loggers;
 
             var validator = new LoggerElementValidator();
 

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Timers;
 using cmpctircd.Configuration;
+using cmpctircd.Configuration.Options;
 using cmpctircd.Modes;
 using cmpctircd.Validation;
 using Microsoft.Extensions.Configuration;
@@ -18,9 +19,11 @@ namespace cmpctircd
         public static char[] lastUID = { };
         public readonly IList<SocketConnector> Connectors = new List<SocketConnector>();
         private readonly IList<SocketListener> Listeners = new List<SocketListener>();
+        private IOptions<LoggerOptions> _loggerOptions;
 
-        public IRCd(Log log, IConfiguration config, IServiceProvider services, IOptions<SocketOptions> socketOptions)
+        public IRCd(Log log, IConfiguration config, IServiceProvider services, IOptions<SocketOptions> socketOptions, IOptions<LoggerOptions> loggerOptions)
         {
+            _loggerOptions = loggerOptions;
             Log = log;
             Config = config;
             SocketOptions = socketOptions;
@@ -36,7 +39,7 @@ namespace cmpctircd
             PingTimeout = config.GetValue<int>("Advanced:PingTimeout");
             RequirePong = config.GetValue<bool>("Advanced:RequirePongCookie");
 
-            Loggers = config.GetSection("Logging:Loggers").Get<List<LoggerElement>>();
+            Loggers = _loggerOptions.Value.Loggers;
 
             MaxTargets = config.GetValue<int>("Advanced:MaxTargets");
             CloakKey = config.GetValue<string>("Advanced:Cloak:Key");
@@ -99,7 +102,7 @@ namespace cmpctircd
         public void Run()
         {
             Log.Info("==> Validating appsettings.json");
-            var configurationValidator = new ConfigurationValidator(Config, SocketOptions);
+            var configurationValidator = new ConfigurationValidator(Config, SocketOptions, _loggerOptions);
             var validationResult = configurationValidator.ValidateConfiguration();
 
             if (!validationResult.IsValid) {

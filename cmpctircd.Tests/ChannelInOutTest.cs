@@ -8,7 +8,7 @@ using NUnit.Framework;
 using Meebey.SmartIrc4net;
 
 namespace cmpctircd.Tests {
-    [TestFixture]
+    [TestFixture, Ignore("Ignoring integration style test as per task #10")]
     public class ChannelInOutTest {
         /// <summary>
         /// Basic set of tests to ensure that a user can JOIN and PART a channel successfully.
@@ -50,6 +50,7 @@ namespace cmpctircd.Tests {
         }
         
         [SetUp]
+        [Ignore("Ignoring integration style test as per task #10")]
         public void SetUp() {
             if(setup) {
                 return;
@@ -84,6 +85,7 @@ namespace cmpctircd.Tests {
         }
 
         [TearDown]
+        [Ignore("Ignoring integration style test as per task #10")]
         public void TearDown() {
             setup = false;
             irc.Disconnect();

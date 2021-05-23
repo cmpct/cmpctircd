@@ -39,7 +39,7 @@ namespace cmpctircd {
                 await tc.ConnectAsync(Info.Host.ToString(), Info.Port);
                 stream = tc.GetStream();
             } catch (SocketException) {
-                _ircd.Log.Warn($"Unable to connect to server {Info.Host.ToString()}:{Info.Port}");
+                log.Warn($"Unable to connect to server {Info.Host.ToString()}:{Info.Port}");
                 return;
             }
 

@@ -44,7 +44,6 @@ namespace cmpctircd
                     services.AddOptions<SocketOptions>().Bind(configuration);
                     services.AddOptions<ServerOptions>().Bind(configuration);
                     services.AddOptions<LoggerOptions>().Bind(configuration);
-                    //services.AddOptions<ConfigurationOptions>().Bind(configuration);
                     services.Configure<ConfigurationOptions>(configuration);
                 });
         }

@@ -19,45 +19,42 @@ namespace cmpctircd
         public static char[] lastUID = { };
         public readonly IList<SocketConnector> Connectors = new List<SocketConnector>();
         private readonly IList<SocketListener> Listeners = new List<SocketListener>();
-        private IOptions<LoggerOptions> _loggerOptions;
 
-        public IRCd(Log log, IConfiguration config, IServiceProvider services, IOptions<SocketOptions> socketOptions, IOptions<LoggerOptions> loggerOptions)
+        public IRCd(Log log, IServiceProvider services, IOptions<ConfigurationOptions> config)
         {
-            _loggerOptions = loggerOptions;
             Log = log;
             Config = config;
-            SocketOptions = socketOptions;
 
             // Interpret the ConfigData
-            SID = config.GetValue<string>("SID");
-            Host = config.GetValue<string>("Host");
-            Desc = config.GetValue<string>("Description");
-            Network = config.GetValue<string>("Network");
+            SID = config.Value.Sid;
+            Host = config.Value.Host;
+            Desc = config.Value.Description;
+            Network = config.Value.Network;
 
             if (SID == "auto") SID = GenerateSID(Host, Desc);
 
-            PingTimeout = config.GetValue<int>("Advanced:PingTimeout");
-            RequirePong = config.GetValue<bool>("Advanced:RequirePongCookie");
+            PingTimeout = config.Value.Advanced.PingTimeout;
+            RequirePong = config.Value.Advanced.RequirePongCookie;
 
-            Loggers = _loggerOptions.Value.Loggers;
+            Loggers = config.Value.Loggers;
 
-            MaxTargets = config.GetValue<int>("Advanced:MaxTargets");
-            CloakKey = config.GetValue<string>("Advanced:Cloak:Key");
-            CloakFull = config.GetValue<bool>("Advanced:Cloak:Full");
-            CloakPrefix = config.GetValue<string>("Advanced:Cloak:Prefix");
-            CloakDomainParts = config.GetValue<int>("Advanced:Cloak:DomainParts");
-            AutoModes = config.GetSection("Cmodes").Get<List<ModeElement>>().ToDictionary(m => m.Name, m => m.Param);
-            AutoUModes = config.GetSection("Umodes").Get<List<ModeElement>>().ToDictionary(m => m.Name, m => m.Param);
-            Opers = config.GetSection("Opers").Get<List<OperatorElement>>();
-            OperChan = config.GetSection("OperChan").Get<List<string>>();
+            MaxTargets = config.Value.Advanced.MaxTargets;
+            CloakKey = config.Value.Advanced.Cloak.Key;
+            CloakFull = config.Value.Advanced.Cloak.Full;
+            CloakPrefix = config.Value.Advanced.Cloak.Prefix;
+            CloakDomainParts = config.Value.Advanced.Cloak.DomainParts;
+            AutoModes = config.Value.CModes.ToDictionary(m => m.Name, m => m.Param);
+            AutoUModes = config.Value.UModes.ToDictionary(m => m.Name, m => m.Param);
+            Opers = config.Value.Opers;
+            OperChan = config.Value.OperChan;
 
             PacketManager = new PacketManager(this, services);
             ChannelManager = new ChannelManager(this);
 
             // Create certificate refresh
-            if (config.GetValue<string>("Tls") != null)
+            if (config.Value.Tls != null)
                 Certificate =
-                    new AutomaticCertificateCacheRefresh(new FileInfo(config.GetValue<string>("Tls:File")), password: config.GetValue<string>("Tls:Password"));
+                    new AutomaticCertificateCacheRefresh(new FileInfo(config.Value.Tls.File), password: config.Value.Tls.Password);
         }
 
         public PacketManager PacketManager { get; }
@@ -69,7 +66,7 @@ namespace cmpctircd
         private IList<string> UserModes { get; set; }
 
         public Log Log { get; }
-        public IConfiguration Config { get; }
+        public IOptions<ConfigurationOptions> Config { get; }
         public IOptions<SocketOptions> SocketOptions { get; }
         public string SID { get; }
         public string Host { get; }
@@ -102,8 +99,8 @@ namespace cmpctircd
         public void Run()
         {
             Log.Info("==> Validating appsettings.json");
-            var configurationValidator = new ConfigurationValidator(Config, SocketOptions, _loggerOptions);
-            var validationResult = configurationValidator.ValidateConfiguration();
+            var configurationValidator = new ConfigurationOptionsValidator();
+            var validationResult = configurationValidator.Validate(Config);
 
             if (!validationResult.IsValid) {
                 Log.Error($"==> {string.Join("\n", validationResult.Errors.Select(e => e.ErrorMessage))}");
@@ -123,8 +120,8 @@ namespace cmpctircd
 
             PacketManager.Load();
 
-            var sockets = SocketOptions.Value;
-            foreach (var listener in sockets.Sockets)
+            var sockets = Config.Value.Sockets;
+            foreach (var listener in sockets)
             {
                 var sl = new SocketListener(this, listener);
                 Log.Info(
@@ -134,7 +131,7 @@ namespace cmpctircd
                 sl.Bind();
             }
 
-            foreach (var server in Config.GetSection("Servers").Get<List<ServerElement>>())
+            foreach (var server in Config.Value.Servers)
                 if (server.Outbound)
                 {
                     // <server> tag with outbound="true"
@@ -290,7 +287,7 @@ namespace cmpctircd
                 .SelectMany(t => t.GetTypes())
                 .Where(
                     t => t.IsClass &&
-                         t.Namespace == "cmpctircd.Modes" &&
+                         t.Namespace == "cmpctircd.UModes" &&
                          t.BaseType.Equals(typeof(UserMode)) &&
                          !badClasses.Contains(t.Name)
                 );
@@ -324,7 +321,7 @@ namespace cmpctircd
                 .SelectMany(t => t.GetTypes())
                 .Where(
                     t => t.IsClass &&
-                         t.Namespace == "cmpctircd.Modes" &&
+                         t.Namespace == "cmpctircd.UModes" &&
                          t.BaseType.Equals(typeof(ChannelMode)) &&
                          !badClasses.Contains(t.Name)
                 );

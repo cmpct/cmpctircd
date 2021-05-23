@@ -66,7 +66,7 @@ namespace cmpctircd {
 
                 try {
                     // Restrict the commands which non-registered (i.e. pre PONG, pre USER/NICK) users can execute
-                    if ((client.State.Equals(ClientState.PreAuth) || (ircd.Config.GetValue<bool>("Advanced:ResolveHostnames") && client.ResolvingHost)) && !registrationCommands.Contains(packet.ToUpper())) {
+                    if ((client.State.Equals(ClientState.PreAuth) || (ircd.Config.Value.Advanced.ResolveHostnames && client.ResolvingHost)) && !registrationCommands.Contains(packet.ToUpper())) {
                         throw new IrcErrNotRegisteredException(client);
                     }
 

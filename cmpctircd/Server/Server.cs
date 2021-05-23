@@ -143,7 +143,7 @@ namespace cmpctircd {
                 }
             } else {
                 // Find matching <server> tag in config (or null)
-                link = IRCd.Config.GetSection("Servers").Get<List<ServerElement>>().Where(s => s.Host == hostname
+                link = IRCd.Config.Value.Servers.Where(s => s.Host == hostname
                         && s.Port == Listener.Info.Port
                         && s.Tls == Listener.Info.Tls
                         && s.Password == password).FirstOrDefault();

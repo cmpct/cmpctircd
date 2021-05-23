@@ -15,7 +15,7 @@ namespace cmpctircd.Configuration {
 
         public bool Tls { get; set; }
         public List<string> Hosts { get; set; }
-        public Type AlgorithmType => Type.GetType(Algorithm);
+        public Type AlgorithmType => Type.GetType($"{Algorithm}, System.Security.Cryptography.Algorithms");
         public byte[] PasswordArray => ConvertPassword(Password);
 
         public byte[] ConvertPassword(string value) {

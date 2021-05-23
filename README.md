@@ -1,13 +1,20 @@
 <img src="./cmpct-icon-round.png" alt="cmpct logo" align="right" width="20%"/>
 
 # cmpctircd
+[![Open Source Love](https://badges.frapsoft.com/os/v3/open-source.svg?v=103)](https://github.com/ellerbrock/open-source-badges/)
+[![GitHub](https://img.shields.io/github/license/cmpct/cmpctircd)](https://github.com/cmpct/cmpctircd/blob/master/LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
+[![GitHub issues](https://img.shields.io/github/issues/cmpct/cmpctircd)](https://github.com/cmpct/cmpctircd/issues)
+[![GitHub Workflow Status (branch)](https://img.shields.io/github/workflow/status/cmpct/cmpctircd/.NET/master)](https://github.com/cmpct/cmpctircd/actions/workflows/dotnet.yml)
+[![GitHub Repo stars](https://img.shields.io/github/stars/cmpct/cmpctircd?style=social)](https://github.com/cmpct/cmpctircd/stargazers)
+
 *compact eye-are-see-dee*  
 An [IRC](https://simple.wikipedia.org/wiki/Internet_Relay_Chat) server software; written with modern tools.
 
 Under heavy development. It'll be clear when it is production ready.
 
 ## Contact
-Feel free to report any bugs on [Jira](https://cmpct.atlassian.net).
+Feel free to report any bugs as an [issue](https://github.com/cmpct/cmpctircd/issues).
 
 We run a live server at [irc://irc.cmpct.info:+6697/stratcom](irc://irc.cmpct.info:+6697/stratcom), come and join us!
 
@@ -17,7 +24,7 @@ We run a live server at [irc://irc.cmpct.info:+6697/stratcom](irc://irc.cmpct.in
 
 ### Clone and run
 ```
-git clone --recurse-submodules https://bitbucket.org/cmpcti/cmpctircd cmpctircd
+git clone https://github.com/cmpct/cmpctircd
 
 cd cmpctircd/cmpctircd
 
@@ -30,7 +37,7 @@ dotnet run
 
 ### Docker container
 ```
-wget https://bitbucket.org/cmpcti/cmpctircd/raw/master/Dockerfile
+wget https://raw.githubusercontent.com/cmpct/cmpctircd/master/Dockerfile
 
 mkdir cmpctircd-docker
 # Place your App.config and so on in cmpctircd-docker
@@ -43,18 +50,18 @@ docker run -v $HOME/cmpctircd-docker:/cmpctircd/ --name cmpctircd -p 6667:6667 -
 ## Contributing
 Many hands make light work, we welcome you to help us out.
 
-Before you start working, check in on the [Jira issues](https://bitbucket.org/cmpcti/cmpctircd/jira) and discuss your plans in order to avoid repeated or unnecessary work.
+Before you start working, check in on the project's [issues](https://github.com/cmpct/cmpctircd/issues) and discuss your plans in order to avoid repeated or unnecessary work.
 
 ### Workflow
-If you're new here, we recommend that you [create a fork](https://support.atlassian.com/bitbucket-cloud/docs/fork-a-repository/) of the project in order to commit your changes to it. After creating a fork, you can clone the repository from your own account:
+If you're new here, we recommend that you [create a fork](https://docs.github.com/en/github/getting-started-with-github/quickstart/fork-a-repo) of the project in order to commit your changes to it. After creating a fork, you can clone the repository from your own account:
 ```
 # Clone the repository from your own account
-git clone --recurse-submodules https://bitbucket.org/<YOUR_USERNAME>/cmpctircd cmpctircd
+git clone https://github.com/<YOUR_USERNAME>/cmpctircd cmpctircd
 ```
 It is also recommended that you add the main repository as a remote, so that you can keep up to date with the project:
 ```
 # Add the main repository as "upstream"
-git remote add upstream https://bitbucket.org/cmpcti/cmpctircd cmpctircd
+git remote add upstream https://github.com/cmpct/cmpctircd cmpctircd
 
 # Pull from the upstream repository
 git pull upstream master
@@ -63,13 +70,28 @@ git pull upstream master
 You must make your changes in a **[new branch](https://git-scm.com/book/en/v2/Git-Branching-Basic-Branching-and-Merging) with a name related to the task** you are performing:
 ```
 # Create a new branch for your task
-git checkout -b feature/IRCD-17-Implement-LIST
+git checkout -b feature/17-Implement-LIST
 ```
 Branches are usually **prefixed with the corresponding task type**, such as *bugfix* or *feature*, as above.
 
-Please **start your commit messages with the task number** (e.g. *IRCD-40*) to which it relates. It is useful for our record keeping to know which task each change relates to.
+Please follow the below convention for commit messages:
+```
+<component>: <description>
 
-When you are finished making your changes, push them to your remote repository and [create a pull request](https://support.atlassian.com/bitbucket-cloud/docs/create-a-pull-request-to-merge-your-change/) for us to review.
+<remarks>
+
+<task type>: #<task number>
+```
+For example:
+```
+Handlers: Add LIST command handler.
+
+New users will now be able to find a channel to join.
+
+feature: #17
+```
+
+When you are finished making your changes, push them to your remote repository and [create a pull request](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request) for us to review.
 
 ### Tests
 This project uses NUnit for testing. Tests are located in the `cmpctircd-tests` folder.

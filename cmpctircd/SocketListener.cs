@@ -26,7 +26,8 @@ namespace cmpctircd {
         public int ServerCount = 0;
         public int AuthServerCount = 0;
 
-        public SocketListener(IRCd ircd, SocketElement info) {
+        public SocketListener(Log log, IRCd ircd, SocketElement info) {
+            this.log = log ?? throw new ArgumentNullException(nameof(log));
             this._ircd = ircd;
             this.Info = info;
             _listener = new TcpListener(info.Host, info.Port);

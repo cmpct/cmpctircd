@@ -28,6 +28,7 @@
                     services.AddScoped<IrcContext>();
                     services.AddScoped(sp => sp.GetRequiredService<IrcContext>().Sender as Client);
                     services.AddScoped(sp => sp.GetRequiredService<IrcContext>().Sender as Server);
+                    services.AddTransient<ISocketListenerFactory, SocketListenerFactory>();
                     services.AddHostedService<IrcApplicationLifecycle>();
                 });
         }

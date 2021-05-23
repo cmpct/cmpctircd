@@ -12,6 +12,7 @@ using cmpctircd.Configuration;
 
 namespace cmpctircd {
     public class SocketListener {
+        private readonly Log log;
         protected IRCd _ircd;
         private Boolean _started = false;
         private TcpListener _listener = null;

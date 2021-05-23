@@ -9,6 +9,8 @@
     using cmpctircd.Modes;
 
     public class IRCd {
+        private readonly ISocketListenerFactory socketListenerFactory;
+        private readonly ISocketConnectorFactory socketConnectorFactory;
         private readonly IList<SocketListener> Listeners = new List<SocketListener>();
         public readonly IList<SocketConnector> Connectors = new List<SocketConnector>();
         public PacketManager PacketManager { get; }
@@ -50,9 +52,11 @@
 
         public List<Client> Clients => ClientLists.SelectMany(clientList => clientList).ToList();
         public List<Server> Servers => ServerLists.SelectMany(serverList => serverList).ToList();
-        public IRCd(Log log, CmpctConfigurationSection config, IServiceProvider services) {
+        public IRCd(Log log, CmpctConfigurationSection config, IServiceProvider services, ISocketListenerFactory socketListenerFactory, ISocketConnectorFactory socketConnectorFactory) {
             this.Log = log;
             this.Config = config;
+            this.socketListenerFactory = socketListenerFactory;
+            this.socketConnectorFactory = socketConnectorFactory;
 
             // Interpret the ConfigData
             SID     = config.SID;
@@ -99,7 +103,7 @@
             PacketManager.Load();
 
             foreach(var listener in Config.Sockets.OfType<SocketElement>()) {
-                SocketListener sl = new SocketListener(this, listener);
+                SocketListener sl = socketListenerFactory.CreateSocketListener(this, listener);
                 Log.Info($"==> Listening on: {listener.Host}:{listener.Port} ({listener.Type}) ({(listener.IsTls ? "TLS" : "Plain" )})");
 
                 Listeners.Add(sl);
@@ -110,7 +114,7 @@
                 if (server.IsOutbound) {
                     // <server> tag with outbound="true"
                     // We want to connect out to this server, not have them connect to us
-                    var sc = new SocketConnector(this, server);
+                    var sc = socketConnectorFactory.CreateSocketConnector(this, server);
                     Log.Info($"==> Connecting to: {server.Destination}:{server.Port} ({server.Host}) ({(server.IsTls ? "TLS" : "Plain" )})");
 
                     Connectors.Add(sc);

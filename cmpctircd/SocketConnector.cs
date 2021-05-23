@@ -9,14 +9,15 @@ using cmpctircd.Configuration;
 
 namespace cmpctircd {
     public class SocketConnector : SocketListener {
-
+        private readonly Log log;
         public ServerElement ServerInfo;
         public bool Connected;
         private TcpClient tc;
         private NetworkStream stream;
 
 
-        public SocketConnector(IRCd ircd, ServerElement info) : base(ircd, info) {
+        public SocketConnector(Log log, IRCd ircd, ServerElement info) : base(log, ircd, info) {
+            this.log = log ?? throw new ArgumentNullException(nameof(log));
             ServerInfo = info;
         }
 
@@ -38,7 +39,7 @@ namespace cmpctircd {
                 await tc.ConnectAsync(Info.Host.ToString(), Info.Port);
                 stream = tc.GetStream();
             } catch (SocketException) {
-                _ircd.Log.Warn($"Unable to connect to server {Info.Host.ToString()}:{Info.Port}");
+                log.Warn($"Unable to connect to server {Info.Host.ToString()}:{Info.Port}");
                 return;
             }
 

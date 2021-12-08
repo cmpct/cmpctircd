@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.Linq;
+using cmpctircd.Cloak;
 
 namespace cmpctircd {
 
@@ -43,7 +44,7 @@ namespace cmpctircd {
             // https://www.anope.org/doxy/2.0/d6/dd0/inspircd20_8cpp_source.html
             // TODO: Make sure we actually do m_services_account, m_hidechans
             // TODO: Readd m_services_account.so below!
-            Server.Write($"CAPAB MODULES :m_cloaking.so={IRCd.CloakPrefix}-{Cloak.InspCloakHost((char) 3, Server.IRCd.CloakKey, "*", 8)}.IP");
+            Server.Write($"CAPAB MODULES :m_cloaking.so={IRCd.CloakPrefix}-{Cloaking.InspCloakHost((char) 3, Server.IRCd.CloakKey, "*", 8)}.IP");
             Server.Write($"CAPAB MODSUPPORT m_services_account.so"); // TODO: this is a requirement for services, not insp (obviously)
             Server.Write($"CAPAB USERMODES hidechans");
 

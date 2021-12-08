@@ -8,6 +8,7 @@ namespace cmpctircd.Validation {
             RuleFor(c => c.Value.Host).NotEmpty();
             RuleFor(c => c.Value.Sid).NotEmpty();
             RuleFor(c => c.Value.OperChan).NotEmpty();
+            RuleForEach(c => c.Value.OperChan).NotEmpty();
             RuleFor(c => c.Value.Advanced).SetValidator(new AdvancedOptionsValidator());
             RuleForEach(c => c.Value.Opers).NotEmpty().SetValidator(new OperatorElementValidator());
             RuleForEach(c => c.Value.Sockets).NotEmpty().SetValidator(new SocketElementValidator());

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using System.IO;
+using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
@@ -28,7 +29,7 @@ namespace cmpctircd {
         public SocketListener(IRCd ircd, SocketElement info) {
             this._ircd = ircd;
             this.Info = info;
-            _listener = new TcpListener(info.Host, info.Port);
+            _listener = new TcpListener(info.EndPoint.Address, info.Port);
             _ircd.ClientLists.Add(Clients);
             _ircd.ServerLists.Add(_servers);
         }
@@ -43,7 +44,7 @@ namespace cmpctircd {
         }
         public virtual void Stop() {
             if (_started) {
-                _ircd.Log.Debug($"Shutting down listener [IP: {Info.Host}, Port: {Info.Port}, TLS: {Info.IsTls}]");
+                _ircd.Log.Debug($"Shutting down listener [IP: {Info.Host}, Port: {Info.Port}, TLS: {Info.Tls}]");
                 _listener.Stop();
                 _started = false;
             }
@@ -68,7 +69,7 @@ namespace cmpctircd {
 
         protected async Task<Stream> HandshakeIfNeededAsync(TcpClient tc, Stream stream) {
             // Handshake with TLS if they're from a TLS port
-            if (Info.IsTls) {
+            if (Info.Tls) {
                 try {
                     stream = await HandshakeTlsAsServerAsync(tc);
                 } catch (Exception e) {

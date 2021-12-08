@@ -8,6 +8,7 @@ using System.Net.Sockets;
 using cmpctircd.Modes;
 using System.Net;
 using System.IO;
+using Microsoft.Extensions.Configuration;
 
 namespace cmpctircd
 {
@@ -43,7 +44,7 @@ namespace cmpctircd
         public string NickIfSet() => string.IsNullOrEmpty(Nick) ? "*" : Nick;
 
         public Client(IRCd ircd, TcpClient tc, SocketListener sl, Stream stream, string UID = null, Server OriginServer = null, bool RemoteClient = false) : base(ircd, tc, sl, stream) {
-            if(ircd.Config.Advanced.ResolveHostnames)
+            if(ircd.Config.Value.Advanced.ResolveHostnames)
                 ResolvingHost = true;
 
             this.UID = UID;
@@ -94,7 +95,7 @@ namespace cmpctircd
                 // Check for PING/PONG events due
                 CheckTimeout();
 
-                if(IRCd.Config.Advanced.ResolveHostnames)
+                if(IRCd.Config.Value.Advanced.ResolveHostnames)
                     Resolve();
             } catch(Exception e) {
                 IRCd.Log.Debug($"Failed to access client: {e.ToString()}");
@@ -169,7 +170,7 @@ namespace cmpctircd
                 IRCd.DNSCache[ip] = DNSHost;
             }
 
-            if (IRCd.Config.Advanced.ResolveHostnames) {
+            if (IRCd.Config.Value.Advanced.ResolveHostnames) {
                 // If the IRCd resolves all hostnames, then we will have
                 // delayed calling SendWelcome until DNS resolution was complete
                 SendWelcome();
@@ -252,7 +253,7 @@ namespace cmpctircd
                 users += list.Count();
                 // Count all of the users with the user mode +i (invisible)
                 invisible += list.Where(client => client.Modes["i"].Enabled).Count();
-                // Count all of the users with usermode +o (IRC Operators)
+                // Count all of the users with usermode +o (IRC Opers)
                 ircops += list.Where(client => client.Modes["o"].Enabled).Count();
             }
             users -= invisible;

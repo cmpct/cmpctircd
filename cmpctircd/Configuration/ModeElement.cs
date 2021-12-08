@@ -1,17 +1,14 @@
-﻿using System.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace cmpctircd.Configuration {
-    public class ModeElement : ConfigurationElement {
-        [ConfigurationProperty("name", IsRequired = true)]
-        public string Name {
-            get { return (string) this["name"]; }
-            set { this["name"] = value; }
-        }
-
-        [ConfigurationProperty("param", IsRequired = false, DefaultValue = "")]
-        public string Param {
-            get { return (string) this["param"]; }
-            set { this["param"] = value; }
-        }
+namespace cmpctircd.Configuration
+{
+    public class ModeElement
+    {
+        public string Name { get; set; }
+        public string Param { get; set; }
     }
 }

@@ -19,6 +19,7 @@
 
   <ItemGroup>
     <!-- https://github.com/dotnet/corefx/issues/17278 -->
+    <PackageReference Include="FluentValidation" Version="10.1.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.4">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -27,6 +28,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.0.3" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.0.3" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="3.0.3" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Stylecop.Analyzers" Version="1.1.118">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -47,7 +49,6 @@
 
 
   <ItemGroup>
-    <None Include="App.config" />
     <None Include="ircd.motd">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -56,5 +57,10 @@
     <EmbeddedResource Include="ircd.rules">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 </Project>

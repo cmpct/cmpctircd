@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Sockets;
 using System.Text;
 
 using cmpctircd.Configuration;
+using Microsoft.Extensions.Configuration;
 
 namespace cmpctircd {
     public class Server : SocketBase {
@@ -136,14 +138,14 @@ namespace cmpctircd {
                 link = ServerInfo;
 
                 if (link.Host == hostname && link.Port == Listener.Info.Port
-                    && link.IsTls == Listener.Info.IsTls && link.Password == password) {
+                    && link.Tls == Listener.Info.Tls && link.Password == password) {
                     foundMatch = true;
                 }
             } else {
                 // Find matching <server> tag in config (or null)
-                link = IRCd.Config.Servers.Cast<ServerElement>().Where(s => s.Host == hostname
+                link = IRCd.Config.Value.Servers.Where(s => s.Host == hostname
                         && s.Port == Listener.Info.Port
-                        && s.IsTls == Listener.Info.IsTls
+                        && s.Tls == Listener.Info.Tls
                         && s.Password == password).FirstOrDefault();
 
                 // IP address needed for the block

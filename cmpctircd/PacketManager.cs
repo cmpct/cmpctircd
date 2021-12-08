@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using Microsoft.Extensions.Configuration;
 
 namespace cmpctircd {
     public class PacketManager {
@@ -65,7 +66,7 @@ namespace cmpctircd {
 
                 try {
                     // Restrict the commands which non-registered (i.e. pre PONG, pre USER/NICK) users can execute
-                    if ((client.State.Equals(ClientState.PreAuth) || (ircd.Config.Advanced.ResolveHostnames && client.ResolvingHost)) && !registrationCommands.Contains(packet.ToUpper())) {
+                    if ((client.State.Equals(ClientState.PreAuth) || (ircd.Config.Value.Advanced.ResolveHostnames && client.ResolvingHost)) && !registrationCommands.Contains(packet.ToUpper())) {
                         throw new IrcErrNotRegisteredException(client);
                     }
 

@@ -35,14 +35,14 @@ namespace cmpctircd {
 
             tc = new TcpClient();
             try {
-                await tc.ConnectAsync(Info.Host.ToString(), Info.Port);
+                await tc.ConnectAsync(Info.Host, Info.Port);
                 stream = tc.GetStream();
             } catch (SocketException) {
-                _ircd.Log.Warn($"Unable to connect to server {Info.Host.ToString()}:{Info.Port}");
+                _ircd.Log.Warn($"Unable to connect to server {Info.Host}:{Info.Port}");
                 return;
             }
 
-            if (ServerInfo.IsTls) {
+            if (ServerInfo.Tls) {
                 // If we're TLS, we need to handshake immediately
                 stream = await HandshakeTlsAsClient(tc, ServerInfo.Host, ServerInfo.VerifyTlsCert);
             }

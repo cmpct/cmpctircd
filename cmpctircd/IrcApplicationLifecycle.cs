@@ -1,4 +1,9 @@
-﻿namespace cmpctircd {
+﻿using System.Collections.Generic;
+using cmpctircd.Configuration.Options;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+
+namespace cmpctircd {
     using System;
     using System.Linq;
     using System.Threading;
@@ -10,11 +15,13 @@
     public class IrcApplicationLifecycle : IHostedService {
         private readonly IRCd ircd;
         private readonly Log log;
-        private readonly CmpctConfigurationSection config;
+        private readonly IConfiguration config;
         private readonly IHostApplicationLifetime appLifetime;
         private QueuedSynchronizationContext synchronizationContext;
+        private IOptions<LoggerOptions> _loggerOptions;
 
-        public IrcApplicationLifecycle(IRCd ircd, Log log, CmpctConfigurationSection config, IHostApplicationLifetime appLifetime) {
+        public IrcApplicationLifecycle(IRCd ircd, Log log, IConfiguration config, IHostApplicationLifetime appLifetime, IOptions<LoggerOptions> loggerOptions) {
+            _loggerOptions = loggerOptions;
             this.ircd = ircd ?? throw new ArgumentNullException(nameof(ircd));
             this.log = log ?? throw new ArgumentNullException(nameof(log));
             this.config = config ?? throw new ArgumentNullException(nameof(config));
@@ -36,7 +43,7 @@
         private void OnStarted() {
             synchronizationContext = new QueuedSynchronizationContext();
             SynchronizationContext.SetSynchronizationContext(synchronizationContext);
-            log.Initialise(ircd, config.Loggers.OfType<LoggerElement>().ToList());
+            log.Initialise(ircd, _loggerOptions.Value.Loggers.ToList());
             ircd.Run();
             synchronizationContext.Run();
         }

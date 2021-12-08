@@ -49,12 +49,12 @@ namespace cmpctircd.Controllers {
                 }
                 // Instantiate the algorithm through reflection, if not already instantiated.
                 HashAlgorithm algorithm;
-                if(!_algorithms.TryGetValue(ircop.Algorithm, out algorithm))
-                    algorithm = _algorithms[ircop.Algorithm] = (ircop.Algorithm.GetConstructor(Type.EmptyTypes)?.Invoke(new object[0]) as HashAlgorithm) ?? throw new IrcErrNoOperHostException(client);
+                if(!_algorithms.TryGetValue(ircop.AlgorithmType, out algorithm))
+                    algorithm = _algorithms[ircop.AlgorithmType] = (ircop.AlgorithmType.GetConstructor(Type.EmptyTypes)?.Invoke(new object[0]) as HashAlgorithm) ?? throw new IrcErrNoOperHostException(client);
                 // Hash the user's input to match the stored hash password in the config
                 byte[] password = Encoding.UTF8.GetBytes(args.SpacedArgs[2]);
                 byte[] builtHash = algorithm.ComputeHash(password);
-                if(builtHash.SequenceEqual(ircop.Password)) {
+                if(builtHash.SequenceEqual(ircop.PasswordArray)) {
                     Channel channel;
                     Topic topic;
                     client.Modes["o"].Grant("", true, true);
